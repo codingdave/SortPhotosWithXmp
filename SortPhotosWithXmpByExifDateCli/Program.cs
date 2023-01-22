@@ -1,259 +1,201 @@
-﻿// See https://aka.ms/new-console-template for more information
-
-// check if image timestamp differs from exif and rename file
-// Find all images of certain camera. Fix their exif by identifying the offset.
-// Find all fspot images. They might be wrong. Compare them.
-// Sort into camera subdirectories.
-// dotnet ~/projects/SortPhotosWithXmpByExifDate/SortPhotosWithXmpByExifDateCli/bin/Release/net6.0/SortPhotosWithXmpByExifDateCli.dll ~/Fotos ~/test
+﻿// dotnet ~/projects/SortPhotosWithXmpByExifDate/SortPhotosWithXmpByExifDateCli/bin/Release/net6.0/SortPhotosWithXmpByExifDateCli.dll ~/Fotos ~/test
 // Found 2670 images and 2699 xmps <-- 2670 images left
+// trim trailing slash on directory parameters
 
+using System.CommandLine;
 using MetadataExtractor;
-using MetadataExtractor.Formats.Exif;
-using MetadataExtractor.Formats.Iptc;
-using MetadataExtractor.Formats.QuickTime;
-using MetadataExtractor.Formats.Xmp;
 using Directory = System.IO.Directory;
 
-var images = 0;
-var xmps = 0;
+namespace SortPhotosWithXmpByExifDateCli;
 
-Console.WriteLine($"Parameters: {string.Join(", ", args)}");
-switch (args.Length)
+public static class Program
 {
-    case < 1:
-        throw new InvalidOperationException("no search path was set");
-    case < 2:
-        throw new InvalidOperationException("no destination path was set");
-}
+    private static readonly Statistics Statistics = new();
 
-string FixPath(string path)
-{
-    if (path.Contains('~'))
+    static async Task<int> Main(string[] args)
     {
-        path = path.Replace("~",
-            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile,
-                Environment.SpecialFolderOption.DoNotVerify));
+        return await ParseCommandLine(args);
     }
 
-    return path;
-}
-
-var searchPath = FixPath(args[0]);
-var destinationPath = FixPath(args[1]);
-
-Console.WriteLine(
-    $"Starting SortPhotosWithXmpByExifDateCli with search path: '{searchPath}' and destination path '{destinationPath}'");
-
-var enumerationOptions = new EnumerationOptions
-{
-    MatchCasing = MatchCasing.CaseInsensitive,
-    RecurseSubdirectories = true,
-};
-
-FileInfo[] GetCorrespondingXmpFiles(FileInfo fileInfo)
-{
-    var localEnumerationOptions = new EnumerationOptions
+    private static async Task<int> ParseCommandLine(string[] args)
     {
-        MatchCasing = MatchCasing.CaseInsensitive,
-        RecurseSubdirectories = false,
-    };
+        var sourceOption = GetSourceOption();
+        var destinationOption = GetDestinationOption();
 
-    return Directory.GetFiles(
-            Path.GetDirectoryName(fileInfo.FullName)
-            ?? throw new InvalidOperationException(),
-            $"{Path.GetFileNameWithoutExtension(fileInfo.FullName)}*.xmp", localEnumerationOptions)
-        .Select(x => new FileInfo(x))
-        .ToArray();
-}
-
-void PrintAllXmpData(IReadOnlyList<MetadataExtractor.Directory> directories, FileInfo fileInfo1)
-{
-    foreach (var directory in directories)
-    {
-        foreach (var xmpDirectory in directories.OfType<XmpDirectory>())
+        var rearrangeByExifCommand = new Command("rearrangeByExif",
+            "Scan source dir and move photos and videos to destination directory in subdirectories given by the Exif information. Xmp files are placed accordingly.")
         {
-            if (xmpDirectory.XmpMeta == null) continue;
-            foreach (var property in xmpDirectory.XmpMeta.Properties)
+            sourceOption,
+            destinationOption
+        };
+        rearrangeByExifCommand.SetHandler(SortImagesByExif!, sourceOption, destinationOption);
+
+        var checkIfFileNameContainsDateDifferentToExifDatesCommand = new Command(
+            "checkIfFileNameContainsDateDifferentToExifDates",
+            "check if image timestamp differs from exif and rename file")
+        {
+            sourceOption
+        };
+        checkIfFileNameContainsDateDifferentToExifDatesCommand.SetHandler(
+            CheckIfFileNameContainsDateDifferentToExifDates!, sourceOption);
+
+        var rearrangeByCameraManufacturerCommand = new Command("rearrangeByCameraManufacturer",
+            "Find all images of certain camera. Sort into camera subdirectories. Keep layout but prepend camera manufacturer.")
+        {
+            sourceOption,
+            destinationOption
+        };
+        rearrangeByCameraManufacturerCommand.SetHandler(SortImagesByManufacturer!, sourceOption, destinationOption);
+
+        var rearrangeBySoftwareCommand = new Command("rearrangeBySoftware",
+            "Find all F-Spot images. They might be wrong. Compare them. Keep layout but prepend software that was creating images.")
+        {
+            sourceOption,
+            destinationOption
+        };
+        rearrangeBySoftwareCommand.SetHandler(RearrangeBySoftware!, sourceOption, destinationOption);
+
+        var fixExifDateByOffsetCommand = new Command(
+            "fixExifDateByOffset",
+            "Fix their exif by identifying the offset.")
+        {
+            sourceOption
+        };
+        fixExifDateByOffsetCommand.SetHandler(FixExifDateByOffset!, sourceOption);
+
+        var rootCommand = new RootCommand("Rearrange files containing Exif data");
+        rootCommand.AddCommand(rearrangeByExifCommand);
+        rootCommand.AddCommand(checkIfFileNameContainsDateDifferentToExifDatesCommand);
+        rootCommand.AddCommand(rearrangeByCameraManufacturerCommand);
+        rootCommand.AddCommand(rearrangeBySoftwareCommand);
+        rootCommand.AddCommand(fixExifDateByOffsetCommand);
+
+        return await rootCommand.InvokeAsync(args);
+    }
+
+    private static void FixExifDateByOffset(FileInfo dir)
+    {
+        throw new NotImplementedException();
+    }
+
+    private static void RearrangeBySoftware(FileInfo source, FileInfo destination)
+    {
+        throw new NotImplementedException();
+    }
+
+    private static void SortImagesByManufacturer(FileInfo source, FileInfo destination)
+    {
+        throw new NotImplementedException();
+    }
+
+    private static void CheckIfFileNameContainsDateDifferentToExifDates(FileInfo source)
+    {
+        throw new NotImplementedException();
+    }
+
+    private static Option<FileInfo?> GetDestinationOption()
+    {
+        return new Option<FileInfo?>(
+            name: "--destination",
+            description: "The destination directory that contains the data.",
+            isDefault: true,
+            parseArgument: result =>
             {
-                Console.WriteLine($"{property.Path}: {property.Value}");
+                var filePath = result.Tokens.SingleOrDefault()?.Value;
+                if (filePath == null)
+                {
+                    result.ErrorMessage = "No argument given";
+                    return null;
+                }
+
+                filePath = Helpers.FixPath(filePath);
+
+                if (!Directory.Exists(filePath))
+                {
+                    Directory.CreateDirectory(filePath);
+                }
+
+                return new FileInfo(filePath);
             }
-        }
+        );
     }
-}
 
-void PrintAllData(IReadOnlyList<MetadataExtractor.Directory> directories, FileInfo fileInfo1)
-{
-    foreach (var directory in directories)
+    private static Option<FileInfo?> GetSourceOption()
     {
-        foreach (var tag in directory.Tags)
-        {
-            // if (tag.Description != null && tag.Description.Contains("10:17"))
+        return new Option<FileInfo?>(
+            name: "--source",
+            description: "The source directory that contains the data.",
+            isDefault: true,
+            parseArgument: result =>
             {
-                Console.WriteLine($"{directory.Name} - {tag.Name} = {tag.Description}");
+                var filePath = result.Tokens.SingleOrDefault()?.Value;
+                if (filePath == null)
+                {
+                    result.ErrorMessage = "No argument given";
+                    return null;
+                }
+
+                filePath = Helpers.FixPath(filePath);
+
+                if (!Directory.Exists(filePath))
+                {
+                    result.ErrorMessage = "Source directory does not exist";
+                    return null;
+                }
+                else
+                {
+                    return new FileInfo(filePath);
+                }
             }
-        }
-    }
-}
-
-void CheckForErrors(IReadOnlyList<MetadataExtractor.Directory> directories, FileInfo fileInfo)
-{
-    foreach (var directory in directories)
-    {
-        if (!directory.HasError) continue;
-        foreach (var error in directory.Errors)
-        {
-            // throw new InvalidOperationException($"ERROR: {fileInfo}: {error}");
-            Console.Error.WriteLine($"{fileInfo}: {error}");
-        }
-    }
-}
-
-DateTime GetDateTimeFromImage(IReadOnlyList<MetadataExtractor.Directory> directories, FileInfo fileInfo)
-{
-    // Exif IFD0 - Date/Time = 2023:01:18 10:54:28
-    // Exif SubIFD - Date/Time Digitized = 2023:01:18 10:17:32
-    // Exif SubIFD - Date/Time Original = 2023:01:18 10:17:32
-    // IPTC - Date Created = 2023:01:18
-    // IPTC - Digital Date Created = 2023:01:18
-    // IPTC - Digital Time Created = 10:17:32+0100
-    // IPTC - Time Created = 10:17:32+0100
-
-    var exifId0Directory = directories.OfType<ExifIfd0Directory>().FirstOrDefault();
-    if (exifId0Directory != null)
-    {
-        if (exifId0Directory.TryGetDateTime(ExifDirectoryBase.TagDateTime, out var tagDateTime))
-        {
-            return tagDateTime;
-        }
+        );
     }
 
-    var exifSubIfdDirectory = directories.OfType<ExifSubIfdDirectory>().FirstOrDefault();
-    if (exifSubIfdDirectory != null)
+    private static void SortImagesByExif(FileInfo searchPath, FileInfo destinationPath)
     {
-        if (exifSubIfdDirectory.TryGetDateTime(ExifDirectoryBase.TagDateTimeDigitized, out var tagDateTimeDigitized))
-        {
-            return tagDateTimeDigitized;
-        }
-        else if (exifSubIfdDirectory.TryGetDateTime(ExifDirectoryBase.TagDateTimeOriginal, out var tagDateTimeOriginal))
-        {
-            return tagDateTimeOriginal;
-        }
-    }
+        Console.WriteLine($"called {nameof(SortImagesByExif)}");
+        Console.WriteLine(
+            $"Starting {nameof(SortPhotosWithXmpByExifDateCli)}.{nameof(SortImagesByExif)} with search path: '{searchPath}' and destination path '{destinationPath}'");
 
-    var iptcDirectory = directories.OfType<IptcDirectory>().FirstOrDefault();
-    if (iptcDirectory != null)
-    {
-        if (iptcDirectory.TryGetDateTime(IptcDirectory.TagDateCreated, out var tagDateCreated))
-        {
-            return tagDateCreated;
-        }
-        else if (iptcDirectory.TryGetDateTime(IptcDirectory.TagTimeCreated, out var tagTimeCreated))
-        {
-            return tagTimeCreated;
-        }
-        else if (iptcDirectory.TryGetDateTime(IptcDirectory.TagDigitalDateCreated, out var tagDigitalDateCreated))
-        {
-            return tagDigitalDateCreated;
-        }
-        else if (iptcDirectory.TryGetDateTime(IptcDirectory.TagDigitalTimeCreated, out var tagDigitalTimeCreated))
-        {
-            return tagDigitalTimeCreated;
-        }
-    }
+        var searchDirectory = searchPath.Directory ?? throw new ArgumentNullException(nameof(searchPath.Directory));
+        var files = searchDirectory.EnumerateFiles("*.*", SearchOption.AllDirectories)
+            .Where(s =>
+                s.Name.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
+                s.Name.EndsWith(".nef", StringComparison.OrdinalIgnoreCase) ||
+                s.Name.EndsWith(".gif", StringComparison.OrdinalIgnoreCase) ||
+                s.Name.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase) ||
+                s.Name.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ||
+                s.Name.EndsWith(".cr3", StringComparison.OrdinalIgnoreCase));
 
-    var quickTimeMovieHeaderDirectory = directories.OfType<QuickTimeMovieHeaderDirectory>().FirstOrDefault();
-    if (quickTimeMovieHeaderDirectory != null)
-    {
-        if (quickTimeMovieHeaderDirectory.TryGetDateTime(ExifDirectoryBase.TagDateTimeOriginal,
-                out var tagDateTimeOriginal))
+        foreach (var fileInfo in files)
         {
-            return tagDateTimeOriginal;
-        }
-        else if (quickTimeMovieHeaderDirectory.TryGetDateTime(QuickTimeMovieHeaderDirectory.TagCreated,
-                     out var tagCreated))
-        {
-            return tagCreated;
-        }
-    }
-
-    throw new InvalidOperationException();
-}
-
-void PrintMetadata(IReadOnlyList<MetadataExtractor.Directory> directories, FileInfo fileInfo)
-{
-    PrintAllData(directories, fileInfo);
-    PrintAllXmpData(directories, fileInfo);
-}
-
-var files = Directory.EnumerateFiles(searchPath, "*.*", SearchOption.AllDirectories)
-    .Where(s =>
-        s.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
-        s.EndsWith(".nef", StringComparison.OrdinalIgnoreCase) ||
-        s.EndsWith(".gif", StringComparison.OrdinalIgnoreCase) ||
-        s.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase) ||
-        s.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ||
-        s.EndsWith(".cr3", StringComparison.OrdinalIgnoreCase));
-
-foreach (var file in files)
-{
-    images++;
-    var fileInfo = new FileInfo(file);
-    Console.WriteLine($"Found photo {fileInfo}");
-    IReadOnlyList<MetadataExtractor.Directory> directories = ImageMetadataReader.ReadMetadata(fileInfo.FullName);
-    try
-    {
-        CheckForErrors(directories, fileInfo);
-        var dateTime = GetDateTimeFromImage(directories, fileInfo);
-
-        var xmpFiles = GetCorrespondingXmpFiles(fileInfo);
-        if (xmpFiles.Length > 0)
-        {
-            foreach (var xmpFile in xmpFiles)
+            Statistics.FoundImages++;
+            Console.WriteLine($"Found photo {fileInfo}");
+            IReadOnlyList<MetadataExtractor.Directory>
+                directories = ImageMetadataReader.ReadMetadata(fileInfo.FullName);
+            try
             {
-                Console.WriteLine($"found xmp {xmpFile} for {fileInfo}");
-                xmps++;
+                Helpers.CheckForErrors(directories, fileInfo);
+                var dateTime = Helpers.GetDateTimeFromImage(directories, fileInfo);
+
+                var xmpFiles = Helpers.GetCorrespondingXmpFiles(fileInfo);
+                if (xmpFiles.Length > 0)
+                {
+                    foreach (var xmpFile in xmpFiles)
+                    {
+                        Console.WriteLine($"found xmp {xmpFile} for {fileInfo}");
+                        Statistics.FoundXmps++;
+                    }
+                }
+
+                Helpers.MoveImageAndXmpToExifPath(fileInfo, xmpFiles, dateTime, destinationPath);
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine($"{fileInfo}: {e.Message}, {e}");
+                Helpers.PrintMetadata(directories);
             }
         }
 
-        MoveImageAndXmpToExifPath(fileInfo, xmpFiles, dateTime);
-    }
-    catch (Exception e)
-    {
-        Console.Error.WriteLine($"{fileInfo}: {e.Message}, {e}");
-        PrintMetadata(directories, fileInfo);
+        Console.WriteLine(Statistics);
     }
 }
-
-void MoveImageAndXmpToExifPath(FileInfo imageFile, FileInfo[] xmlFiles, DateTime dateTime)
-{
-    var destinationSuffix = dateTime.ToString("yyyy/MM/dd");
-    // /{Path.GetFileNameWithoutExtension(imageFile.Name)}
-    // /{imageFile.Directory}
-    var finalDestinationPath = $"{destinationPath}/{destinationSuffix}";
-    if (!Directory.Exists(finalDestinationPath))
-    {
-        Console.WriteLine($"Directory does not exist. Creating {finalDestinationPath}");
-        Directory.CreateDirectory(finalDestinationPath);
-    }
-
-    var allSourceFiles = new List<FileInfo>() { imageFile };
-    allSourceFiles.AddRange(xmlFiles);
-
-    foreach (var f in allSourceFiles)
-    {
-        var targetName = $"{finalDestinationPath}/{f.Name}";
-        // Console.WriteLine($"File.Move({f}, {targetName});");
-        if (!File.Exists(targetName))
-        {
-            File.Move(f.FullName, targetName);
-        }
-        else
-        {
-            Console.WriteLine($"Skipping existing {targetName}");
-        }
-    }
-
-    Console.WriteLine();
-}
-
-Console.WriteLine($"Found {images} images and {xmps} xmps");
