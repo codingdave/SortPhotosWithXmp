@@ -154,12 +154,12 @@ public static class Helpers
     }
 
     public static void MoveImageAndXmpToExifPath(FileInfo imageFile, FileInfo[] xmlFiles, DateTime dateTime,
-        FileInfo? destinationPath)
+        DirectoryInfo destinationDirectory)
     {
         var destinationSuffix = dateTime.ToString("yyyy/MM/dd");
         // /{Path.GetFileNameWithoutExtension(imageFile.Name)}
         // /{imageFile.Directory}
-        var finalDestinationPath = $"{destinationPath.FullName}/{destinationSuffix}";
+        var finalDestinationPath = $"{destinationDirectory.FullName}/{destinationSuffix}";
         if (!Directory.Exists(finalDestinationPath))
         {
             Console.WriteLine($"Directory does not exist. Creating {finalDestinationPath}");
