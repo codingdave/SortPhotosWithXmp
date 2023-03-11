@@ -7,7 +7,7 @@ internal class RearrangeBySoftware : IRun
         throw new NotImplementedException();
     }
 
-    public Statistics Run()
+    public IStatistics Run()
     {
         throw new NotImplementedException();
     }

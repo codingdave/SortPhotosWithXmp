@@ -103,14 +103,20 @@ internal class CommandLine
     
     public static async Task<int> InitCommandLine(string[] args)
     {
-        Statistics statistics = new();
+        ImagesAndXmpFoundStatistics statistics = new();
         
         var sourceOption = GetSourceOption();
         var destinationOption = GetDestinationOption();
         var offsetOption = GetOffsetOption();
 
+        var deleteEmptyDirectoryCommand = new Command("deleteEmptyDirectory", "Search recursively for emtpy directories and delete them.")
+        { 
+            sourceOption
+        };
+        deleteEmptyDirectoryCommand.SetHandler(DeleteEmptyDirectory!, sourceOption);
+
         var rearrangeByExifCommand = new Command("rearrangeByExif",
-            "Scan source dir and move photos and videos to destination directory in subdirectories given by the Exif information. Xmp files are placed accordingly.")
+            "Scan source dir and move photos and videos to destination directory. Create subdirectory structure yyyy/MM/dd given by the Exif information of the image/video source. Xmp files are placed accordingly.")
         {
             sourceOption,
             destinationOption
@@ -155,6 +161,7 @@ internal class CommandLine
         {
             TreatUnmatchedTokensAsErrors = true
         };
+        rootCommand.AddCommand(deleteEmptyDirectoryCommand);
         rootCommand.AddCommand(rearrangeByExifCommand);
         rootCommand.AddCommand(checkIfFileNameContainsDateDifferentToExifDatesCommand);
         rootCommand.AddCommand(rearrangeByCameraManufacturerCommand);
@@ -164,14 +171,20 @@ internal class CommandLine
         return await rootCommand.InvokeAsync(args);
     }
 
-    private static void FixExifDateByOffset(DirectoryInfo directory, object offset)
+    private static void DeleteEmptyDirectory(DirectoryInfo directory)
     {
-        Run(new FixExifDateByOffset(directory, (TimeSpan) offset));
+        Run(new DeleteEmptyDirectory(directory));
     }
 
     private static void SortImagesByExif(DirectoryInfo sourcePath, DirectoryInfo destinationPath)
     {
         Run(new SortImageByExif(sourcePath, destinationPath, _extensions));
+    }
+
+    private static void FixExifDateByOffset(DirectoryInfo directory, object offset)
+    {
+        // https://github.com/dotnet/command-line-api/issues/2086
+        Run(new FixExifDateByOffset(directory, (TimeSpan) offset));
     }
 
     private static void RearrangeBySoftware(DirectoryInfo source, DirectoryInfo destination)
@@ -193,7 +206,7 @@ internal class CommandLine
     {
         try
         {
-            Console.WriteLine(f.Run());
+            Console.WriteLine(f.Run().PrintStatistics());
         }
         catch (Exception e)
         {

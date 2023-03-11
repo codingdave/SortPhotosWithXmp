@@ -7,7 +7,7 @@ internal class SortImageByExif : IRun
     private readonly DirectoryInfo _destinationDirectory;
     private readonly DirectoryInfo _sourceDirectory;
     private readonly IEnumerable<string> _extensions;
-    private readonly Statistics _statistics = new Statistics();
+    private readonly ImagesAndXmpFoundStatistics _statistics = new ImagesAndXmpFoundStatistics();
 
     internal SortImageByExif(DirectoryInfo sourceDirectoryInfo, DirectoryInfo destinationDirectoryInfo, IEnumerable<string> extensions)
     {
@@ -16,7 +16,7 @@ internal class SortImageByExif : IRun
         _extensions = extensions;
     }
 
-    public Statistics Run()
+    public IStatistics Run()
     {
         Console.WriteLine($"called {nameof(SortImageByExif)}::{nameof(Run)}");
         Console.WriteLine(
@@ -34,7 +34,7 @@ internal class SortImageByExif : IRun
         foreach (var fileInfo in files)
         {
             _statistics.FoundImages++;
-            Console.WriteLine($"Found photo {fileInfo}");
+            // Console.WriteLine($"Found photo {fileInfo}");
             IReadOnlyList<MetadataExtractor.Directory>
                 directories = ImageMetadataReader.ReadMetadata(fileInfo.FullName);
             try
@@ -47,7 +47,7 @@ internal class SortImageByExif : IRun
                 {
                     foreach (var xmpFile in xmpFiles)
                     {
-                        Console.WriteLine($"found xmp {xmpFile} for {fileInfo}");
+                        // Console.WriteLine($"found xmp {xmpFile} for {fileInfo}");
                         _statistics.FoundXmps++;
                     }
                 }
@@ -61,6 +61,9 @@ internal class SortImageByExif : IRun
             }
         }
 
-        return _statistics;
+        var statistics = new DirectoriesDeletedStatistics();
+        Helpers.RecursivelyDeleteEmptyDirectories(_sourceDirectory, statistics);
+
+        return new ImagesAndXmpCopiedDirectoriesDeletedStatistics(_statistics, statistics);
     }
 }

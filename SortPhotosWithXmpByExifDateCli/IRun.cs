@@ -2,5 +2,5 @@ namespace SortPhotosWithXmpByExifDateCli;
 
 internal interface IRun
 {
-    public Statistics Run();
+    public IStatistics Run();
 }

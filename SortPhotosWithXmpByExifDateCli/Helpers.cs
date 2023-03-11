@@ -162,7 +162,7 @@ public static class Helpers
         var finalDestinationPath = $"{destinationDirectory.FullName}/{destinationSuffix}";
         if (!Directory.Exists(finalDestinationPath))
         {
-            Console.WriteLine($"Directory does not exist. Creating {finalDestinationPath}");
+            // Console.WriteLine($"Directory does not exist. Creating {finalDestinationPath}");
             Directory.CreateDirectory(finalDestinationPath);
         }
 
@@ -183,6 +183,31 @@ public static class Helpers
             }
         }
 
-        Console.WriteLine();
+        // Console.WriteLine();
+    }
+
+    public static void RecursivelyDeleteEmptyDirectories(DirectoryInfo directory, DirectoriesDeletedStatistics statistics, bool start = true)
+    {
+        void DeleteDirectoryIfEmpty(DirectoryInfo d)
+        {
+            statistics.DirectoriesFound++;
+            if(!d.GetDirectories().Any() && 
+               !d.GetFiles().Any())
+            {
+                statistics.DirectoriesDeleted++;
+                Directory.Delete(d.FullName, false);
+            }
+        }
+
+        foreach(var d in directory.GetDirectories())
+        {
+            RecursivelyDeleteEmptyDirectories(d, statistics, false);
+            DeleteDirectoryIfEmpty(d);
+        }
+
+        if(start)
+        {
+                DeleteDirectoryIfEmpty(directory);
+        }
     }
 }
