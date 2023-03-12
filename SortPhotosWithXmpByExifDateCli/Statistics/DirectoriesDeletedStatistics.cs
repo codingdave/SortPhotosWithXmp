@@ -1,6 +1,6 @@
-namespace SortPhotosWithXmpByExifDateCli;
+namespace SortPhotosWithXmpByExifDateCli.Statistics;
 
-public class DirectoriesDeletedStatistics : IStatistics
+public class DirectoriesDeletedStatistics : IStatistics, IErrors
 {
     private bool _force;
     public DirectoriesDeletedStatistics(bool force)
@@ -8,7 +8,7 @@ public class DirectoriesDeletedStatistics : IStatistics
         _force = force;
     }
 
-    public List<string> Errors { get; } = new List<string>();
+    public IErrorCollection ErrorCollection { get; } = new ErrorCollection();
     public int DirectoriesFound { get; set; }
     public int DirectoriesDeleted { get; set; }
     public string PrintStatistics() 
@@ -17,17 +17,14 @@ public class DirectoriesDeletedStatistics : IStatistics
 
         if(DirectoriesDeleted > 0 && _force)
         {
-            ret = $", deleted {DirectoriesDeleted} directories";
+            ret += $", deleted {DirectoriesDeleted} directories";
         } 
         else
         {
-            ret = $", skipped deleting {DirectoriesDeleted} directories due to dry run";
+            ret += $", skipped deleting {DirectoriesDeleted} directories due to dry run";
         }
 
-        foreach(var error in Errors)
-        {
-            ret += error;
-        }
+        ret += string.Join(System.Environment.NewLine, ErrorCollection.Errors);
 
         return ret;
     }

@@ -3,6 +3,7 @@ using MetadataExtractor.Formats.Iptc;
 using MetadataExtractor.Formats.QuickTime;
 using MetadataExtractor.Formats.Xmp;
 using DirectoryExtensions = MetadataExtractor.DirectoryExtensions;
+using SortPhotosWithXmpByExifDateCli.Statistics;
 
 namespace SortPhotosWithXmpByExifDateCli;
 
@@ -175,16 +176,16 @@ public static class Helpers
         foreach (var f in allSourceFiles)
         {
             var targetName = $"{finalDestinationPath}/{f.Name}";
-            if (!File.Exists(targetName))
+            if (force)
             {
-                if (force)
+                if (!File.Exists(targetName))
                 {
                     File.Move(f.FullName, targetName);
                 }
-            }
-            else
-            {
-                statistics.Errors.Add($"ERROR: Skipping existing {targetName}");
+                else
+                {
+                    statistics.ErrorCollection.Errors.Add($"ERROR: Skipping existing {targetName}");
+                }
             }
         }
     }

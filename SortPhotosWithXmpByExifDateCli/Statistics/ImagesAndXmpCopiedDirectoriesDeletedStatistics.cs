@@ -1,4 +1,4 @@
-namespace SortPhotosWithXmpByExifDateCli;
+namespace SortPhotosWithXmpByExifDateCli.Statistics;
 
 public class ImagesAndXmpCopiedDirectoriesDeletedStatistics : IStatistics
 {
@@ -8,9 +8,7 @@ public class ImagesAndXmpCopiedDirectoriesDeletedStatistics : IStatistics
     public ImagesAndXmpCopiedDirectoriesDeletedStatistics(
         ImagesAndXmpFoundStatistics imagesStatistics, 
         DirectoriesDeletedStatistics directoriesStatistics) => 
-        (_imagesStatistics, _directoriesStatistics) = (imagesStatistics, directoriesStatistics);  
-        
-    public List<string> Errors { get; } = new List<string>();    
+        (_imagesStatistics, _directoriesStatistics) = (imagesStatistics, directoriesStatistics); 
 
     public string PrintStatistics() => _imagesStatistics.PrintStatistics() + ", " + _directoriesStatistics.PrintStatistics();
 }

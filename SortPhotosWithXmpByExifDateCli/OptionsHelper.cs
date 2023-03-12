@@ -10,11 +10,6 @@ internal static class OptionsHelper
             name: "--force",
             description: "Allow possibly destructive operations.",
             getDefaultValue: () => false
-            // isDefault = false,
-            // parseArgument: result =>
-            // {
-            //     return true;
-            // }
         );
     }
 

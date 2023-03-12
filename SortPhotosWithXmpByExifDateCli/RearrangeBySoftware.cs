@@ -1,3 +1,4 @@
+using SortPhotosWithXmpByExifDateCli.Statistics;
 namespace SortPhotosWithXmpByExifDateCli;
 
 internal class RearrangeBySoftware : IRun

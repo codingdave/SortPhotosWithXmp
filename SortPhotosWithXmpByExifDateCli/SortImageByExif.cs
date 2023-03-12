@@ -1,4 +1,5 @@
 using MetadataExtractor;
+using SortPhotosWithXmpByExifDateCli.Statistics;
 
 namespace SortPhotosWithXmpByExifDateCli;
 
@@ -29,12 +30,11 @@ internal class SortImageByExif : IRun
 
         foreach (var fileInfo in GetFileInfos())
         {               
-            // Console.WriteLine($"Found photo {fileInfo}");
             var metaDataDirectories = ImageMetadataReader.ReadMetadata(fileInfo.FullName);
             try
             {
-                _statistics.Errors.AddRange(Helpers.GetErrors(metaDataDirectories, fileInfo));
-                
+                _statistics.ErrorCollection.Errors.AddRange(Helpers.GetErrors(metaDataDirectories, fileInfo));
+
                 var dateTime = Helpers.GetDateTimeFromImage(metaDataDirectories, fileInfo);
                 var xmpFiles = Helpers.GetCorrespondingXmpFiles(fileInfo);
      
@@ -42,7 +42,7 @@ internal class SortImageByExif : IRun
             }
             catch (Exception e)
             {
-                _statistics.Errors.Add($"{fileInfo}: {e.Message}, {e}{string.Join(System.Environment.NewLine, Helpers.GetMetadata(metaDataDirectories))}");
+                _statistics.ErrorCollection.Errors.Add($"{fileInfo}: {e.Message}, {e}{string.Join(System.Environment.NewLine, Helpers.GetMetadata(metaDataDirectories))}");
             }
         }
 

@@ -1,3 +1,5 @@
+using SortPhotosWithXmpByExifDateCli.Statistics;
+
 namespace SortPhotosWithXmpByExifDateCli;
 
 internal class SortImagesByManufacturer : IRun

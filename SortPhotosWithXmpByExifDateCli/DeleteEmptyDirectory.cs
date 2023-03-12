@@ -1,3 +1,4 @@
+using SortPhotosWithXmpByExifDateCli.Statistics;
 namespace SortPhotosWithXmpByExifDateCli;
 
 public class DeleteEmptyDirectory : IRun 
