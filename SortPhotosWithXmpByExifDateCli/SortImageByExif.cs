@@ -7,13 +7,16 @@ internal class SortImageByExif : IRun
     private readonly DirectoryInfo _destinationDirectory;
     private readonly DirectoryInfo _sourceDirectory;
     private readonly IEnumerable<string> _extensions;
-    private readonly ImagesAndXmpFoundStatistics _statistics = new ImagesAndXmpFoundStatistics();
+    private readonly ImagesAndXmpFoundStatistics _statistics;
+    private bool _force;
 
-    internal SortImageByExif(DirectoryInfo sourceDirectoryInfo, DirectoryInfo destinationDirectoryInfo, IEnumerable<string> extensions)
+    internal SortImageByExif(DirectoryInfo sourceDirectoryInfo, DirectoryInfo destinationDirectoryInfo, IEnumerable<string> extensions, bool force)
     {
         _sourceDirectory = sourceDirectoryInfo ?? throw new ArgumentNullException(nameof(sourceDirectoryInfo));
         _destinationDirectory = destinationDirectoryInfo ?? throw new ArgumentNullException(nameof(destinationDirectoryInfo));
         _extensions = extensions;
+        _force = force;
+        _statistics = new ImagesAndXmpFoundStatistics(force);
     }
 
     public IStatistics Run()
@@ -32,27 +35,16 @@ internal class SortImageByExif : IRun
         // s.Name.EndsWith(".cr3", StringComparison.OrdinalIgnoreCase));
 
         foreach (var fileInfo in files)
-        {
-            _statistics.FoundImages++;
+        {               
             // Console.WriteLine($"Found photo {fileInfo}");
-            IReadOnlyList<MetadataExtractor.Directory>
-                directories = ImageMetadataReader.ReadMetadata(fileInfo.FullName);
+            var directories = ImageMetadataReader.ReadMetadata(fileInfo.FullName);
             try
             {
                 Helpers.CheckForErrors(directories, fileInfo);
                 var dateTime = Helpers.GetDateTimeFromImage(directories, fileInfo);
-
                 var xmpFiles = Helpers.GetCorrespondingXmpFiles(fileInfo);
-                if (xmpFiles.Length > 0)
-                {
-                    foreach (var xmpFile in xmpFiles)
-                    {
-                        // Console.WriteLine($"found xmp {xmpFile} for {fileInfo}");
-                        _statistics.FoundXmps++;
-                    }
-                }
-
-                Helpers.MoveImageAndXmpToExifPath(fileInfo, xmpFiles, dateTime, _destinationDirectory);
+     
+                Helpers.MoveImageAndXmpToExifPath(fileInfo, xmpFiles, dateTime, _destinationDirectory, _statistics, _force);
             }
             catch (Exception e)
             {
@@ -61,9 +53,8 @@ internal class SortImageByExif : IRun
             }
         }
 
-        var statistics = new DirectoriesDeletedStatistics();
-        Helpers.RecursivelyDeleteEmptyDirectories(_sourceDirectory, statistics);
-
+        var statistics = new DirectoriesDeletedStatistics(_force);
+        Helpers.RecursivelyDeleteEmptyDirectories(_sourceDirectory, statistics, _force);
         return new ImagesAndXmpCopiedDirectoriesDeletedStatistics(_statistics, statistics);
     }
 }

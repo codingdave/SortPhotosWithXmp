@@ -9,6 +9,6 @@ public static class Program
     static async Task<int> Main(string[] args)
     {
         var commandLine = new CommandLine();
-        return await commandLine.InitCommandLine(args);
+        return await commandLine.InvokeAsync(args);
     }
 }

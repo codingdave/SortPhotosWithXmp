@@ -154,7 +154,7 @@ public static class Helpers
     }
 
     public static void MoveImageAndXmpToExifPath(FileInfo imageFile, FileInfo[] xmlFiles, DateTime dateTime,
-        DirectoryInfo destinationDirectory)
+        DirectoryInfo destinationDirectory, ImagesAndXmpFoundStatistics statistics, bool force)
     {
         var destinationSuffix = dateTime.ToString("yyyy/MM/dd");
         // /{Path.GetFileNameWithoutExtension(imageFile.Name)}
@@ -166,6 +166,9 @@ public static class Helpers
             Directory.CreateDirectory(finalDestinationPath);
         }
 
+        statistics.FoundImages++;
+        statistics.FoundXmps += xmlFiles.Count();
+
         var allSourceFiles = new List<FileInfo>() { imageFile };
         allSourceFiles.AddRange(xmlFiles);
 
@@ -175,7 +178,10 @@ public static class Helpers
             // Console.WriteLine($"File.Move({f}, {targetName});");
             if (!File.Exists(targetName))
             {
-                File.Move(f.FullName, targetName);
+                if(force)
+                {
+                    File.Move(f.FullName, targetName);
+                }
             }
             else
             {
@@ -186,7 +192,7 @@ public static class Helpers
         // Console.WriteLine();
     }
 
-    public static void RecursivelyDeleteEmptyDirectories(DirectoryInfo directory, DirectoriesDeletedStatistics statistics, bool start = true)
+    public static void RecursivelyDeleteEmptyDirectories(DirectoryInfo directory, DirectoriesDeletedStatistics statistics, bool force, bool start = true)
     {
         void DeleteDirectoryIfEmpty(DirectoryInfo d)
         {
@@ -195,7 +201,10 @@ public static class Helpers
                !d.GetFiles().Any())
             {
                 statistics.DirectoriesDeleted++;
-                Directory.Delete(d.FullName, false);
+                if(force)
+                {
+                    Directory.Delete(d.FullName, false);
+                }
             }
         }
 
@@ -207,7 +216,7 @@ public static class Helpers
 
         if(start)
         {
-                DeleteDirectoryIfEmpty(directory);
+            DeleteDirectoryIfEmpty(directory);
         }
     }
 }
