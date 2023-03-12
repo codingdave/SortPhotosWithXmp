@@ -26,17 +26,19 @@ internal class CommandLine
             isDefault: true,
             parseArgument: result =>
             {
+                TimeSpan? ret = null;
                 var offset = result.Tokens.SingleOrDefault()?.Value;
                 if (offset == null)
                 {
                     result.ErrorMessage = "No argument given";
-                    return null;
+                } 
+                else if (TimeSpan.TryParse(offset, out var parsed))
+                {
+                    ret = parsed;
                 }
-
-                if (!TimeSpan.TryParse(offset, out var ret))
+                else 
                 {
                     result.ErrorMessage = $"cannot parse TimeSpan '{offset}'";
-                    return null;
                 }
 
                 return ret;
@@ -52,21 +54,25 @@ internal class CommandLine
             isDefault: true,
             parseArgument: result =>
             {
+                DirectoryInfo? ret = null;
                 var filePath = result.Tokens.SingleOrDefault()?.Value;
                 if (filePath == null)
                 {
                     result.ErrorMessage = "No argument given";
-                    return null;
-                }
-
-                filePath = Helpers.FixPath(filePath);
-
-                if (!Directory.Exists(filePath))
+                } 
+                else 
                 {
-                    Directory.CreateDirectory(filePath);
-                }
+                    filePath = Helpers.FixPath(filePath);
 
-                return new DirectoryInfo(filePath);
+                    if (!Directory.Exists(filePath))
+                    {
+                        Directory.CreateDirectory(filePath);
+                    }
+
+                    ret = new DirectoryInfo(filePath);
+                }
+               
+                return ret;
             }
         );
     }
@@ -79,24 +85,27 @@ internal class CommandLine
             isDefault: true,
             parseArgument: result =>
             {
+                DirectoryInfo? ret = null;
                 var filePath = result.Tokens.SingleOrDefault()?.Value;
                 if (filePath == null)
                 {
                     result.ErrorMessage = "No argument given";
-                    return null;
+                } 
+                else 
+                {
+                    filePath = Helpers.FixPath(filePath);
+
+                    if (!Directory.Exists(filePath))
+                    {
+                        result.ErrorMessage = "Source directory does not exist";
+                    }
+                    else
+                    {
+                        ret = new DirectoryInfo(filePath);
+                    }
                 }
 
-                filePath = Helpers.FixPath(filePath);
-
-                if (!Directory.Exists(filePath))
-                {
-                    result.ErrorMessage = "Source directory does not exist";
-                    return null;
-                }
-                else
-                {
-                    return new DirectoryInfo(filePath);
-                }
+                return ret;
             }
         );
     }
