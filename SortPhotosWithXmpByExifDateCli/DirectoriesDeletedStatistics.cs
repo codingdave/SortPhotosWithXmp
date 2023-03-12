@@ -12,15 +12,15 @@ public class DirectoriesDeletedStatistics : IStatistics
     public int DirectoriesDeleted { get; set; }
     public string PrintStatistics() 
     {
-        var ret = string.Empty;
+        var ret = $"Found {DirectoriesFound} directories";
 
-        if(_force)
+        if(DirectoriesDeleted > 0 && _force)
         {
-            ret = $"Found {DirectoriesFound} directories, deleted {DirectoriesDeleted} directories";
+            ret = $", deleted {DirectoriesDeleted} directories";
         } 
         else
         {
-            ret = $"Found {DirectoriesFound} directories, skipped deleting {DirectoriesDeleted} directories due to dry run";
+            ret = $", skipped deleting {DirectoriesDeleted} directories due to dry run";
         }
 
         return ret;
