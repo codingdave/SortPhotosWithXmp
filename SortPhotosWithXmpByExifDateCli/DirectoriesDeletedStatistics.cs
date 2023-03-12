@@ -16,11 +16,11 @@ public class DirectoriesDeletedStatistics : IStatistics
 
         if(_force)
         {
-            ret = $"Found {DirectoriesFound} directories, deleted {DirectoriesDeleted} directories.";
+            ret = $"Found {DirectoriesFound} directories, deleted {DirectoriesDeleted} directories";
         } 
         else
         {
-            ret = $"Found {DirectoriesFound} directories, skipped deleting {DirectoriesDeleted} directories due to dry run.";
+            ret = $"Found {DirectoriesFound} directories, skipped deleting {DirectoriesDeleted} directories due to dry run";
         }
 
         return ret;

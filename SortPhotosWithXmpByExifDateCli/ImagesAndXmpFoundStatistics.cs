@@ -17,7 +17,7 @@ public class ImagesAndXmpFoundStatistics : IStatistics
         }
         else
         {
-            ret = $"Found {FoundImages} images and {FoundXmps} xmps. Since we are running in dry mode no movement has been performed.";
+            ret = $"Found {FoundImages} images and {FoundXmps} xmps. Since we are running in dry mode no movement has been performed";
         }
         
         return ret;
