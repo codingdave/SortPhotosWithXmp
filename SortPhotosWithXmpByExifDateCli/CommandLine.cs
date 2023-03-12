@@ -37,8 +37,8 @@ internal class CommandLine
         AddDeleteEmptyDirectoryCommand();
         AddRearrangeByExifCommand();
 
-// TODO: Add command to print files whose filenames contain a timestamp and for which the xmp time information differs. Also allow to specify the format for the time, like dd/mm/yyyy
-// TODO Allow to specify the format for the time, like dd/mm/yyyy
+// TODO: Add command to print files whose filenames contain a timestamp and for which the xmp time information differs. Also allow to specify the format for the time, like yyyy/MM/dd
+// TODO Allow to specify the format for the time, like yyyy/MM/dd
         // AddCheckIfFileNameContainsDateDifferentToExifDatesCommand();
         AddRearrangeByCameraManufacturerCommand();
         AddRearrangeBySoftwareCommand();

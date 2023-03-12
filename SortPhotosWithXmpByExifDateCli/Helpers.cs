@@ -153,7 +153,7 @@ public static class Helpers
         PrintAllXmpData(directories);
     }
 
-    public static void MoveImageAndXmpToExifPath(FileInfo imageFile, FileInfo[] xmlFiles, DateTime dateTime,
+    public static void MoveImageAndXmpToExifPath(FileInfo imageFile, FileInfo[] xmpFiles, DateTime dateTime,
         DirectoryInfo destinationDirectory, ImagesAndXmpFoundStatistics statistics, bool force)
     {
         var destinationSuffix = dateTime.ToString("yyyy/MM/dd");
@@ -167,10 +167,10 @@ public static class Helpers
         }
 
         statistics.FoundImages++;
-        statistics.FoundXmps += xmlFiles.Count();
+        statistics.FoundXmps += xmpFiles.Count();
 
         var allSourceFiles = new List<FileInfo>() { imageFile };
-        allSourceFiles.AddRange(xmlFiles);
+        allSourceFiles.AddRange(xmpFiles);
 
         foreach (var f in allSourceFiles)
         {
