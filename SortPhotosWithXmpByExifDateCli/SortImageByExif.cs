@@ -30,19 +30,19 @@ internal class SortImageByExif : IRun
         foreach (var fileInfo in GetFileInfos())
         {               
             // Console.WriteLine($"Found photo {fileInfo}");
-            var directories = ImageMetadataReader.ReadMetadata(fileInfo.FullName);
+            var metaDataDirectories = ImageMetadataReader.ReadMetadata(fileInfo.FullName);
             try
             {
-                Helpers.CheckForErrors(directories, fileInfo);
-                var dateTime = Helpers.GetDateTimeFromImage(directories, fileInfo);
+                _statistics.Errors.AddRange(Helpers.GetErrors(metaDataDirectories, fileInfo));
+                
+                var dateTime = Helpers.GetDateTimeFromImage(metaDataDirectories, fileInfo);
                 var xmpFiles = Helpers.GetCorrespondingXmpFiles(fileInfo);
      
                 Helpers.MoveImageAndXmpToExifPath(fileInfo, xmpFiles, dateTime, _destinationDirectory, _statistics, _force);
             }
             catch (Exception e)
             {
-                Console.Error.WriteLine($"{fileInfo}: {e.Message}, {e}");
-                Helpers.PrintMetadata(directories);
+                _statistics.Errors.Add($"{fileInfo}: {e.Message}, {e}{string.Join(System.Environment.NewLine, Helpers.GetMetadata(metaDataDirectories))}");
             }
         }
 

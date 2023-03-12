@@ -34,42 +34,50 @@ public static class Helpers
             .ToArray();
     }
 
-    private static void PrintAllXmpData(IReadOnlyList<MetadataExtractor.Directory> directories)
+    private static List<string> GetAllXmpData(IReadOnlyList<MetadataExtractor.Directory> directories)
     {
+        var ret = new List<string>();
         foreach (var xmpDirectory in directories.OfType<XmpDirectory>())
         {
             if (xmpDirectory.XmpMeta == null) continue;
             foreach (var property in xmpDirectory.XmpMeta.Properties)
             {
-                Console.WriteLine($"{property.Path}: {property.Value}");
+                ret.Add($"{property.Path}: {property.Value}");
             }
         }
+
+        return ret;
     }
 
-    private static void PrintAllData(IReadOnlyList<MetadataExtractor.Directory> directories)
+    private static List<string> GetAllData(IReadOnlyList<MetadataExtractor.Directory> directories)
     {
+        var ret = new List<string>();
         foreach (var directory in directories)
         {
             foreach (var tag in directory.Tags)
             {
                 // if (tag.Description != null && tag.Description.Contains("10:17"))
                 {
-                    Console.WriteLine($"{directory.Name} - {tag.Name} = {tag.Description}");
+                    ret.Add($"{directory.Name} - {tag.Name} = {tag.Description}");
                 }
             }
         }
+
+        return ret;
     }
 
-    public static void CheckForErrors(IReadOnlyList<MetadataExtractor.Directory> metaDataDirectories, FileInfo fileInfo)
+    public static List<string> GetErrors(IReadOnlyList<MetadataExtractor.Directory> metaDataDirectories, FileInfo fileInfo)
     {
+        var ret = new List<string>();
         foreach (var metaDataDirectory in metaDataDirectories)
         {
             foreach (var error in metaDataDirectory.Errors)
             {
-                // throw new InvalidOperationException($"ERROR: {fileInfo}: {error}");
-                Console.Error.WriteLine($"*** ERROR *** {fileInfo}: {error}");
+                ret.Add($"*** ERROR *** {fileInfo}: {error}");
             }
         }
+
+        return ret;
     }
 
     public static DateTime GetDateTimeFromImage(IReadOnlyList<MetadataExtractor.Directory> directories, FileInfo fileInfo)
@@ -141,10 +149,11 @@ public static class Helpers
         throw new InvalidOperationException();
     }
 
-    public static void PrintMetadata(IReadOnlyList<MetadataExtractor.Directory> directories)
+    public static List<string> GetMetadata(IReadOnlyList<MetadataExtractor.Directory> directories)
     {
-        PrintAllData(directories);
-        PrintAllXmpData(directories);
+        var ret = GetAllData(directories);
+        ret.AddRange(GetAllXmpData(directories));
+        return ret;
     }
 
     public static void MoveImageAndXmpToExifPath(FileInfo imageFile, FileInfo[] xmpFiles, DateTime dateTime,
@@ -154,7 +163,6 @@ public static class Helpers
         var finalDestinationPath = $"{destinationDirectory.FullName}/{destinationSuffix}";
         if (!Directory.Exists(finalDestinationPath))
         {
-            // Console.WriteLine($"Directory does not exist. Creating {finalDestinationPath}");
             Directory.CreateDirectory(finalDestinationPath);
         }
 
@@ -176,7 +184,7 @@ public static class Helpers
             }
             else
             {
-                Console.WriteLine($"ERROR: Skipping existing {targetName}");
+                statistics.Errors.Add($"ERROR: Skipping existing {targetName}");
             }
         }
     }

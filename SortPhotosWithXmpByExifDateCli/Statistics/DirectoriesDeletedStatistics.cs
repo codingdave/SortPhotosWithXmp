@@ -8,6 +8,7 @@ public class DirectoriesDeletedStatistics : IStatistics
         _force = force;
     }
 
+    public List<string> Errors { get; } = new List<string>();
     public int DirectoriesFound { get; set; }
     public int DirectoriesDeleted { get; set; }
     public string PrintStatistics() 
@@ -21,6 +22,11 @@ public class DirectoriesDeletedStatistics : IStatistics
         else
         {
             ret = $", skipped deleting {DirectoriesDeleted} directories due to dry run";
+        }
+
+        foreach(var error in Errors)
+        {
+            ret += error;
         }
 
         return ret;
