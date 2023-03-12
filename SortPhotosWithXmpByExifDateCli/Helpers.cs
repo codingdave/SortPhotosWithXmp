@@ -60,21 +60,19 @@ public static class Helpers
         }
     }
 
-    public static void CheckForErrors(IReadOnlyList<MetadataExtractor.Directory> directories, FileInfo fileInfo)
+    public static void CheckForErrors(IReadOnlyList<MetadataExtractor.Directory> metaDataDirectories, FileInfo fileInfo)
     {
-        foreach (var directory in directories)
+        foreach (var metaDataDirectory in metaDataDirectories)
         {
-            if (!directory.HasError) continue;
-            foreach (var error in directory.Errors)
+            foreach (var error in metaDataDirectory.Errors)
             {
                 // throw new InvalidOperationException($"ERROR: {fileInfo}: {error}");
-                Console.Error.WriteLine($"{fileInfo}: {error}");
+                Console.Error.WriteLine($"*** ERROR *** {fileInfo}: {error}");
             }
         }
     }
 
-    public static DateTime GetDateTimeFromImage(IReadOnlyList<MetadataExtractor.Directory> directories,
-        FileInfo fileInfo)
+    public static DateTime GetDateTimeFromImage(IReadOnlyList<MetadataExtractor.Directory> directories, FileInfo fileInfo)
     {
         // Exif IFD0 - Date/Time = 2023:01:18 10:54:28
         // Exif SubIFD - Date/Time Digitized = 2023:01:18 10:17:32
@@ -96,13 +94,11 @@ public static class Helpers
         var exifSubIfdDirectory = directories.OfType<ExifSubIfdDirectory>().FirstOrDefault();
         if (exifSubIfdDirectory != null)
         {
-            if (DirectoryExtensions.TryGetDateTime(exifSubIfdDirectory, ExifDirectoryBase.TagDateTimeDigitized,
-                    out var tagDateTimeDigitized))
+            if (DirectoryExtensions.TryGetDateTime(exifSubIfdDirectory, ExifDirectoryBase.TagDateTimeDigitized, out var tagDateTimeDigitized))
             {
                 return tagDateTimeDigitized;
             }
-            else if (DirectoryExtensions.TryGetDateTime(exifSubIfdDirectory, ExifDirectoryBase.TagDateTimeOriginal,
-                         out var tagDateTimeOriginal))
+            else if (DirectoryExtensions.TryGetDateTime(exifSubIfdDirectory, ExifDirectoryBase.TagDateTimeOriginal, out var tagDateTimeOriginal))
             {
                 return tagDateTimeOriginal;
             }
@@ -132,13 +128,11 @@ public static class Helpers
         var quickTimeMovieHeaderDirectory = directories.OfType<QuickTimeMovieHeaderDirectory>().FirstOrDefault();
         if (quickTimeMovieHeaderDirectory != null)
         {
-            if (DirectoryExtensions.TryGetDateTime(quickTimeMovieHeaderDirectory, ExifDirectoryBase.TagDateTimeOriginal,
-                    out var tagDateTimeOriginal))
+            if (DirectoryExtensions.TryGetDateTime(quickTimeMovieHeaderDirectory, ExifDirectoryBase.TagDateTimeOriginal, out var tagDateTimeOriginal))
             {
                 return tagDateTimeOriginal;
             }
-            else if (DirectoryExtensions.TryGetDateTime(quickTimeMovieHeaderDirectory, QuickTimeMovieHeaderDirectory.TagCreated,
-                         out var tagCreated))
+            else if (DirectoryExtensions.TryGetDateTime(quickTimeMovieHeaderDirectory, QuickTimeMovieHeaderDirectory.TagCreated, out var tagCreated))
             {
                 return tagCreated;
             }
@@ -157,8 +151,6 @@ public static class Helpers
         DirectoryInfo destinationDirectory, ImagesAndXmpFoundStatistics statistics, bool force)
     {
         var destinationSuffix = dateTime.ToString("yyyy/MM/dd");
-        // /{Path.GetFileNameWithoutExtension(imageFile.Name)}
-        // /{imageFile.Directory}
         var finalDestinationPath = $"{destinationDirectory.FullName}/{destinationSuffix}";
         if (!Directory.Exists(finalDestinationPath))
         {
@@ -175,24 +167,21 @@ public static class Helpers
         foreach (var f in allSourceFiles)
         {
             var targetName = $"{finalDestinationPath}/{f.Name}";
-            // Console.WriteLine($"File.Move({f}, {targetName});");
             if (!File.Exists(targetName))
             {
-                if(force)
+                if (force)
                 {
                     File.Move(f.FullName, targetName);
                 }
             }
             else
             {
-                Console.WriteLine($"Skipping existing {targetName}");
+                Console.WriteLine($"ERROR: Skipping existing {targetName}");
             }
         }
-
-        // Console.WriteLine();
     }
 
-    public static void RecursivelyDeleteEmptyDirectories(DirectoryInfo directory, DirectoriesDeletedStatistics statistics, bool force, bool start = true)
+    public static void RecursivelyDeleteEmptyDirectories(DirectoryInfo directory, DirectoriesDeletedStatistics statistics, bool force, bool isFirstRun = true)
     {
         void DeleteDirectoryIfEmpty(DirectoryInfo d)
         {
@@ -201,7 +190,7 @@ public static class Helpers
                !d.GetFiles().Any())
             {
                 statistics.DirectoriesDeleted++;
-                if(force)
+                if (force)
                 {
                     Directory.Delete(d.FullName, false);
                 }
@@ -214,7 +203,7 @@ public static class Helpers
             DeleteDirectoryIfEmpty(d);
         }
 
-        if(start)
+        if(isFirstRun)
         {
             DeleteDirectoryIfEmpty(directory);
         }

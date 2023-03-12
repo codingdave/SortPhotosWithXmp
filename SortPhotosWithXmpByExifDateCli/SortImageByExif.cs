@@ -19,22 +19,15 @@ internal class SortImageByExif : IRun
         _statistics = new ImagesAndXmpFoundStatistics(force);
     }
 
+    private IEnumerable<FileInfo> GetFileInfos() => 
+        _sourceDirectory.EnumerateFiles("*.*", SearchOption.AllDirectories)
+            .Where(f => _extensions.Any(e => f.Name.EndsWith(e, StringComparison.OrdinalIgnoreCase)));
+
     public IStatistics Run()
     {
-        Console.WriteLine($"called {nameof(SortImageByExif)}::{nameof(Run)}");
-        Console.WriteLine(
-            $"Starting {nameof(SortPhotosWithXmpByExifDateCli)}.{nameof(Run)} with search path: '{_sourceDirectory}' and destination path '{_destinationDirectory}'");
+        Console.WriteLine($"Starting {nameof(SortPhotosWithXmpByExifDateCli)}.{nameof(Run)} with search path: '{_sourceDirectory}' and destination path '{_destinationDirectory}'");
 
-        var files = _sourceDirectory.EnumerateFiles("*.*", SearchOption.AllDirectories)
-            .Where(f => _extensions.Any(e => f.Name.EndsWith(e, StringComparison.OrdinalIgnoreCase)));
-        // s.Name.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
-        // s.Name.EndsWith(".nef", StringComparison.OrdinalIgnoreCase) ||
-        // s.Name.EndsWith(".gif", StringComparison.OrdinalIgnoreCase) ||
-        // s.Name.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase) ||
-        // s.Name.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ||
-        // s.Name.EndsWith(".cr3", StringComparison.OrdinalIgnoreCase));
-
-        foreach (var fileInfo in files)
+        foreach (var fileInfo in GetFileInfos())
         {               
             // Console.WriteLine($"Found photo {fileInfo}");
             var directories = ImageMetadataReader.ReadMetadata(fileInfo.FullName);
