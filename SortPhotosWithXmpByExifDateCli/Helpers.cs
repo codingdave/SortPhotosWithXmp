@@ -57,10 +57,7 @@ public static class Helpers
         {
             foreach (var tag in directory.Tags)
             {
-                // if (tag.Description != null && tag.Description.Contains("10:17"))
-                {
-                    ret.Add($"{directory.Name} - {tag.Name} = {tag.Description}");
-                }
+                ret.Add($"{directory.Name} - {tag.Name} = {tag.Description}");
             }
         }
 
