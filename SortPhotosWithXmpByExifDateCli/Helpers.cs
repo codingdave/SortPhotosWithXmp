@@ -24,13 +24,13 @@ public static class Helpers
     public static FileInfo[] GetCorrespondingXmpFiles(FileInfo fileInfo)
     {
         return Directory.GetFiles(
-                Path.GetDirectoryName(fileInfo.FullName)
-                ?? throw new InvalidOperationException(),
-                $"{Path.GetFileNameWithoutExtension(fileInfo.FullName)}*.xmp", new EnumerationOptions
-                {
-                    MatchCasing = MatchCasing.CaseInsensitive,
-                    RecurseSubdirectories = false,
-                })
+            Path.GetDirectoryName(fileInfo.FullName)
+            ?? throw new InvalidOperationException(),
+            $"{Path.GetFileNameWithoutExtension(fileInfo.FullName)}*.xmp", new EnumerationOptions
+            {
+                MatchCasing = MatchCasing.CaseInsensitive,
+                RecurseSubdirectories = false,
+            })
             .Select(x => new FileInfo(x))
             .ToArray();
     }
