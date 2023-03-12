@@ -109,75 +109,108 @@ internal class CommandLine
             }
         );
     }
-    
-    public static async Task<int> InitCommandLine(string[] args)
+
+    private Option<DirectoryInfo?> _sourceOption;
+    private Option<DirectoryInfo?> _destinationOption;
+    private Option<object?> _offsetOption;
+
+    public CommandLine()
     {
-        ImagesAndXmpFoundStatistics statistics = new();
-        
-        var sourceOption = GetSourceOption();
-        var destinationOption = GetDestinationOption();
-        var offsetOption = GetOffsetOption();
-
-        var deleteEmptyDirectoryCommand = new Command("deleteEmptyDirectory", "Search recursively for emtpy directories and delete them.")
-        { 
-            sourceOption
-        };
-        deleteEmptyDirectoryCommand.SetHandler(DeleteEmptyDirectory!, sourceOption);
-
-        var rearrangeByExifCommand = new Command("rearrangeByExif",
-            "Scan source dir and move photos and videos to destination directory. Create subdirectory structure yyyy/MM/dd given by the Exif information of the image/video source. Xmp files are placed accordingly.")
-        {
-            sourceOption,
-            destinationOption
-        };
-        rearrangeByExifCommand.SetHandler(SortImagesByExif!, sourceOption, destinationOption);
-
-        var checkIfFileNameContainsDateDifferentToExifDatesCommand = new Command(
-            "checkIfFileNameContainsDateDifferentToExifDates",
-            "check if image timestamp differs from exif and rename file")
-        {
-            sourceOption
-        };
-        checkIfFileNameContainsDateDifferentToExifDatesCommand.SetHandler(
-            CheckIfFileNameContainsDateDifferentToExifDates!, sourceOption);
-
-        var rearrangeByCameraManufacturerCommand = new Command("rearrangeByCameraManufacturer",
-            "Find all images of certain camera. Sort into camera subdirectories. Keep layout but prepend camera manufacturer.")
-        {
-            sourceOption,
-            destinationOption
-        };
-        rearrangeByCameraManufacturerCommand.SetHandler(SortImagesByManufacturer!, sourceOption, destinationOption);
-
-        var rearrangeBySoftwareCommand = new Command("rearrangeBySoftware",
-            "Find all F-Spot images. They might be wrong. Compare them. Keep layout but prepend software that was creating images.")
-        {
-            sourceOption,
-            destinationOption
-        };
-        rearrangeBySoftwareCommand.SetHandler(RearrangeBySoftware!, sourceOption, destinationOption);
-
-        var fixExifDateByOffsetCommand = new Command(
-            "fixExifDateByOffset",
-            "Fix their exif by identifying the offset.")
-        {
-            sourceOption,
-            offsetOption,
-        };
-        fixExifDateByOffsetCommand.SetHandler<DirectoryInfo, object>(FixExifDateByOffset!, sourceOption!, offsetOption!);
-
+        _sourceOption = GetSourceOption();
+        _destinationOption = GetDestinationOption();
+        _offsetOption = GetOffsetOption();
+    }
+    
+    public async Task<int> InitCommandLine(string[] args)
+    {
         var rootCommand = new RootCommand("Rearrange files containing Exif data")
         {
             TreatUnmatchedTokensAsErrors = true
         };
-        rootCommand.AddCommand(deleteEmptyDirectoryCommand);
-        rootCommand.AddCommand(rearrangeByExifCommand);
-        rootCommand.AddCommand(checkIfFileNameContainsDateDifferentToExifDatesCommand);
-        rootCommand.AddCommand(rearrangeByCameraManufacturerCommand);
-        rootCommand.AddCommand(rearrangeBySoftwareCommand);
-        rootCommand.AddCommand(fixExifDateByOffsetCommand);
-
+        
+        AddDeleteEmptyDirectoryCommand(rootCommand);
+        AddRearrangeByExifCommand(rootCommand);
+        AddCheckIfFileNameContainsDateDifferentToExifDatesCommand(rootCommand);
+        AddRearrangeByCameraManufacturerCommand(rootCommand);
+        AddRearrangeBySoftwareCommand(rootCommand);
+        AddFixExifDateByOffsetCommand(rootCommand);
         return await rootCommand.InvokeAsync(args);
+    }
+
+    private void AddDeleteEmptyDirectoryCommand(RootCommand rootCommand)
+    {
+        var deleteEmptyDirectoryCommand = new Command("deleteEmptyDirectory", "Search recursively for emtpy directories and delete them.")
+        { 
+            _sourceOption
+        };
+        deleteEmptyDirectoryCommand.SetHandler(DeleteEmptyDirectory!, _sourceOption);
+        rootCommand.AddCommand(deleteEmptyDirectoryCommand);
+    }
+
+    private void AddRearrangeByExifCommand(RootCommand rootCommand)
+    {
+        var rearrangeByExifCommand = new Command("rearrangeByExif",
+            "Scan source dir and move photos and videos to destination directory. Create subdirectory structure yyyy/MM/dd given by the Exif information of the image/video source. Xmp files are placed accordingly.")
+        {
+            _sourceOption,
+            _destinationOption
+        };
+        rootCommand.AddCommand(rearrangeByExifCommand);
+        rearrangeByExifCommand.SetHandler(SortImagesByExif!, _sourceOption, _destinationOption);
+        rootCommand.AddCommand(rearrangeByExifCommand);
+    }
+
+    private void AddCheckIfFileNameContainsDateDifferentToExifDatesCommand(RootCommand rootCommand)
+    {
+        var checkIfFileNameContainsDateDifferentToExifDatesCommand = new Command(
+            "checkIfFileNameContainsDateDifferentToExifDates",
+            "check if image timestamp differs from exif and rename file")
+        {
+            _sourceOption
+        };
+        checkIfFileNameContainsDateDifferentToExifDatesCommand.SetHandler(
+            CheckIfFileNameContainsDateDifferentToExifDates!, _sourceOption);
+        rootCommand.AddCommand(checkIfFileNameContainsDateDifferentToExifDatesCommand);
+    }
+
+    private void AddRearrangeByCameraManufacturerCommand(RootCommand rootCommand)
+    {
+        var rearrangeByCameraManufacturerCommand = new Command("rearrangeByCameraManufacturer",
+            "Find all images of certain camera. Sort into camera subdirectories. Keep layout but prepend camera manufacturer.")
+        {
+            _sourceOption,
+            _destinationOption
+        };
+        rearrangeByCameraManufacturerCommand.SetHandler(SortImagesByManufacturer!, _sourceOption, _destinationOption);
+
+        rootCommand.AddCommand(rearrangeByCameraManufacturerCommand);
+    }
+
+    private void AddRearrangeBySoftwareCommand(RootCommand rootCommand)
+    {
+        var rearrangeBySoftwareCommand = new Command("rearrangeBySoftware",
+            "Find all F-Spot images. They might be wrong. Compare them. Keep layout but prepend software that was creating images.")
+        {
+            _sourceOption,
+            _destinationOption
+        };
+        rearrangeBySoftwareCommand.SetHandler(RearrangeBySoftware!, _sourceOption, _destinationOption);
+
+        rootCommand.AddCommand(rearrangeBySoftwareCommand);
+    }
+
+    private void AddFixExifDateByOffsetCommand(RootCommand rootCommand)
+    {
+        var fixExifDateByOffsetCommand = new Command(
+            "fixExifDateByOffset",
+            "Fix their exif by identifying the offset.")
+        {
+            _sourceOption,
+            _offsetOption,
+        };
+        fixExifDateByOffsetCommand.SetHandler<DirectoryInfo, object>(FixExifDateByOffset!, _sourceOption!, _offsetOption!);
+
+        rootCommand.AddCommand(fixExifDateByOffsetCommand);
     }
 
     private static void DeleteEmptyDirectory(DirectoryInfo directory)

@@ -8,6 +8,7 @@ public static class Program
 {
     static async Task<int> Main(string[] args)
     {
-        return await CommandLine.InitCommandLine(args);
+        var commandLine = new CommandLine();
+        return await commandLine.InitCommandLine(args);
     }
 }
