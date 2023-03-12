@@ -36,7 +36,10 @@ internal class CommandLine
 
         AddDeleteEmptyDirectoryCommand();
         AddRearrangeByExifCommand();
-        AddCheckIfFileNameContainsDateDifferentToExifDatesCommand();
+
+// TODO: Add command to print files whose filenames contain a timestamp and for which the xmp time information differs. Also allow to specify the format for the time, like dd/mm/yyyy
+// TODO Allow to specify the format for the time, like dd/mm/yyyy
+        // AddCheckIfFileNameContainsDateDifferentToExifDatesCommand();
         AddRearrangeByCameraManufacturerCommand();
         AddRearrangeBySoftwareCommand();
         AddFixExifDateByOffsetCommand();
@@ -93,7 +96,7 @@ internal class CommandLine
 
         var checkIfFileNameContainsDateDifferentToExifDatesCommand = new Command(
             "checkIfFileNameContainsDateDifferentToExifDates",
-            "check if image timestamp differs from exif and rename file")
+            "There might be situations in which the filename contains the correct timecheck if image timestamp differs from exif and rename file.")
         {
             _sourceOption
         };
@@ -106,48 +109,50 @@ internal class CommandLine
 
     private void AddRearrangeByCameraManufacturerCommand()
     {
-        void SortImagesByManufacturer(DirectoryInfo source, DirectoryInfo destination)
+        void SortImagesByManufacturer(DirectoryInfo source, DirectoryInfo destination, bool force)
         { 
-            Run(new SortImagesByManufacturer(source, destination));
+            Run(new SortImagesByManufacturer(source, destination, force));
         }
 
         var rearrangeByCameraManufacturerCommand = new Command("rearrangeByCameraManufacturer",
-            "Find all images of certain camera. Sort into camera subdirectories. Keep layout but prepend camera manufacturer.")
+            "Find all images of certain camera. Prepend camera manufacturer to the existing directory structure.")
         {
             _sourceOption,
-            _destinationOption
+            _destinationOption,
+            _forceOption
         };
 
-        rearrangeByCameraManufacturerCommand.SetHandler(SortImagesByManufacturer!, _sourceOption, _destinationOption);
+        rearrangeByCameraManufacturerCommand.SetHandler(SortImagesByManufacturer!, _sourceOption, _destinationOption, _forceOption);
 
         _rootCommand.AddCommand(rearrangeByCameraManufacturerCommand);
     }
 
     private void AddRearrangeBySoftwareCommand()
     {
-        void RearrangeBySoftware(DirectoryInfo source, DirectoryInfo destination)
+        void RearrangeBySoftware(DirectoryInfo source, DirectoryInfo destination, bool force)
         {
-            Run(new RearrangeBySoftware(source, destination));
+            Run(new RearrangeBySoftware(source, destination, force));
         }
     
         var rearrangeBySoftwareCommand = new Command("rearrangeBySoftware",
-            "Find all F-Spot images. They might be wrong. Compare them. Keep layout but prepend software that was creating images.")
+            "Find all images of certain application. Prepend software manufacturer to the existing directory structure. Usecase: All F-Spot images might be wrong, enable an easy comparison.")
         {
             _sourceOption,
-            _destinationOption
+            _destinationOption,
+            _forceOption
         };
 
-        rearrangeBySoftwareCommand.SetHandler(RearrangeBySoftware!, _sourceOption, _destinationOption);
+        rearrangeBySoftwareCommand.SetHandler(RearrangeBySoftware!, _sourceOption, _destinationOption, _forceOption);
 
         _rootCommand.AddCommand(rearrangeBySoftwareCommand);
     }
 
     private void AddFixExifDateByOffsetCommand()
     {
-        void FixExifDateByOffset(DirectoryInfo directory, object offset)
+        void FixExifDateByOffset(DirectoryInfo directory, object offset, bool force)
         {
             // https://github.com/dotnet/command-line-api/issues/2086
-            Run(new FixExifDateByOffset(directory, (TimeSpan) offset));
+            Run(new FixExifDateByOffset(directory, (TimeSpan) offset, force));
         }
 
         var fixExifDateByOffsetCommand = new Command(
@@ -156,9 +161,10 @@ internal class CommandLine
         {
             _sourceOption,
             _offsetOption,
+            _forceOption
         };
 
-        fixExifDateByOffsetCommand.SetHandler<DirectoryInfo, object>(FixExifDateByOffset!, _sourceOption!, _offsetOption!);
+        fixExifDateByOffsetCommand.SetHandler(FixExifDateByOffset!, _sourceOption!, _offsetOption!, _forceOption);
 
         _rootCommand.AddCommand(fixExifDateByOffsetCommand);
     }

@@ -2,7 +2,7 @@ namespace SortPhotosWithXmpByExifDateCli;
 
 internal class FixExifDateByOffset : IRun
 {
-    public FixExifDateByOffset(DirectoryInfo dir, TimeSpan offset)
+    public FixExifDateByOffset(DirectoryInfo dir, TimeSpan offset, bool force)
     {
         throw new NotImplementedException();
     }

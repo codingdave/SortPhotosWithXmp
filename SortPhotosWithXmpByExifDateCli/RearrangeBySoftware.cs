@@ -2,7 +2,7 @@ namespace SortPhotosWithXmpByExifDateCli;
 
 internal class RearrangeBySoftware : IRun
 {
-    public RearrangeBySoftware(DirectoryInfo source, DirectoryInfo destination)
+    public RearrangeBySoftware(DirectoryInfo source, DirectoryInfo destination, bool force)
     {
         throw new NotImplementedException();
     }
