@@ -357,3 +357,5 @@ obj/
 riderModule.iml
 /_ReSharper.Caches/.idea
 *.DotSettings.user
+*/ErrorFiles/
+
