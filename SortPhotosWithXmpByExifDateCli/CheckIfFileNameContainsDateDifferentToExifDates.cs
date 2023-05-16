@@ -8,6 +8,7 @@ internal class CheckIfFileNameContainsDateDifferentToExifDates : IRun
         throw new NotImplementedException();
     }
 
+
     public IStatistics Run()
     {
         throw new NotImplementedException();

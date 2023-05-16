@@ -9,7 +9,7 @@ internal class SortImageByExif : IRun
     private readonly DirectoryInfo _sourceDirectory;
     private readonly IEnumerable<string> _extensions;
     private readonly ImagesAndXmpFoundStatistics _statistics;
-    private bool _force;
+    private readonly bool _force;
 
     internal SortImageByExif(DirectoryInfo sourceDirectoryInfo, DirectoryInfo destinationDirectoryInfo, IEnumerable<string> extensions, bool force)
     {
@@ -20,7 +20,7 @@ internal class SortImageByExif : IRun
         _statistics = new ImagesAndXmpFoundStatistics(force);
     }
 
-    private IEnumerable<FileInfo> GetFileInfos() => 
+    private IEnumerable<FileInfo> GetFileInfos() =>
         _sourceDirectory.EnumerateFiles("*.*", SearchOption.AllDirectories)
             .Where(f => _extensions.Any(e => f.Name.EndsWith(e, StringComparison.OrdinalIgnoreCase)));
 
@@ -29,20 +29,24 @@ internal class SortImageByExif : IRun
         Console.WriteLine($"Starting {nameof(SortPhotosWithXmpByExifDateCli)}.{nameof(Run)} with search path: '{_sourceDirectory}' and destination path '{_destinationDirectory}'");
 
         foreach (var fileInfo in GetFileInfos())
-        {               
+        {
             var metaDataDirectories = ImageMetadataReader.ReadMetadata(fileInfo.FullName);
-            try
+            var errors = Helpers.GetErrors(metaDataDirectories, fileInfo);
+            if (errors.Count > 0)
             {
-                _statistics.ErrorCollection.Errors.AddRange(Helpers.GetErrors(metaDataDirectories, fileInfo));
+                _statistics.ModifiableErrorCollection.AddRange(errors);
+            }
 
-                var dateTime = Helpers.GetDateTimeFromImage(metaDataDirectories, fileInfo);
+            var dateTime = Helpers.GetDateTimeFromImage(metaDataDirectories);
+            if (dateTime != DateTime.MinValue)
+            {
                 var xmpFiles = Helpers.GetCorrespondingXmpFiles(fileInfo);
-     
                 Helpers.MoveImageAndXmpToExifPath(fileInfo, xmpFiles, dateTime, _destinationDirectory, _statistics, _force);
             }
-            catch (Exception e)
+            else
             {
-                _statistics.ErrorCollection.Errors.Add($"{fileInfo}: {e.Message}, {e}{string.Join(System.Environment.NewLine, Helpers.GetMetadata(metaDataDirectories))}");
+                var message = $"No time found for {fileInfo}:{System.Environment.NewLine}{string.Join(System.Environment.NewLine, Helpers.GetMetadata(metaDataDirectories))}";
+                _statistics.ModifiableErrorCollection.Add((message, fileInfo));
             }
         }
 

@@ -40,10 +40,12 @@ public static class Helpers
         var ret = new List<string>();
         foreach (var xmpDirectory in directories.OfType<XmpDirectory>())
         {
-            if (xmpDirectory.XmpMeta == null) continue;
-            foreach (var property in xmpDirectory.XmpMeta.Properties)
+            if (xmpDirectory.XmpMeta != null)
             {
-                ret.Add($"{property.Path}: {property.Value}");
+                foreach (var property in xmpDirectory.XmpMeta.Properties)
+                {
+                    ret.Add($"{property.Path}: {property.Value}");
+                }
             }
         }
 
@@ -64,21 +66,21 @@ public static class Helpers
         return ret;
     }
 
-    public static List<string> GetErrors(IReadOnlyList<MetadataExtractor.Directory> metaDataDirectories, FileInfo fileInfo)
+    public static List<(string message, FileInfo fileInfo)> GetErrors(IReadOnlyList<MetadataExtractor.Directory> metaDataDirectories, FileInfo fileInfo)
     {
-        var ret = new List<string>();
+        var ret = new List<(string message, FileInfo fileInfo)>();
         foreach (var metaDataDirectory in metaDataDirectories)
         {
             foreach (var error in metaDataDirectory.Errors)
             {
-                ret.Add($"*** ERROR *** {fileInfo}: {error}");
+                ret.Add(($"{fileInfo}: {error}", fileInfo));
             }
         }
 
         return ret;
     }
 
-    public static DateTime GetDateTimeFromImage(IReadOnlyList<MetadataExtractor.Directory> directories, FileInfo fileInfo)
+    public static DateTime GetDateTimeFromImage(IReadOnlyList<MetadataExtractor.Directory> directories)
     {
         // Exif IFD0 - Date/Time = 2023:01:18 10:54:28
         // Exif SubIFD - Date/Time Digitized = 2023:01:18 10:17:32
@@ -144,7 +146,16 @@ public static class Helpers
             }
         }
 
-        throw new InvalidOperationException();
+        // var fileMetadataDirectory = directories.OfType<MetadataExtractor.Formats.FileSystem.FileMetadataDirectory>().FirstOrDefault();
+        // if (fileMetadataDirectory != null)
+        // {
+        //     if (DirectoryExtensions.TryGetDateTime(fileMetadataDirectory, MetadataExtractor.Formats.FileSystem.FileMetadataDirectory.TagFileModifiedDate, out var tagFileModifiedDate))
+        //     {
+        //         return tagFileModifiedDate;
+        //     }
+        // }
+        // throw new InvalidOperationException(directories.GetType().ToString());
+        return DateTime.MinValue;
     }
 
     public static List<string> GetMetadata(IReadOnlyList<MetadataExtractor.Directory> directories)
@@ -165,7 +176,7 @@ public static class Helpers
         }
 
         statistics.FoundImages++;
-        statistics.FoundXmps += xmpFiles.Count();
+        statistics.FoundXmps += xmpFiles.Length;
 
         var allSourceFiles = new List<FileInfo>() { imageFile };
         allSourceFiles.AddRange(xmpFiles);
@@ -181,7 +192,7 @@ public static class Helpers
                 }
                 else
                 {
-                    statistics.ErrorCollection.Errors.Add($"ERROR: Skipping existing {targetName}");
+                    statistics.ModifiableErrorCollection.Add(($"Skipping existing {targetName}", f));
                 }
             }
         }
@@ -192,7 +203,7 @@ public static class Helpers
         void DeleteDirectoryIfEmpty(DirectoryInfo d)
         {
             statistics.DirectoriesFound++;
-            if(!d.GetDirectories().Any() && 
+            if (!d.GetDirectories().Any() &&
                !d.GetFiles().Any())
             {
                 statistics.DirectoriesDeleted++;
@@ -203,13 +214,13 @@ public static class Helpers
             }
         }
 
-        foreach(var d in directory.GetDirectories())
+        foreach (var d in directory.GetDirectories())
         {
             RecursivelyDeleteEmptyDirectories(d, statistics, false);
             DeleteDirectoryIfEmpty(d);
         }
 
-        if(isFirstRun)
+        if (isFirstRun)
         {
             DeleteDirectoryIfEmpty(directory);
         }

@@ -1,15 +1,17 @@
 namespace SortPhotosWithXmpByExifDateCli.Statistics;
 
 
-public class ImagesAndXmpFoundStatistics : IStatistics, IErrors
+public class ImagesAndXmpFoundStatistics : IStatistics, IModifiableErrorCollection
 {
-    private bool _force;
+    private readonly bool _force;
     public ImagesAndXmpFoundStatistics(bool force) => _force = force;
-    public IErrorCollection ErrorCollection { get; } = new ErrorCollection();
     public int FoundXmps { get; set; }
     public int FoundImages { get; set; }
 
-    public string PrintStatistics() 
+    public IReadOnlyErrorCollection ErrorCollection => ModifiableErrorCollection;
+    public ErrorCollection ModifiableErrorCollection { get; } = new ErrorCollection();
+
+    public string PrintStatistics()
     {
         var ret = string.Empty;
         if (_force)
@@ -21,8 +23,8 @@ public class ImagesAndXmpFoundStatistics : IStatistics, IErrors
             ret += $"Found {FoundImages} images and {FoundXmps} xmps. Since we are running in dry mode no movement has been performed";
         }
 
-        ret += string.Join(System.Environment.NewLine, ErrorCollection.Errors);
-        
+        ret += System.Environment.NewLine + string.Join(System.Environment.NewLine, ErrorCollection.Errors);
+
         return ret;
     }
 }
