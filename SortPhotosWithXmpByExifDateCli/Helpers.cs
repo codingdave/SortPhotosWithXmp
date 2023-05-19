@@ -1,8 +1,4 @@
-using MetadataExtractor.Formats.Exif;
-using MetadataExtractor.Formats.Iptc;
-using MetadataExtractor.Formats.QuickTime;
 using MetadataExtractor.Formats.Xmp;
-using DirectoryExtensions = MetadataExtractor.DirectoryExtensions;
 using SortPhotosWithXmpByExifDateCli.Statistics;
 
 namespace SortPhotosWithXmpByExifDateCli;
@@ -23,16 +19,15 @@ public static class Helpers
 
     public static FileInfo[] GetCorrespondingXmpFiles(FileInfo fileInfo)
     {
-        return Directory.GetFiles(
-            Path.GetDirectoryName(fileInfo.FullName)
-            ?? throw new InvalidOperationException(),
-            $"{Path.GetFileNameWithoutExtension(fileInfo.FullName)}*.xmp", new EnumerationOptions
-            {
-                MatchCasing = MatchCasing.CaseInsensitive,
-                RecurseSubdirectories = false,
-            })
-            .Select(x => new FileInfo(x))
-            .ToArray();
+        if (fileInfo?.Directory is null) { throw new ArgumentNullException(nameof(fileInfo)); }
+
+        var filename = fileInfo.Name + "*.xmp";
+        var options = new EnumerationOptions
+        {
+            MatchCasing = MatchCasing.CaseInsensitive,
+            RecurseSubdirectories = false,
+        };
+        return fileInfo.Directory.GetFiles(filename, options);
     }
 
     private static List<string> GetAllXmpData(IReadOnlyList<MetadataExtractor.Directory> directories)
@@ -44,7 +39,10 @@ public static class Helpers
             {
                 foreach (var property in xmpDirectory.XmpMeta.Properties)
                 {
-                    ret.Add($"{property.Path}: {property.Value}");
+                    if (property.Path != null && property.Value != null)
+                    {
+                        ret.Add($"{property.Path}: {property.Value}");
+                    }
                 }
             }
         }
@@ -66,97 +64,22 @@ public static class Helpers
         return ret;
     }
 
-    public static List<(string message, FileInfo fileInfo)> GetErrors(IReadOnlyList<MetadataExtractor.Directory> metaDataDirectories, FileInfo fileInfo)
+    public static IError GetError(FileInfo fileInfo, IReadOnlyList<MetadataExtractor.Directory> metaDataDirectories)
     {
-        var ret = new List<(string message, FileInfo fileInfo)>();
-        foreach (var metaDataDirectory in metaDataDirectories)
-        {
-            foreach (var error in metaDataDirectory.Errors)
-            {
-                ret.Add(($"{fileInfo}: {error}", fileInfo));
-            }
-        }
+        return GetError(fileInfo, metaDataDirectories.SelectMany(t => t.Errors));
+    }
 
+    public static IError GetError(FileInfo fileInfo, IEnumerable<string> errors)
+    {
+        IError ret = errors.Count() switch
+        {
+            0 => new NoError(fileInfo),
+            1 => new SingleError(fileInfo, errors.First()),
+            _ => new MultipleErrors(fileInfo, errors),
+        };
         return ret;
     }
 
-    public static DateTime GetDateTimeFromImage(IReadOnlyList<MetadataExtractor.Directory> directories)
-    {
-        // Exif IFD0 - Date/Time = 2023:01:18 10:54:28
-        // Exif SubIFD - Date/Time Digitized = 2023:01:18 10:17:32
-        // Exif SubIFD - Date/Time Original = 2023:01:18 10:17:32
-        // IPTC - Date Created = 2023:01:18
-        // IPTC - Digital Date Created = 2023:01:18
-        // IPTC - Digital Time Created = 10:17:32+0100
-        // IPTC - Time Created = 10:17:32+0100
-
-        var exifId0Directory = directories.OfType<ExifIfd0Directory>().FirstOrDefault();
-        if (exifId0Directory != null)
-        {
-            if (DirectoryExtensions.TryGetDateTime(exifId0Directory, ExifDirectoryBase.TagDateTime, out var tagDateTime))
-            {
-                return tagDateTime;
-            }
-        }
-
-        var exifSubIfdDirectory = directories.OfType<ExifSubIfdDirectory>().FirstOrDefault();
-        if (exifSubIfdDirectory != null)
-        {
-            if (DirectoryExtensions.TryGetDateTime(exifSubIfdDirectory, ExifDirectoryBase.TagDateTimeDigitized, out var tagDateTimeDigitized))
-            {
-                return tagDateTimeDigitized;
-            }
-            else if (DirectoryExtensions.TryGetDateTime(exifSubIfdDirectory, ExifDirectoryBase.TagDateTimeOriginal, out var tagDateTimeOriginal))
-            {
-                return tagDateTimeOriginal;
-            }
-        }
-
-        var iptcDirectory = directories.OfType<IptcDirectory>().FirstOrDefault();
-        if (iptcDirectory != null)
-        {
-            if (DirectoryExtensions.TryGetDateTime(iptcDirectory, IptcDirectory.TagDateCreated, out var tagDateCreated))
-            {
-                return tagDateCreated;
-            }
-            else if (DirectoryExtensions.TryGetDateTime(iptcDirectory, IptcDirectory.TagTimeCreated, out var tagTimeCreated))
-            {
-                return tagTimeCreated;
-            }
-            else if (DirectoryExtensions.TryGetDateTime(iptcDirectory, IptcDirectory.TagDigitalDateCreated, out var tagDigitalDateCreated))
-            {
-                return tagDigitalDateCreated;
-            }
-            else if (DirectoryExtensions.TryGetDateTime(iptcDirectory, IptcDirectory.TagDigitalTimeCreated, out var tagDigitalTimeCreated))
-            {
-                return tagDigitalTimeCreated;
-            }
-        }
-
-        var quickTimeMovieHeaderDirectory = directories.OfType<QuickTimeMovieHeaderDirectory>().FirstOrDefault();
-        if (quickTimeMovieHeaderDirectory != null)
-        {
-            if (DirectoryExtensions.TryGetDateTime(quickTimeMovieHeaderDirectory, ExifDirectoryBase.TagDateTimeOriginal, out var tagDateTimeOriginal))
-            {
-                return tagDateTimeOriginal;
-            }
-            else if (DirectoryExtensions.TryGetDateTime(quickTimeMovieHeaderDirectory, QuickTimeMovieHeaderDirectory.TagCreated, out var tagCreated))
-            {
-                return tagCreated;
-            }
-        }
-
-        // var fileMetadataDirectory = directories.OfType<MetadataExtractor.Formats.FileSystem.FileMetadataDirectory>().FirstOrDefault();
-        // if (fileMetadataDirectory != null)
-        // {
-        //     if (DirectoryExtensions.TryGetDateTime(fileMetadataDirectory, MetadataExtractor.Formats.FileSystem.FileMetadataDirectory.TagFileModifiedDate, out var tagFileModifiedDate))
-        //     {
-        //         return tagFileModifiedDate;
-        //     }
-        // }
-        // throw new InvalidOperationException(directories.GetType().ToString());
-        return DateTime.MinValue;
-    }
 
     public static List<string> GetMetadata(IReadOnlyList<MetadataExtractor.Directory> directories)
     {
@@ -192,7 +115,7 @@ public static class Helpers
                 }
                 else
                 {
-                    statistics.ModifiableErrorCollection.Add(($"Skipping existing {targetName}", f));
+                    statistics.FileError.Add(new SingleError(f, $"Skipping existing {targetName}"));
                 }
             }
         }

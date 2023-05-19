@@ -10,9 +10,9 @@ public class ImagesAndXmpCopiedDirectoriesDeletedStatistics : IStatistics
         DirectoriesDeletedStatistics directoriesStatistics)
     {
         (_imagesStatistics, _directoriesStatistics) = (imagesStatistics, directoriesStatistics);
-       ErrorCollection = new MergedErrorCollection(errorCollection1: _imagesStatistics.ErrorCollection, errorCollection2: _directoriesStatistics.ErrorCollection) ;
+       ReadOnlyFileError = new MergedFileError(errorCollection1: _imagesStatistics.ReadOnlyFileError, errorCollection2: _directoriesStatistics.ReadOnlyFileError) ;
     }
 
-    public IReadOnlyErrorCollection ErrorCollection { get; } 
-    public string PrintStatistics() => _imagesStatistics.PrintStatistics() + ", " + _directoriesStatistics.PrintStatistics();
+    public IReadOnlyFileError ReadOnlyFileError { get; } 
+    public string PrintStatistics() => _imagesStatistics.PrintStatistics() + Environment.NewLine + _directoriesStatistics.PrintStatistics();
 }

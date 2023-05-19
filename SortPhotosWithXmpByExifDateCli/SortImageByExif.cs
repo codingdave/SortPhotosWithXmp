@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using MetadataExtractor;
 using SortPhotosWithXmpByExifDateCli.Statistics;
 
@@ -31,27 +32,41 @@ internal class SortImageByExif : IRun
         foreach (var fileInfo in GetFileInfos())
         {
             var metaDataDirectories = ImageMetadataReader.ReadMetadata(fileInfo.FullName);
-            var errors = Helpers.GetErrors(metaDataDirectories, fileInfo);
-            if (errors.Count > 0)
-            {
-                _statistics.ModifiableErrorCollection.AddRange(errors);
-            }
+            var errorLogged = LogError(fileInfo, metaDataDirectories);
 
-            var dateTime = Helpers.GetDateTimeFromImage(metaDataDirectories);
-            if (dateTime != DateTime.MinValue)
+            if (!errorLogged)
             {
-                var xmpFiles = Helpers.GetCorrespondingXmpFiles(fileInfo);
-                Helpers.MoveImageAndXmpToExifPath(fileInfo, xmpFiles, dateTime, _destinationDirectory, _statistics, _force);
-            }
-            else
-            {
-                var message = $"No time found for {fileInfo}:{System.Environment.NewLine}{string.Join(System.Environment.NewLine, Helpers.GetMetadata(metaDataDirectories))}";
-                _statistics.ModifiableErrorCollection.Add((message, fileInfo));
+                var dateTime = DateTimeHelpers.GetDateTimeFromImage(metaDataDirectories);
+                if (dateTime != DateTime.MinValue)
+                {
+                    var xmpFiles = Helpers.GetCorrespondingXmpFiles(fileInfo);
+                    Helpers.MoveImageAndXmpToExifPath(fileInfo, xmpFiles, dateTime, _destinationDirectory, _statistics, _force);
+                }
+                else
+                {
+                    var metadata = Helpers.GetMetadata(metaDataDirectories);
+                    Debug.WriteLine($"MetaData:{Environment.NewLine}" + string.Join(Environment.NewLine, metadata));
+                    if (!LogError(fileInfo, metaDataDirectories))
+                    {
+                        throw new NotImplementedException("We should never get here, as we already have detected that there is an error");
+                    }
+                }
             }
         }
 
         var statistics = new DirectoriesDeletedStatistics(_force);
         Helpers.RecursivelyDeleteEmptyDirectories(_sourceDirectory, statistics, _force);
         return new ImagesAndXmpCopiedDirectoriesDeletedStatistics(_statistics, statistics);
+
+        bool LogError(FileInfo fileInfo, IReadOnlyList<MetadataExtractor.Directory> metaDataDirectories)
+        {
+            var errors = Helpers.GetError(fileInfo, metaDataDirectories);
+            if (errors.HasErrors)
+            {
+                _statistics.FileError.Add(errors);
+            }
+
+            return errors.HasErrors;
+        }
     }
 }

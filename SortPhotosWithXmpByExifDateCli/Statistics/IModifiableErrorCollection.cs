@@ -2,6 +2,6 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
 {
     internal interface IModifiableErrorCollection
     {
-        public ErrorCollection ModifiableErrorCollection { get; }
+        public FileError FileError { get; }
     }
 }

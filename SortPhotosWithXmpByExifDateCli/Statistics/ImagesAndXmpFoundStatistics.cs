@@ -8,23 +8,26 @@ public class ImagesAndXmpFoundStatistics : IStatistics, IModifiableErrorCollecti
     public int FoundXmps { get; set; }
     public int FoundImages { get; set; }
 
-    public IReadOnlyErrorCollection ErrorCollection => ModifiableErrorCollection;
-    public ErrorCollection ModifiableErrorCollection { get; } = new ErrorCollection();
+    public IReadOnlyFileError ReadOnlyFileError => FileError;
+    public FileError FileError { get; } = new FileError();
 
     public string PrintStatistics()
     {
-        var ret = string.Empty;
+        var ret = "-> Found ";
         if (_force)
         {
-            ret += $"Found and moved {FoundImages} images and {FoundXmps} xmps";
+            ret += $"and moved {FoundImages} images and {FoundXmps} xmps";
         }
         else
         {
-            ret += $"Found {FoundImages} images and {FoundXmps} xmps. Since we are running in dry mode no movement has been performed";
+            ret += $"{FoundImages} images and {FoundXmps} xmps. Since we are running in dry mode no movement has been performed";
         }
 
-        ret += System.Environment.NewLine + string.Join(System.Environment.NewLine, ErrorCollection.Errors);
-
+        foreach (var error in ReadOnlyFileError.Errors)
+        {
+            ret += Environment.NewLine + "*** Error: " + error.ErrorMessage;
+        }
+        
         return ret;
     }
 }

@@ -2,11 +2,11 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
 {
     public static class IReadOnlyErrorCollectionHelpers
     {
-        public static void CopyErrorFiles(this IReadOnlyErrorCollection errorCollection, DirectoryInfo errorDirectory)
+        public static void CopyErrorFiles(this IReadOnlyFileError errorCollection, DirectoryInfo errorDirectory)
         {
-            foreach (var (_, file) in errorCollection.Errors)
+            foreach (var error in errorCollection.Errors)
             {
-                File.Copy(file.FullName, Path.Join(errorDirectory.FullName, file.Name), true);
+                File.Copy(error.FileInfo.FullName, Path.Join(errorDirectory.FullName, error.FileInfo.Name), true);
             }
         }
     }

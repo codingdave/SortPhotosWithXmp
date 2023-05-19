@@ -183,7 +183,7 @@ internal class CommandLine
                 errorDirectory.Create();
             }
 
-            statstics.ErrorCollection.CopyErrorFiles(errorDirectory);
+            statstics.ReadOnlyFileError.CopyErrorFiles(errorDirectory);
 
             Console.WriteLine(statstics.PrintStatistics());
         }
