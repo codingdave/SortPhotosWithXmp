@@ -80,7 +80,8 @@ internal class CommandLine
             "Scan source dir and move photos and videos to destination directory. Create subdirectory structure yyyy/MM/dd given by the Exif information of the image/video source. Xmp files are placed accordingly.")
         {
             _sourceOption,
-            _destinationOption
+            _destinationOption,
+            _forceOption
         };
 
         rearrangeByExifCommand.SetHandler(SortImagesByExif!, _sourceOption, _destinationOption, _forceOption);
@@ -90,20 +91,21 @@ internal class CommandLine
 
     private void AddCheckIfFileNameContainsDateDifferentToExifDatesCommand()
     {
-        static void CheckIfFileNameContainsDateDifferentToExifDates(DirectoryInfo source)
+        static void CheckIfFileNameContainsDateDifferentToExifDates(DirectoryInfo source, bool force)
         {
-            Run(new CheckIfFileNameContainsDateDifferentToExifDates(source));
+            Run(new CheckIfFileNameContainsDateDifferentToExifDates(source, force));
         }
 
         var checkIfFileNameContainsDateDifferentToExifDatesCommand = new Command(
             "checkIfFileNameContainsDateDifferentToExifDates",
             "There might be situations in which the filename contains the correct timecheck if image timestamp differs from exif and rename file.")
         {
-            _sourceOption
+            _sourceOption,
+            _forceOption
         };
 
         checkIfFileNameContainsDateDifferentToExifDatesCommand.SetHandler(
-            CheckIfFileNameContainsDateDifferentToExifDates!, _sourceOption);
+            CheckIfFileNameContainsDateDifferentToExifDates!, _sourceOption, _forceOption);
 
         _rootCommand.AddCommand(checkIfFileNameContainsDateDifferentToExifDatesCommand);
     }
