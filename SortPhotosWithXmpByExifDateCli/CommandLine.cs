@@ -5,14 +5,16 @@ namespace SortPhotosWithXmpByExifDateCli;
 
 internal class CommandLine
 {
-    private static readonly IEnumerable<string> _extensions = new List<string>()
+    private static readonly string[] _extensions = new string[]
     {
         ".jpg",
         ".nef",
         ".gif",
-        ".mp4",
         ".png",
-        ".cr3"
+        ".cr3",
+        ".arw",
+        ".mp4",
+        ".mov"
     };
 
     private readonly Option<DirectoryInfo?> _sourceOption;
