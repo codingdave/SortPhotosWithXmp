@@ -44,7 +44,7 @@ internal class CommandLine
 
         // TODO: Add command to print files whose filenames contain a timestamp and for which the xmp time information differs. Also allow to specify the format for the time, like yyyy/MM/dd
         // TODO Allow to specify the format for the time, like yyyy/MM/dd
-        // AddCheckIfFileNameContainsDateDifferentToExifDatesCommand();
+        AddCheckIfFileNameContainsDateDifferentToExifDatesCommand();
         AddRearrangeByCameraManufacturerCommand();
         AddRearrangeBySoftwareCommand();
         AddFixExifDateByOffsetCommand();
