@@ -27,7 +27,14 @@ public class ImagesAndXmpFoundStatistics : IStatistics, IModifiableErrorCollecti
 
         foreach (var error in ReadOnlyFileError.Errors)
         {
-            logger.LogError("{FileInfo}. {ErrorMessage}", error.FileInfo, error.ErrorMessage);
+            if (error.ErrorMessage.StartsWith("Unsupported ilist key"))
+            {
+                logger.LogTrace("{FileInfo}. {ErrorMessage}", error.FileInfo, error.ErrorMessage);
+            }
+            else
+            {
+                logger.LogError("{FileInfo}. {ErrorMessage}", error.FileInfo, error.ErrorMessage);
+            }
         }
     }
 }
