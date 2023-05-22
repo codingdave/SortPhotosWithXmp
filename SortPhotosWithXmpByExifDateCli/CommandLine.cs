@@ -182,17 +182,8 @@ internal class CommandLine
         try
         {
             var statstics = f.Run();
-
-            var errorDirectory = new DirectoryInfo("ErrorFiles");
-            Console.WriteLine($"Copy files to {errorDirectory.FullName}");
-            if (!errorDirectory.Exists)
-            {
-                errorDirectory.Create();
-            }
-
-            statstics.ReadOnlyFileError.CopyErrorFiles(errorDirectory);
-
             Console.WriteLine(statstics.PrintStatistics());
+            statstics.ReadOnlyFileError.CopyErrorFiles();
         }
         catch (Exception e)
         {
