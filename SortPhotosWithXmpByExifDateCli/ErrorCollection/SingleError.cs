@@ -10,7 +10,7 @@ public class SingleError : IError
         _message = message;
     }
 
-    public string ErrorMessage => FileInfo.FullName + ":" + Environment.NewLine + _message;
+    public string ErrorMessage => _message;
 
     public bool HasErrors => true;
 

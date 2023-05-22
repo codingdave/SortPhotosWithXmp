@@ -10,7 +10,7 @@ public class MultipleErrors : IError
         _messages = messages;
     }
 
-    public string ErrorMessage => FileInfo.FullName + ":" + Environment.NewLine + String.Join(Environment.NewLine, _messages);
+    public string ErrorMessage => string.Join(Environment.NewLine, _messages);
 
     public bool HasErrors => true;
 
