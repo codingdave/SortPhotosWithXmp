@@ -14,7 +14,7 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
                 if (errorBaseDirectory.Exists)
                 {
                     var time = File.GetLastWriteTime(errorBaseDirectory.FullName).ToString("yyyyMMddTHHmmss");
-                    var p = errorBaseDirectory.Parent;
+                    var p = errorBaseDirectory.Parent ?? throw new InvalidOperationException("Path does not exist");
                     var n = errorBaseDirectory.Name;
                     var newName = Path.Combine(p.FullName, n + "_" + time);
                     Directory.Move(errorBaseDirectory.FullName, newName);
