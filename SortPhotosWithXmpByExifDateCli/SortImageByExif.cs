@@ -47,12 +47,9 @@ internal class SortImageByExif : IRun
                 }
                 else
                 {
-                    var metadata = Helpers.GetMetadata(metaDataDirectories);
-                    Debug.WriteLine($"MetaData:{Environment.NewLine}" + string.Join(Environment.NewLine, metadata));
-                    if (!LogError(fileInfo, metaDataDirectories))
-                    {
-                        throw new NotImplementedException("We should never get here, as we already have detected that there is an error");
-                    }
+                    var errorMessage = new List<string>() { "No time found." };
+                    errorMessage.AddRange(Helpers.GetMetadata(metaDataDirectories));
+                    _statistics.FileError.Add(Helpers.GetError(fileInfo, errorMessage));
                 }
             }
         }
