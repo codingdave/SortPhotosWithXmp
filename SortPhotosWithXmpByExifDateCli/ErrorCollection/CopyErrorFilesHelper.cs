@@ -8,9 +8,20 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
         {
             if (errorCollection.Errors.Any())
             {
-                var errorBaseDirectory = new DirectoryInfo("ErrorFiles");
-                logger.LogInformation($"Copy {errorCollection.Errors.Count} files to {errorBaseDirectory.FullName}");
-                foreach (var error in errorCollection.Errors)
+                var distincsErrorFiles = errorCollection.Errors.Select(e => e.FileInfo).Distinct();
+                var errorBaseDirectory = new DirectoryInfo("../ErrorFiles");
+
+                if (errorBaseDirectory.Exists)
+                {
+                    var time = File.GetLastWriteTime(errorBaseDirectory.FullName).ToString("yyyyMMddTHHmmss");
+                    var p = errorBaseDirectory.Parent;
+                    var n = errorBaseDirectory.Name;
+                    var newName = Path.Combine(p.FullName, n + "_" + time);
+                    Directory.Move(errorBaseDirectory.FullName, newName);
+                }
+
+                logger.LogInformation($"Copy {distincsErrorFiles.Count()} files to {errorBaseDirectory.FullName}");
+                foreach (var errorFileInfo in distincsErrorFiles)
                 {
                     var fileDirectory = Path.Combine(errorBaseDirectory.FullName);
                     if (!Directory.Exists(fileDirectory))
@@ -18,7 +29,7 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
                         Directory.CreateDirectory(fileDirectory);
                     }
 
-                    File.Copy(error.FileInfo.FullName, Path.Join(fileDirectory, error.FileInfo.Name), true);
+                    File.Copy(errorFileInfo.FullName, Path.Join(fileDirectory, errorFileInfo.Name));
                 }
             }
         }
