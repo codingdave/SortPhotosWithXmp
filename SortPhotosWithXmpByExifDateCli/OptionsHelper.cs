@@ -13,6 +13,15 @@ internal static class OptionsHelper
         );
     }
 
+    internal static Option<bool> GetMoveOption()
+    {
+        return new Option<bool>(
+            name: "--move",
+            description: "Operation on files, move if true. Defaults to copy.",
+            getDefaultValue: () => false
+        );
+    }
+
     internal static Option<object?> GetOffsetOption()
     {
         // To workaround the following issue we return an object instead of a struct 

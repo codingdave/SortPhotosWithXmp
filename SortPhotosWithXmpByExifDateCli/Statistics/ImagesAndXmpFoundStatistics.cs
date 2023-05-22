@@ -11,23 +11,24 @@ public class ImagesAndXmpFoundStatistics : IStatistics, IModifiableErrorCollecti
     public IReadOnlyFileError ReadOnlyFileError => FileError;
     public FileError FileError { get; } = new FileError();
 
-    public string PrintStatistics()
+    public string PrintStatistics(bool move)
     {
         var ret = "-> Found ";
         if (_force)
         {
-            ret += $"and moved {FoundImages} images and {FoundXmps} xmps";
+            var operation = move ? "moved" : "copied";
+            ret += $"and {operation} {FoundImages} images and {FoundXmps} xmps";
         }
         else
         {
-            ret += $"{FoundImages} images and {FoundXmps} xmps. Since we are running in dry mode no movement has been performed";
+            ret += $"{FoundImages} images and {FoundXmps} xmps. Since we are running in dry mode no action has been performed";
         }
 
         foreach (var error in ReadOnlyFileError.Errors)
         {
-            ret += Environment.NewLine + "*** Error: " + error.ErrorMessage;
+            ret += Environment.NewLine + "*** Error for " + error.FileInfo + ". " + error.ErrorMessage;
         }
-        
+
         return ret;
     }
 }

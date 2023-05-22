@@ -11,13 +11,15 @@ internal class SortImageByExif : IRun
     private readonly IEnumerable<string> _extensions;
     private readonly ImagesAndXmpFoundStatistics _statistics;
     private readonly bool _force;
+    private readonly bool _move;
 
-    internal SortImageByExif(DirectoryInfo sourceDirectoryInfo, DirectoryInfo destinationDirectoryInfo, IEnumerable<string> extensions, bool force)
+    internal SortImageByExif(DirectoryInfo sourceDirectoryInfo, DirectoryInfo destinationDirectoryInfo, IEnumerable<string> extensions, bool force, bool move)
     {
         _sourceDirectory = sourceDirectoryInfo ?? throw new ArgumentNullException(nameof(sourceDirectoryInfo));
         _destinationDirectory = destinationDirectoryInfo ?? throw new ArgumentNullException(nameof(destinationDirectoryInfo));
         _extensions = extensions;
         _force = force;
+        _move = move;
         _statistics = new ImagesAndXmpFoundStatistics(force);
     }
 
@@ -27,7 +29,8 @@ internal class SortImageByExif : IRun
 
     public IStatistics Run()
     {
-        Console.WriteLine($"Starting {nameof(SortPhotosWithXmpByExifDateCli)}.{nameof(Run)} with search path: '{_sourceDirectory}' and destination path '{_destinationDirectory}'");
+        var operation = _move ? "move" : "copy";
+        Console.WriteLine($"Starting {nameof(SortPhotosWithXmpByExifDateCli)}.{nameof(Run)} with search path: '{_sourceDirectory}' and destination path '{_destinationDirectory}'. force: {_force}, operation: {operation}");
 
         foreach (var fileInfo in GetFileInfos())
         {
@@ -40,7 +43,7 @@ internal class SortImageByExif : IRun
                 if (dateTime != DateTime.MinValue)
                 {
                     var xmpFiles = Helpers.GetCorrespondingXmpFiles(fileInfo);
-                    Helpers.MoveImageAndXmpToExifPath(fileInfo, xmpFiles, dateTime, _destinationDirectory, _statistics, _force);
+                    Helpers.MoveImageAndXmpToExifPath(fileInfo, xmpFiles, dateTime, _destinationDirectory, _statistics, _force, _move);
                 }
                 else
                 {

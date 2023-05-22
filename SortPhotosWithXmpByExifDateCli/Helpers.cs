@@ -89,10 +89,10 @@ public static class Helpers
     }
 
     public static void MoveImageAndXmpToExifPath(FileInfo imageFile, FileInfo[] xmpFiles, DateTime dateTime,
-        DirectoryInfo destinationDirectory, ImagesAndXmpFoundStatistics statistics, bool force)
+        DirectoryInfo destinationDirectory, ImagesAndXmpFoundStatistics statistics, bool force, bool move)
     {
         var destinationSuffix = dateTime.ToString("yyyy/MM/dd");
-        var finalDestinationPath = $"{destinationDirectory.FullName}/{destinationSuffix}";
+        var finalDestinationPath = Path.Combine(destinationDirectory.FullName, destinationSuffix);
         if (!Directory.Exists(finalDestinationPath))
         {
             Directory.CreateDirectory(finalDestinationPath);
@@ -101,22 +101,41 @@ public static class Helpers
         statistics.FoundImages++;
         statistics.FoundXmps += xmpFiles.Length;
 
-        var allSourceFiles = new List<FileInfo>() { imageFile };
-        allSourceFiles.AddRange(xmpFiles);
+        var allSourceFiles = xmpFiles.ToList();
+        allSourceFiles.Add(imageFile);
 
         foreach (var f in allSourceFiles)
         {
-            var targetName = $"{finalDestinationPath}/{f.Name}";
-            if (force)
+            var targetName = Path.Combine(finalDestinationPath, f.Name); ;
+
+            if (!File.Exists(targetName))
             {
-                if (!File.Exists(targetName))
+                if (force)
                 {
-                    File.Move(f.FullName, targetName);
+                    if (move)
+                    {
+                        File.Move(f.FullName, targetName);
+                    }
+                    else
+                    {
+                        File.Copy(f.FullName, targetName);
+                    }
                 }
                 else
                 {
-                    statistics.FileError.Add(new SingleError(f, $"Skipping existing {targetName}"));
+                    if (move)
+                    {
+                        Console.WriteLine($"File.Move({f.FullName}, {targetName});");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"File.Copy({f.FullName}, {targetName});");
+                    }
                 }
+            }
+            else
+            {
+                statistics.FileError.Add(new SingleError(f, $"File already exists"));
             }
         }
     }

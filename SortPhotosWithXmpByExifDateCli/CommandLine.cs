@@ -22,6 +22,7 @@ internal class CommandLine
     private readonly Option<object?> _offsetOption;
 
     private readonly Option<bool> _forceOption;
+    private readonly Option<bool> _moveOption;
 
     private readonly RootCommand _rootCommand;
 
@@ -31,6 +32,7 @@ internal class CommandLine
         _destinationOption = OptionsHelper.GetDestinationOption();
         _offsetOption = OptionsHelper.GetOffsetOption();
         _forceOption = OptionsHelper.GetForceOption();
+        _moveOption = OptionsHelper.GetMoveOption();
 
         _rootCommand = new RootCommand("Rearrange files containing Exif data")
         {
@@ -73,9 +75,9 @@ internal class CommandLine
 
     private void AddRearrangeByExifCommand()
     {
-        static void SortImagesByExif(DirectoryInfo sourcePath, DirectoryInfo destinationPath, bool force)
+        static void SortImagesByExif(DirectoryInfo sourcePath, DirectoryInfo destinationPath, bool force, bool move)
         {
-            Run(new SortImageByExif(sourcePath, destinationPath, _extensions, force));
+            Run(new SortImageByExif(sourcePath, destinationPath, _extensions, force, move));
         }
 
         var rearrangeByExifCommand = new Command("rearrangeByExif",
@@ -83,10 +85,11 @@ internal class CommandLine
         {
             _sourceOption,
             _destinationOption,
-            _forceOption
+            _forceOption,
+            _moveOption
         };
 
-        rearrangeByExifCommand.SetHandler(SortImagesByExif!, _sourceOption, _destinationOption, _forceOption);
+        rearrangeByExifCommand.SetHandler(SortImagesByExif!, _sourceOption, _destinationOption, _forceOption, _moveOption);
 
         _rootCommand.AddCommand(rearrangeByExifCommand);
     }
