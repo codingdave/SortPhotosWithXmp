@@ -27,7 +27,11 @@ public class ImagesAndXmpFoundStatistics : IStatistics, IModifiableErrorCollecti
 
         foreach (var error in ReadOnlyFileError.Errors)
         {
-            if (error.ErrorMessage.StartsWith("Unsupported ilist key"))
+            if (
+                error.ErrorMessage.StartsWith("Unsupported ilist key") ||
+                error.ErrorMessage.StartsWith("Invalid TIFF tag format code 13 for tag 0x0011") ||
+                error.ErrorMessage.StartsWith("Exception processing TIFF data: Unclear distinction between Motorola/Intel byte ordering: 17784")
+                )
             {
                 logger.LogTrace("{FileInfo}. {ErrorMessage}", error.FileInfo, error.ErrorMessage);
             }
