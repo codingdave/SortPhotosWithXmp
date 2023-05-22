@@ -9,14 +9,14 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
             if (errorCollection.Errors.Any())
             {
                 var distincsErrorFiles = errorCollection.Errors.Select(e => e.FileInfo).Distinct();
-                var errorBaseDirectory = new DirectoryInfo("../ErrorFiles");
+                var errorBaseDirectory = new DirectoryInfo("ErrorFiles");
 
                 if (errorBaseDirectory.Exists)
                 {
                     var time = File.GetLastWriteTime(errorBaseDirectory.FullName).ToString("yyyyMMddTHHmmss");
-                    var p = errorBaseDirectory.Parent ?? throw new InvalidOperationException("Path does not exist");
-                    var n = errorBaseDirectory.Name;
-                    var newName = Path.Combine(p.FullName, n + "_" + time);
+                    var parentDirectory = errorBaseDirectory.Parent ?? throw new InvalidOperationException("Path does not exist");
+                    var directoryName = errorBaseDirectory.Name;
+                    var newName = Path.Combine(parentDirectory.FullName, directoryName + "_" + time);
                     Directory.Move(errorBaseDirectory.FullName, newName);
                 }
 

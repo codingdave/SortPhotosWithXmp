@@ -136,7 +136,7 @@ public static class Helpers
             }
             else
             {
-                statistics.FileError.Add(new SingleError(f, $"File already exists"));
+                statistics.FileError.Add(new SingleError(f, $"File already exists at {targetName}"));
             }
         }
     }
