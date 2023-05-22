@@ -1,4 +1,5 @@
 using System.CommandLine;
+using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using SortPhotosWithXmpByExifDateCli.Statistics;
 
@@ -36,8 +37,14 @@ internal class CommandLine
         _moveOption = OptionsHelper.GetMoveOption();
         _logger = LoggerFactory.Create(c =>
         {
-            _ = c.AddConsole();
-            _ = c.AddDebug();
+            if (Debugger.IsAttached)
+            {
+                _ = c.AddDebug();
+            }
+            else
+            {
+                _ = c.AddConsole();
+            }
         }).CreateLogger<CommandLine>();
 
         _rootCommand = new RootCommand("Rearrange files containing Exif data")
