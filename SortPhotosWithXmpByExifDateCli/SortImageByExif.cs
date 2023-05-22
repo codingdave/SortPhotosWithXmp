@@ -39,20 +39,17 @@ internal class SortImageByExif : IRun
             var metaDataDirectories = ImageMetadataReader.ReadMetadata(fileInfo.FullName);
             var errorLogged = LogError(fileInfo, metaDataDirectories);
 
-            if (!errorLogged)
+            var dateTime = dateTimeResolver.GetDateTimeFromImage(metaDataDirectories);
+            if (dateTime != DateTime.MinValue)
             {
-                var dateTime = dateTimeResolver.GetDateTimeFromImage(metaDataDirectories);
-                if (dateTime != DateTime.MinValue)
-                {
-                    var xmpFiles = Helpers.GetCorrespondingXmpFiles(fileInfo);
-                    Helpers.MoveImageAndXmpToExifPath(logger, fileInfo, xmpFiles, dateTime, _destinationDirectory, _statistics, _force, _move);
-                }
-                else
-                {
-                    var errorMessage = new List<string>() { "No time found." };
-                    errorMessage.AddRange(Helpers.GetMetadata(metaDataDirectories));
-                    _statistics.FileError.Add(Helpers.GetError(fileInfo, errorMessage));
-                }
+                var xmpFiles = Helpers.GetCorrespondingXmpFiles(fileInfo);
+                Helpers.MoveImageAndXmpToExifPath(logger, fileInfo, xmpFiles, dateTime, _destinationDirectory, _statistics, _force, _move);
+            }
+            else
+            {
+                var errorMessage = new List<string>() { "No time found." };
+                errorMessage.AddRange(Helpers.GetMetadata(metaDataDirectories));
+                _statistics.FileError.Add(Helpers.GetError(fileInfo, errorMessage));
             }
         }
 
