@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging;
+
 namespace SortPhotosWithXmpByExifDateCli.Statistics;
 
 public class ImagesAndXmpCopiedDirectoriesDeletedStatistics : IStatistics
@@ -13,6 +15,10 @@ public class ImagesAndXmpCopiedDirectoriesDeletedStatistics : IStatistics
        ReadOnlyFileError = new MergedFileError(errorCollection1: _imagesStatistics.ReadOnlyFileError, errorCollection2: _directoriesStatistics.ReadOnlyFileError) ;
     }
 
-    public IReadOnlyFileError ReadOnlyFileError { get; } 
-    public string PrintStatistics() => _imagesStatistics.PrintStatistics() + Environment.NewLine + _directoriesStatistics.PrintStatistics();
+    public IReadOnlyFileError ReadOnlyFileError { get; }
+    public void Log(ILogger logger)
+    {
+        _imagesStatistics.Log(logger);
+        _directoriesStatistics.Log(logger);
+    }
 }

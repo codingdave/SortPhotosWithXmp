@@ -10,6 +10,5 @@ public class FileError : IFileError
     public void Add(IError error)
     {
         _errors.Add(error);
-        // Debug.WriteLine(error.ErrorMessage);
     }
 }

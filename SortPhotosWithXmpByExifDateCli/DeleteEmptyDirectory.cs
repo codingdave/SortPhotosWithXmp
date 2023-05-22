@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using SortPhotosWithXmpByExifDateCli.Statistics;
 namespace SortPhotosWithXmpByExifDateCli;
 
@@ -7,7 +8,7 @@ public class DeleteEmptyDirectory : IRun
     private readonly bool _force;
     public DeleteEmptyDirectory(DirectoryInfo directory, bool force) => 
         (_directory, _force) = (directory, force);
-    public IStatistics Run()
+    public IStatistics Run(ILogger logger)
     {
         var statistics = new DirectoriesDeletedStatistics(_force);
         Helpers.RecursivelyDeleteEmptyDirectories(_directory, statistics, _force);

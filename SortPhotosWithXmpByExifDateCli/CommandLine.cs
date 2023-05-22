@@ -1,4 +1,5 @@
 using System.CommandLine;
+using Microsoft.Extensions.Logging;
 using SortPhotosWithXmpByExifDateCli.Statistics;
 
 namespace SortPhotosWithXmpByExifDateCli;
@@ -20,10 +21,10 @@ internal class CommandLine
     private readonly Option<DirectoryInfo?> _sourceOption;
     private readonly Option<DirectoryInfo?> _destinationOption;
     private readonly Option<object?> _offsetOption;
-
     private readonly Option<bool> _forceOption;
     private readonly Option<bool> _moveOption;
 
+    private readonly ILogger<CommandLine> _logger;
     private readonly RootCommand _rootCommand;
 
     public CommandLine()
@@ -33,6 +34,11 @@ internal class CommandLine
         _offsetOption = OptionsHelper.GetOffsetOption();
         _forceOption = OptionsHelper.GetForceOption();
         _moveOption = OptionsHelper.GetMoveOption();
+        _logger = LoggerFactory.Create(c =>
+        {
+            _ = c.AddConsole();
+            _ = c.AddDebug();
+        }).CreateLogger<CommandLine>();
 
         _rootCommand = new RootCommand("Rearrange files containing Exif data")
         {
@@ -57,7 +63,7 @@ internal class CommandLine
 
     private void AddDeleteEmptyDirectoryCommand()
     {
-        static void DeleteEmptyDirectory(DirectoryInfo directory, bool force)
+        void DeleteEmptyDirectory(DirectoryInfo directory, bool force)
         {
             Run(new DeleteEmptyDirectory(directory, force));
         }
@@ -75,7 +81,7 @@ internal class CommandLine
 
     private void AddRearrangeByExifCommand()
     {
-        static void SortImagesByExif(DirectoryInfo sourcePath, DirectoryInfo destinationPath, bool force, bool move)
+        void SortImagesByExif(DirectoryInfo sourcePath, DirectoryInfo destinationPath, bool force, bool move)
         {
             Run(new SortImageByExif(sourcePath, destinationPath, _extensions, force, move));
         }
@@ -96,7 +102,7 @@ internal class CommandLine
 
     private void AddCheckIfFileNameContainsDateDifferentToExifDatesCommand()
     {
-        static void CheckIfFileNameContainsDateDifferentToExifDates(DirectoryInfo source, bool force)
+        void CheckIfFileNameContainsDateDifferentToExifDates(DirectoryInfo source, bool force)
         {
             Run(new CheckIfFileNameContainsDateDifferentToExifDates(source, force));
         }
@@ -117,7 +123,7 @@ internal class CommandLine
 
     private void AddRearrangeByCameraManufacturerCommand()
     {
-        static void SortImagesByManufacturer(DirectoryInfo source, DirectoryInfo destination, bool force)
+        void SortImagesByManufacturer(DirectoryInfo source, DirectoryInfo destination, bool force)
         {
             Run(new SortImagesByManufacturer(source, destination, force));
         }
@@ -137,7 +143,7 @@ internal class CommandLine
 
     private void AddRearrangeBySoftwareCommand()
     {
-        static void RearrangeBySoftware(DirectoryInfo source, DirectoryInfo destination, bool force)
+        void RearrangeBySoftware(DirectoryInfo source, DirectoryInfo destination, bool force)
         {
             Run(new RearrangeBySoftware(source, destination, force));
         }
@@ -157,7 +163,7 @@ internal class CommandLine
 
     private void AddFixExifDateByOffsetCommand()
     {
-        static void FixExifDateByOffset(DirectoryInfo directory, object offset, bool force)
+        void FixExifDateByOffset(DirectoryInfo directory, object offset, bool force)
         {
             // https://github.com/dotnet/command-line-api/issues/2086
             Run(new FixExifDateByOffset(directory, (TimeSpan)offset, force));
@@ -177,17 +183,17 @@ internal class CommandLine
         _rootCommand.AddCommand(fixExifDateByOffsetCommand);
     }
 
-    private static void Run(IRun f)
+    private void Run(IRun f)
     {
         try
         {
-            var statstics = f.Run();
-            Console.WriteLine(statstics.PrintStatistics());
-            statstics.ReadOnlyFileError.CopyErrorFiles();
+            var statstics = f.Run(_logger);
+            statstics.Log(_logger);
+            statstics.ReadOnlyFileError.CopyErrorFiles(_logger);
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            _logger.LogError(e.Message);
         };
     }
 }

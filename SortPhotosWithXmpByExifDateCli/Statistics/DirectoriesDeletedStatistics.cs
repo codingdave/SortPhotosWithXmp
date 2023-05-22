@@ -1,4 +1,5 @@
 using MetadataExtractor;
+using Microsoft.Extensions.Logging;
 
 namespace SortPhotosWithXmpByExifDateCli.Statistics;
 
@@ -15,17 +16,20 @@ public class DirectoriesDeletedStatistics : IStatistics
 
     public IReadOnlyFileError ReadOnlyFileError { get; } = new FileError();
 
-    public string PrintStatistics()
+    public void Log(ILogger logger)
     {
-        var ret = $"-> Found {DirectoriesFound} directories";
+        var info = "-> Found {DirectoriesFound} directories";
 
-        ret += DirectoriesDeleted switch
+        info += DirectoriesDeleted switch
         {
-            > 0 when _force => $", deleted {DirectoriesDeleted} directories",
-            _ => $", skipped deleting {DirectoriesDeleted} directories due to dry run",
+            > 0 when _force => ", deleted {DirectoriesDeleted} directories",
+            _ => ", skipped deleting {DirectoriesDeleted} directories due to dry run",
         };
-        ret += string.Join(System.Environment.NewLine, ReadOnlyFileError.Errors);
+        logger.LogInformation(info, DirectoriesFound, DirectoriesDeleted);
 
-        return ret;
+        foreach (var error in ReadOnlyFileError.Errors)
+        {
+            logger.LogError(error.ErrorMessage);
+        }
     }
 }

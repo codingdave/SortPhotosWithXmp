@@ -1,34 +1,33 @@
-namespace SortPhotosWithXmpByExifDateCli.Statistics;
+using Microsoft.Extensions.Logging;
 
+namespace SortPhotosWithXmpByExifDateCli.Statistics;
 
 public class ImagesAndXmpFoundStatistics : IStatistics, IModifiableErrorCollection
 {
     private readonly bool _force;
-    public ImagesAndXmpFoundStatistics(bool force) => _force = force;
+    private readonly bool _move;
+    public ImagesAndXmpFoundStatistics(bool force, bool move) => (_force, _move) = (force, move);
     public int FoundXmps { get; set; }
     public int FoundImages { get; set; }
 
     public IReadOnlyFileError ReadOnlyFileError => FileError;
     public FileError FileError { get; } = new FileError();
 
-    public string PrintStatistics(bool move)
+    public void Log(ILogger logger)
     {
-        var ret = "-> Found ";
         if (_force)
         {
-            var operation = move ? "moved" : "copied";
-            ret += $"and {operation} {FoundImages} images and {FoundXmps} xmps";
+            var operation = _move ? "moved" : "copied";
+            logger.LogInformation("-> Found and {operation} {FoundImages} images and {FoundXmps} xmps", operation, FoundImages, FoundXmps);
         }
         else
         {
-            ret += $"{FoundImages} images and {FoundXmps} xmps. Since we are running in dry mode no action has been performed";
+            logger.LogInformation("-> Found {FoundImages} images and {FoundXmps} xmps. Since we are running in dry mode no action has been performed", FoundImages, FoundXmps);
         }
 
         foreach (var error in ReadOnlyFileError.Errors)
         {
-            ret += Environment.NewLine + "*** Error for " + error.FileInfo + ". " + error.ErrorMessage;
+            logger.LogError("{FileInfo}. {ErrorMessage}", error.FileInfo, error.ErrorMessage);
         }
-
-        return ret;
     }
 }

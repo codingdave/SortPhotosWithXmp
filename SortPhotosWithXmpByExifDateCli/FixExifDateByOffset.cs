@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using SortPhotosWithXmpByExifDateCli.Statistics;
 namespace SortPhotosWithXmpByExifDateCli;
 
@@ -8,7 +9,7 @@ internal class FixExifDateByOffset : IRun
         throw new NotImplementedException();
     }
 
-    public IStatistics Run()
+    public IStatistics Run(ILogger logger)
     {
         throw new NotImplementedException();
     }

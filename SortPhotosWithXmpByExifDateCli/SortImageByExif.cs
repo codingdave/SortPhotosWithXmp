@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using MetadataExtractor;
+using Microsoft.Extensions.Logging;
 using SortPhotosWithXmpByExifDateCli.Statistics;
 
 namespace SortPhotosWithXmpByExifDateCli;
@@ -20,17 +21,18 @@ internal class SortImageByExif : IRun
         _extensions = extensions;
         _force = force;
         _move = move;
-        _statistics = new ImagesAndXmpFoundStatistics(force);
+        _statistics = new ImagesAndXmpFoundStatistics(force, move);
     }
 
     private IEnumerable<FileInfo> GetFileInfos() =>
         _sourceDirectory.EnumerateFiles("*.*", SearchOption.AllDirectories)
             .Where(f => _extensions.Any(e => f.Name.EndsWith(e, StringComparison.OrdinalIgnoreCase)));
 
-    public IStatistics Run()
+    public IStatistics Run(ILogger logger)
     {
+        DateTimeResolver dateTimeResolver = new(logger);
         var operation = _move ? "move" : "copy";
-        Console.WriteLine($"Starting {nameof(SortPhotosWithXmpByExifDateCli)}.{nameof(Run)} with search path: '{_sourceDirectory}' and destination path '{_destinationDirectory}'. force: {_force}, operation: {operation}");
+        logger.LogInformation($"Starting {nameof(SortPhotosWithXmpByExifDateCli)}.{nameof(Run)} with search path: '{_sourceDirectory}' and destination path '{_destinationDirectory}'. force: {_force}, operation: {operation}");
 
         foreach (var fileInfo in GetFileInfos())
         {
@@ -39,11 +41,11 @@ internal class SortImageByExif : IRun
 
             if (!errorLogged)
             {
-                var dateTime = DateTimeHelpers.GetDateTimeFromImage(metaDataDirectories);
+                var dateTime = dateTimeResolver.GetDateTimeFromImage(metaDataDirectories);
                 if (dateTime != DateTime.MinValue)
                 {
                     var xmpFiles = Helpers.GetCorrespondingXmpFiles(fileInfo);
-                    Helpers.MoveImageAndXmpToExifPath(fileInfo, xmpFiles, dateTime, _destinationDirectory, _statistics, _force, _move);
+                    Helpers.MoveImageAndXmpToExifPath(logger, fileInfo, xmpFiles, dateTime, _destinationDirectory, _statistics, _force, _move);
                 }
                 else
                 {

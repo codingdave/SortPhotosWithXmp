@@ -1,7 +1,9 @@
+using Microsoft.Extensions.Logging;
+
 namespace SortPhotosWithXmpByExifDateCli.Statistics;
 
 public interface IStatistics
 {
-    string PrintStatistics();
+    void Log(ILogger logger);
     IReadOnlyFileError ReadOnlyFileError { get; }
 }

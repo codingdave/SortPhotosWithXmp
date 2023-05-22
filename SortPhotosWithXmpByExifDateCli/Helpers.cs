@@ -1,4 +1,5 @@
 using MetadataExtractor.Formats.Xmp;
+using Microsoft.Extensions.Logging;
 using SortPhotosWithXmpByExifDateCli.Statistics;
 
 namespace SortPhotosWithXmpByExifDateCli;
@@ -88,7 +89,7 @@ public static class Helpers
         return ret;
     }
 
-    public static void MoveImageAndXmpToExifPath(FileInfo imageFile, FileInfo[] xmpFiles, DateTime dateTime,
+    public static void MoveImageAndXmpToExifPath(ILogger logger, FileInfo imageFile, FileInfo[] xmpFiles, DateTime dateTime,
         DirectoryInfo destinationDirectory, ImagesAndXmpFoundStatistics statistics, bool force, bool move)
     {
         var destinationSuffix = dateTime.ToString("yyyy/MM/dd");
@@ -125,11 +126,11 @@ public static class Helpers
                 {
                     if (move)
                     {
-                        Console.WriteLine($"File.Move({f.FullName}, {targetName});");
+                        logger.LogInformation($"File.Move({f.FullName}, {targetName});");
                     }
                     else
                     {
-                        Console.WriteLine($"File.Copy({f.FullName}, {targetName});");
+                        logger.LogInformation($"File.Copy({f.FullName}, {targetName});");
                     }
                 }
             }
