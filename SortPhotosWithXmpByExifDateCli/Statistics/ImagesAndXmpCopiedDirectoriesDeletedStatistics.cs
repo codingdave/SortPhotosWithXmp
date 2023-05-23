@@ -12,10 +12,10 @@ public class ImagesAndXmpCopiedDirectoriesDeletedStatistics : IStatistics
         DirectoriesDeletedStatistics directoriesStatistics)
     {
         (_imagesStatistics, _directoriesStatistics) = (imagesStatistics, directoriesStatistics);
-       ReadOnlyFileError = new MergedFileError(errorCollection1: _imagesStatistics.ReadOnlyFileError, errorCollection2: _directoriesStatistics.ReadOnlyFileError) ;
+       FileError = new MergedFileError(errorCollection1: _imagesStatistics.FileError, errorCollection2: _directoriesStatistics.FileError) ;
     }
 
-    public IReadOnlyFileError ReadOnlyFileError { get; }
+    public IReadOnlyFileError FileError { get; }
     public void Log(ILogger logger)
     {
         _imagesStatistics.Log(logger);

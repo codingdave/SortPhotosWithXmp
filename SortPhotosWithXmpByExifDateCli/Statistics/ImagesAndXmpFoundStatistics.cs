@@ -10,8 +10,13 @@ public class ImagesAndXmpFoundStatistics : IStatistics, IModifiableErrorCollecti
     public int FoundXmps { get; set; }
     public int FoundImages { get; set; }
 
-    public IReadOnlyFileError ReadOnlyFileError => FileError;
-    public FileError FileError { get; } = new FileError();
+    public IReadOnlyFileError FileError => _fileError;
+    private IFileError _fileError = new FileError();
+
+    public void AddError(IError error)
+    {
+        _fileError.Add(error);
+    }
 
     public void Log(ILogger logger)
     {

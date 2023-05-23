@@ -197,7 +197,7 @@ internal class CommandLine
         {
             var statstics = f.Run(_logger);
             statstics.Log(_logger);
-            statstics.ReadOnlyFileError.CopyErrorFiles(_logger);
+            statstics.FileError.CopyErrorFiles(_logger);
         }
         catch (Exception e)
         {

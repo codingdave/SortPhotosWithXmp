@@ -14,7 +14,7 @@ public class DirectoriesDeletedStatistics : IStatistics
     public int DirectoriesFound { get; set; }
     public int DirectoriesDeleted { get; set; }
 
-    public IReadOnlyFileError ReadOnlyFileError { get; } = new FileError();
+    public IReadOnlyFileError FileError { get; } = new FileError();
 
     public void Log(ILogger logger)
     {
@@ -27,7 +27,7 @@ public class DirectoriesDeletedStatistics : IStatistics
         };
         logger.LogInformation(info, DirectoriesFound, DirectoriesDeleted);
 
-        foreach (var error in ReadOnlyFileError.Errors)
+        foreach (var error in FileError.Errors)
         {
             logger.LogError(error.ErrorMessage);
         }
