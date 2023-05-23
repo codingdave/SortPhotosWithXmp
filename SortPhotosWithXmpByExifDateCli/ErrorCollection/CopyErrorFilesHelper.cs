@@ -10,6 +10,7 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
             {
                 var distincsErrorFiles = errorCollection.Errors.Select(e => e.FileInfo).Distinct();
                 var errorBaseDirectory = new DirectoryInfo("ErrorFiles");
+                logger.LogError($"Could not copy all files due to collisions. Please check {errorBaseDirectory.FullName}");
 
                 if (errorBaseDirectory.Exists)
                 {
@@ -88,7 +89,7 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
             var subdirectory = Path.Combine(directory.FullName, filename);
             var fileCount = Directory.GetFiles(subdirectory, "*" + extension).Length;
             var fullname = Path.Combine(subdirectory, filename + "_" + fileCount + extension);
-            logger.LogWarning("Collision for {errorFileInfo}. Copy next to others as {fullname}", errorFileInfo, fullname);
+            logger.LogDebug("Collision for {errorFileInfo}. Copy next to others as {fullname}", errorFileInfo, fullname);
             File.Copy(errorFileInfo.FullName, fullname);
         }
     }

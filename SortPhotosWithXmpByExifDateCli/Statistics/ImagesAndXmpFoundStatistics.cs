@@ -30,14 +30,17 @@ public class ImagesAndXmpFoundStatistics : IStatistics, IModifiableErrorCollecti
             logger.LogInformation("-> Found {FoundImages} images and {FoundXmps} xmps. Since we are running in dry mode no action has been performed", FoundImages, FoundXmps);
         }
 
-        foreach (var error in ReadOnlyFileError.Errors)
+        foreach (var error in FileError.Errors)
         {
-            if (
-                error.ErrorMessage.StartsWith("Unsupported ilist key") ||
-                error.ErrorMessage.StartsWith("ICC data describes an invalid date/time") ||
-                error.ErrorMessage.StartsWith("Invalid TIFF tag format code 13 for tag 0x0011") ||
-                error.ErrorMessage.StartsWith("Exception processing TIFF data: Unclear distinction between Motorola/Intel byte ordering: 17784")
-            )
+            string[] traceLevel = {
+                "Unsupported ilist key",
+                "ICC data describes an invalid date/time",
+                "Unsupported type indicator \"67\" for key \"com.android.video.temporal_layers_count\"",
+                "Invalid TIFF tag format code 13 for tag 0x0011",
+                "Exception processing TIFF data: Unclear distinction between Motorola/Intel byte ordering: 17784"
+            };
+
+            if (traceLevel.Any(s => error.ErrorMessage.StartsWith(s)))
             {
                 logger.LogTrace("{FileInfo}. {ErrorMessage}", error.FileInfo, error.ErrorMessage);
             }
