@@ -45,6 +45,7 @@ internal class CommandLine
             {
                 _ = c.AddConsole();
             }
+            // _ = c.SetMinimumLevel(LogLevel.Trace);
         }).CreateLogger<CommandLine>();
 
         _rootCommand = new RootCommand("Rearrange files containing Exif data")
