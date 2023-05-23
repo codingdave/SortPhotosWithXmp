@@ -7,3 +7,5 @@ Sort your Photos and Videos by exif time. If you have .xmp files, this tool will
 * Add all the other commands
 * How to handle collisions?
 * The logging message template should not vary between calls to 'LoggerExtensions.LogInformation(ILogger, string?, params object?[])' 
+* If file already exists and is the same, ignore it
+* run for Pictures and sorted-Pictures
