@@ -11,7 +11,7 @@ public class ImagesAndXmpFoundStatistics : IStatistics, IModifiableErrorCollecti
     public int FoundImages { get; set; }
 
     public IReadOnlyFileError FileError => _fileError;
-    private IFileError _fileError = new FileError();
+    private readonly IFileError _fileError = new FileError();
 
     public void AddError(IError error)
     {
