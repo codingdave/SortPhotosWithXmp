@@ -29,9 +29,10 @@ public class ImagesAndXmpFoundStatistics : IStatistics, IModifiableErrorCollecti
         {
             if (
                 error.ErrorMessage.StartsWith("Unsupported ilist key") ||
+                error.ErrorMessage.StartsWith("ICC data describes an invalid date/time") ||
                 error.ErrorMessage.StartsWith("Invalid TIFF tag format code 13 for tag 0x0011") ||
                 error.ErrorMessage.StartsWith("Exception processing TIFF data: Unclear distinction between Motorola/Intel byte ordering: 17784")
-                )
+            )
             {
                 logger.LogTrace("{FileInfo}. {ErrorMessage}", error.FileInfo, error.ErrorMessage);
             }
