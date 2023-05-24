@@ -40,8 +40,9 @@ public class ImagesAndXmpFoundStatistics : IStatistics, IModifiableErrorCollecti
                 case MetaDataError me:
                     _logger.LogTrace("{FileInfo}. {ErrorMessage}", me.FileInfo, me.ErrorMessage);
                     break;
-                case NoTimeFoundError nte:
-                    _logger.LogError("{FileInfo}. {ErrorMessage}", nte.FileInfo, nte.ErrorMessage);
+                case NoTimeFoundError:
+                case ImageProcessingExceptionError:
+                    _logger.LogError("{FileInfo}. {ErrorMessage}", error.FileInfo, error.ErrorMessage);
                     break;
                 case FileAlreadyExistsError:
                     // nothing to do over here

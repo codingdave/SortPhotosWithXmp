@@ -36,28 +36,35 @@ internal class SortImageByExif : IRun
 
         foreach (var fileInfo in GetFileInfos())
         {
-            var metaDataDirectories = ImageMetadataReader.ReadMetadata(fileInfo.FullName);
-            var error = Helpers.GetError(fileInfo, metaDataDirectories);
-            if (error.HasErrors)
+            try
             {
-                _statistics.AddError(error);
-            }
-
-            var dateTime = dateTimeResolver.GetDateTimeFromImage(metaDataDirectories);
-            if (dateTime != DateTime.MinValue)
-            {
-                var xmpFiles = Helpers.GetCorrespondingXmpFiles(fileInfo);
-                Helpers.MoveImageAndXmpToExifPath(logger, fileInfo, xmpFiles, dateTime, _destinationDirectory, _statistics, _force, _move);
-            }
-            else
-            {
-                var errorMessage = new List<string>() { "No time found." };
-                errorMessage.AddRange(Helpers.GetMetadata(metaDataDirectories));
-                error = new NoTimeFoundError(fileInfo, errorMessage);
+                var metaDataDirectories = ImageMetadataReader.ReadMetadata(fileInfo.FullName);
+                var error = Helpers.GetError(fileInfo, metaDataDirectories);
                 if (error.HasErrors)
                 {
                     _statistics.AddError(error);
                 }
+
+                var dateTime = dateTimeResolver.GetDateTimeFromImage(metaDataDirectories);
+                if (dateTime != DateTime.MinValue)
+                {
+                    var xmpFiles = Helpers.GetCorrespondingXmpFiles(fileInfo);
+                    Helpers.MoveImageAndXmpToExifPath(logger, fileInfo, xmpFiles, dateTime, _destinationDirectory, _statistics, _force, _move);
+                }
+                else
+                {
+                    var errorMessage = new List<string>() { "No time found." };
+                    errorMessage.AddRange(Helpers.GetMetadata(metaDataDirectories));
+                    error = new NoTimeFoundError(fileInfo, errorMessage);
+                    if (error.HasErrors)
+                    {
+                        _statistics.AddError(error);
+                    }
+                }
+            }
+            catch (ImageProcessingException e)
+            {
+                _statistics.AddError(new ImageProcessingExceptionError(fileInfo, e));
             }
         }
 
