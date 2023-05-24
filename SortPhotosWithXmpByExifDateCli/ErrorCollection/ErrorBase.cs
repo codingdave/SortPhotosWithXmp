@@ -12,8 +12,6 @@ public abstract class ErrorBase : IError
 
     public string ErrorMessage => string.Join(Environment.NewLine, _messages);
 
-    public bool HasErrors => true;
-
     public FileInfo FileInfo { get; }
 
     public void AddMessage(string errorMessage)

@@ -4,7 +4,6 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
     {
         FileInfo FileInfo { get; }
         string ErrorMessage { get; }
-        bool HasErrors { get; }
 
         void AddMessage(string errorMessage);
     }

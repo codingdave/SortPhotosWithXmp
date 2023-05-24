@@ -22,7 +22,7 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
                 logger.LogTrace($"Copy {errors.Count} files to {errorBaseDirectory.FullName}");
                 foreach (var error in errors)
                 {
-                    if (IsDuplicate(error, statistics))
+                    if (IsDuplicate(logger, error, statistics))
                     {
                         logger.LogInformation($"ignoring duplicate {error.OtherFile} of {error.FileInfo}");
                     }
@@ -34,7 +34,7 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
             }
         }
 
-        private static bool IsDuplicate(FileAlreadyExistsError error, IFoundStatistics statistics)
+        private static bool IsDuplicate(ILogger logger, FileAlreadyExistsError error, IFoundStatistics statistics)
         {
             // when are 2 images identical?
             var isDuplicate = false;
@@ -53,7 +53,7 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
                 }
                 else
                 {
-                    isDuplicate = AreImagesDuplicates(error, statistics);
+                    isDuplicate = AreImagesDuplicates(logger, error, statistics);
                 }
             }
 
@@ -78,27 +78,37 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
             return isHashIdentical;
         }
 
-        private static bool AreImagesDuplicates(FileAlreadyExistsError error, IFoundStatistics statistics)
+        private static bool AreImagesDuplicates(ILogger logger, FileAlreadyExistsError error, IFoundStatistics statistics)
         {
+            var isDuplicate = false;
             // do exact an comparison, not a fuzzy one: We expect equality on
             // * filesize
             // * Hash
-            // * identical dimensions in width and height,
-            var isLengthIdentical = error.FileInfo.Length == error.OtherFile.Length;
-            using var copiedImage = new MagickImage(error.FileInfo);
-            using var otherImage = new MagickImage(error.OtherFile);
-
-            var distortion = copiedImage.Compare(otherImage, ErrorMetric.Absolute);
-            var isUndistorted = distortion < .000001;
-            var isIdentical =
-                isLengthIdentical && isUndistorted;
-
-            if (isIdentical)
+            // * identical dimensions in width and height
+            try
             {
-                statistics.SkippedImages++;
+                var isLengthIdentical = error.FileInfo.Length == error.OtherFile.Length;
+
+                using var copiedImage = new MagickImage(error.FileInfo);
+                using var otherImage = new MagickImage(error.OtherFile);
+                var distortion = copiedImage.Compare(otherImage, ErrorMetric.Absolute);
+                var isDistorted = distortion > .000001;
+
+                isDuplicate = 
+                    isLengthIdentical &&
+                    !isDistorted;
+
+                if (isDuplicate)
+                {
+                    statistics.SkippedImages++;
+                }
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e + Environment.NewLine + e.StackTrace);
             }
 
-            return !isIdentical;
+            return isDuplicate;
         }
 
         private static void HandleCollision(ILogger logger, DirectoryInfo errorBaseDirectory, FileAlreadyExistsError error)

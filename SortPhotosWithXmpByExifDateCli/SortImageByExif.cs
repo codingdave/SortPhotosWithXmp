@@ -39,11 +39,7 @@ internal class SortImageByExif : IRun
             try
             {
                 var metaDataDirectories = ImageMetadataReader.ReadMetadata(fileInfo.FullName);
-                var error = Helpers.GetError(fileInfo, metaDataDirectories);
-                if (error.HasErrors)
-                {
-                    _statistics.AddError(error);
-                }
+                _statistics.AddError(Helpers.GetError(fileInfo, metaDataDirectories));
 
                 var dateTime = dateTimeResolver.GetDateTimeFromImage(metaDataDirectories);
                 if (dateTime != DateTime.MinValue)
@@ -53,13 +49,7 @@ internal class SortImageByExif : IRun
                 }
                 else
                 {
-                    var errorMessage = new List<string>() { "No time found." };
-                    errorMessage.AddRange(Helpers.GetMetadata(metaDataDirectories));
-                    error = new NoTimeFoundError(fileInfo, errorMessage);
-                    if (error.HasErrors)
-                    {
-                        _statistics.AddError(error);
-                    }
+                    _statistics.AddError(new NoTimeFoundError(fileInfo, Helpers.GetMetadata(metaDataDirectories)));
                 }
             }
             catch (ImageProcessingException e)
