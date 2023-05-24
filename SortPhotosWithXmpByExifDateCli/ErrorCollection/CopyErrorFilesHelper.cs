@@ -65,7 +65,7 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
                     else
                     {
                         // if there is no collision, we are just copying
-                        File.Copy(errorFileInfo.FullName, Path.Join(errorBaseDirectory.FullName, errorFileInfo.Name));
+                        Helpers.Copy(errorFileInfo.FullName, Path.Join(errorBaseDirectory.FullName, errorFileInfo.Name));
                     }
                 }
             }
@@ -90,7 +90,7 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
             var fileCount = Directory.GetFiles(subdirectory, "*" + extension).Length;
             var fullname = Path.Combine(subdirectory, filename + "_" + fileCount + extension);
             logger.LogDebug("Collision for {errorFileInfo}. Copy next to others as {fullname}", errorFileInfo, fullname);
-            File.Copy(errorFileInfo.FullName, fullname);
+            Helpers.Copy(errorFileInfo.FullName, fullname);
         }
     }
 }

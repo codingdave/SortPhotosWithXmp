@@ -107,19 +107,19 @@ public static class Helpers
 
         foreach (var f in allSourceFiles)
         {
-            var targetName = Path.Combine(finalDestinationPath, f.Name); ;
+            var targetName = new FileInfo(Path.Combine(finalDestinationPath, f.Name));
 
-            if (!File.Exists(targetName))
+            if (!targetName.Exists)
             {
                 if (force)
                 {
                     if (move)
                     {
-                        File.Move(f.FullName, targetName);
+                        File.Move(f.FullName, targetName.FullName);
                     }
                     else
                     {
-                        File.Copy(f.FullName, targetName);
+                        Copy(f.FullName, targetName.FullName);
                     }
                 }
                 else
@@ -139,6 +139,11 @@ public static class Helpers
                 statistics.AddError(new SingleError(f, $"File already exists at {targetName}"));
             }
         }
+    }
+
+    public static void Copy(string errorfile, string fullname)
+    {
+        File.Copy(errorfile, fullname);
     }
 
     public static void RecursivelyDeleteEmptyDirectories(DirectoryInfo directory, DirectoriesDeletedStatistics statistics, bool force, bool isFirstRun = true)
