@@ -72,7 +72,7 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
             bool isHashIdentical = hash1 == hash2;
             if (isHashIdentical)
             {
-                statistics.FoundXmps++;
+                statistics.SkippedXmps++;
             }
 
             return isHashIdentical;
@@ -83,27 +83,20 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
             // do exact an comparison, not a fuzzy one: We expect equality on
             // * filesize
             // * Hash
-            // * identical dimensions in width and height, 
-            ResourceLimits.LimitMemory(new Percentage(90));
+            // * identical dimensions in width and height,
             var isLengthIdentical = error.FileInfo.Length == error.OtherFile.Length;
-            double distortion = 0;
-            using (var copiedImage = new MagickImage(error.FileInfo))
-            using (var otherImage = new MagickImage(error.OtherFile))
-            // using (var diffImage = new MagickImage())
-            {
-                distortion = copiedImage.Compare(otherImage, ErrorMetric.Absolute);
-                // copiedImage.Compare(otherImage, ErrorMetric.Absolute, diffImage);
-                // diffImage.Write(diffImagePath);
-            }
+            using var copiedImage = new MagickImage(error.FileInfo);
+            using var otherImage = new MagickImage(error.OtherFile);
 
-            var isIdentical = isLengthIdentical
-                && distortion < .000001;
+            var distortion = copiedImage.Compare(otherImage, ErrorMetric.Absolute);
+            var isUndistorted = distortion < .000001;
+            var isIdentical =
+                isLengthIdentical && isUndistorted;
 
             if (isIdentical)
             {
-                statistics.FoundXmps++;
+                statistics.SkippedImages++;
             }
-
 
             return !isIdentical;
         }
