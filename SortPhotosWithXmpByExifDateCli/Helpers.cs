@@ -78,7 +78,7 @@ public static class Helpers
     }
 
     public static void MoveImageAndXmpToExifPath(ILogger logger, FileInfo imageFile, FileInfo[] xmpFiles, DateTime dateTime,
-        DirectoryInfo destinationDirectory, ImagesAndXmpFoundStatistics statistics, bool force, bool move)
+        DirectoryInfo destinationDirectory, FilesFoundStatistics statistics, bool force, bool move)
     {
         var destinationSuffix = dateTime.ToString("yyyy/MM/dd");
         var finalDestinationPath = Path.Combine(destinationDirectory.FullName, destinationSuffix);

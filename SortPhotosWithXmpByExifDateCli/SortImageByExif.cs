@@ -10,7 +10,7 @@ internal class SortImageByExif : IRun
     private readonly DirectoryInfo _destinationDirectory;
     private readonly DirectoryInfo _sourceDirectory;
     private readonly IEnumerable<string> _extensions;
-    private readonly ImagesAndXmpFoundStatistics _statistics;
+    private readonly FilesFoundStatistics _statistics;
     private readonly bool _force;
     private readonly bool _move;
 
@@ -21,7 +21,7 @@ internal class SortImageByExif : IRun
         _extensions = extensions;
         _force = force;
         _move = move;
-        _statistics = new ImagesAndXmpFoundStatistics(logger, force, move);
+        _statistics = new FilesFoundStatistics(logger, force, move);
     }
 
     private IEnumerable<FileInfo> GetFileInfos() =>
@@ -70,6 +70,6 @@ internal class SortImageByExif : IRun
 
         var statistics = new DirectoriesDeletedStatistics(logger, _force);
         Helpers.RecursivelyDeleteEmptyDirectories(_sourceDirectory, statistics, _force);
-        return new ImagesAndXmpCopiedDirectoriesDeletedStatistics(_statistics, statistics);
+        return new FilesAndDirectoriesStatistics(_statistics, statistics);
     }
 }
