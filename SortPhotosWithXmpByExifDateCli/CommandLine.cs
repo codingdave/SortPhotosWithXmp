@@ -194,11 +194,11 @@ internal class CommandLine
         try
         {
             var statistics = f.Run(_logger);
-            statistics.Log();
             if (statistics is IFoundStatistics filesFoundStatistics)
             {
                 statistics.FileErrors.CopyErrorFiles(_logger, filesFoundStatistics);
             }
+            statistics.Log();
         }
         catch (Exception e)
         {
