@@ -4,49 +4,50 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics;
 
 public class ImagesAndXmpFoundStatistics : IStatistics, IModifiableErrorCollection
 {
+    private readonly ILogger _logger;
     private readonly bool _force;
     private readonly bool _move;
-    public ImagesAndXmpFoundStatistics(bool force, bool move) => (_force, _move) = (force, move);
+    public ImagesAndXmpFoundStatistics(ILogger logger, bool force, bool move) =>
+    (_logger, _force, _move, _errors) = (logger, force, move, new ErrorCollection(logger));
+
     public int FoundXmps { get; set; }
     public int FoundImages { get; set; }
 
-    public IReadOnlyFileError FileError => _fileError;
-    private readonly IFileError _fileError = new FileError();
+    public IReadOnlyErrorCollection FileErrors => _errors;
+    private readonly IErrorCollection _errors;
 
     public void AddError(IError error)
     {
-        _fileError.Add(error);
+        _errors.Add(error);
     }
 
-    public void Log(ILogger logger)
+    public void Log()
     {
         if (_force)
         {
             var operation = _move ? "moved" : "copied";
-            logger.LogInformation("-> Found and {operation} {FoundImages} images and {FoundXmps} xmps", operation, FoundImages, FoundXmps);
+            _logger.LogInformation("-> Found and {operation} {FoundImages} images and {FoundXmps} xmps", operation, FoundImages, FoundXmps);
         }
         else
         {
-            logger.LogInformation("-> Found {FoundImages} images and {FoundXmps} xmps. Since we are running in dry mode no action has been performed", FoundImages, FoundXmps);
+            _logger.LogInformation("-> Found {FoundImages} images and {FoundXmps} xmps. Since we are running in dry mode no action has been performed", FoundImages, FoundXmps);
         }
 
-        foreach (var error in FileError.Errors)
+        foreach (var error in FileErrors.Errors)
         {
-            string[] traceLevel = {
-                "Unsupported ilist key",
-                "ICC data describes an invalid date/time",
-                "Unsupported type indicator \"67\" for key \"com.android.video.temporal_layers_count\"",
-                "Invalid TIFF tag format code 13 for tag 0x0011",
-                "Exception processing TIFF data: Unclear distinction between Motorola/Intel byte ordering: 17784"
-            };
-
-            if (traceLevel.Any(s => error.ErrorMessage.StartsWith(s)))
+            switch (error)
             {
-                logger.LogTrace("{FileInfo}. {ErrorMessage}", error.FileInfo, error.ErrorMessage);
-            }
-            else
-            {
-                logger.LogError("{FileInfo}. {ErrorMessage}", error.FileInfo, error.ErrorMessage);
+                case MetaDataError me:
+                    _logger.LogTrace("{FileInfo}. {ErrorMessage}", me.FileInfo, me.ErrorMessage);
+                    break;
+                case NoTimeFoundError nte:
+                    _logger.LogError("{FileInfo}. {ErrorMessage}", nte.FileInfo, nte.ErrorMessage);
+                    break;
+                case FileAlreadyExistsError:
+                    // nothing to do over here
+                    break;
+                default:
+                    throw new NotImplementedException();
             }
         }
     }

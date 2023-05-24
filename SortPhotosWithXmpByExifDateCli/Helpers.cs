@@ -67,20 +67,8 @@ public static class Helpers
 
     public static IError GetError(FileInfo fileInfo, IReadOnlyList<MetadataExtractor.Directory> metaDataDirectories)
     {
-        return GetError(fileInfo, metaDataDirectories.SelectMany(t => t.Errors));
+        return new MetaDataError(fileInfo, metaDataDirectories.SelectMany(t => t.Errors));
     }
-
-    public static IError GetError(FileInfo fileInfo, IEnumerable<string> errors)
-    {
-        IError ret = errors.Count() switch
-        {
-            0 => new NoError(fileInfo),
-            1 => new SingleError(fileInfo, errors.First()),
-            _ => new MultipleErrors(fileInfo, errors),
-        };
-        return ret;
-    }
-
 
     public static List<string> GetMetadata(IReadOnlyList<MetadataExtractor.Directory> directories)
     {
@@ -105,9 +93,9 @@ public static class Helpers
         var allSourceFiles = xmpFiles.ToList();
         allSourceFiles.Add(imageFile);
 
-        foreach (var f in allSourceFiles)
+        foreach (var file in allSourceFiles)
         {
-            var targetName = new FileInfo(Path.Combine(finalDestinationPath, f.Name));
+            var targetName = new FileInfo(Path.Combine(finalDestinationPath, file.Name));
 
             if (!targetName.Exists)
             {
@@ -115,28 +103,28 @@ public static class Helpers
                 {
                     if (move)
                     {
-                        File.Move(f.FullName, targetName.FullName);
+                        File.Move(file.FullName, targetName.FullName);
                     }
                     else
                     {
-                        Copy(f.FullName, targetName.FullName);
+                        Copy(file.FullName, targetName.FullName);
                     }
                 }
                 else
                 {
                     if (move)
                     {
-                        logger.LogInformation($"File.Move({f.FullName}, {targetName});");
+                        logger.LogInformation($"File.Move({file.FullName}, {targetName});");
                     }
                     else
                     {
-                        logger.LogInformation($"File.Copy({f.FullName}, {targetName});");
+                        logger.LogInformation($"File.Copy({file.FullName}, {targetName});");
                     }
                 }
             }
             else
             {
-                statistics.AddError(new SingleError(f, $"File already exists at {targetName}"));
+                statistics.AddError(new FileAlreadyExistsError(targetName, file, $"File {file.FullName} already exists at {targetName}"));
             }
         }
     }

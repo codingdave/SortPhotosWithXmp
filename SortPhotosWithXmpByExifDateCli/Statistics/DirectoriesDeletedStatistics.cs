@@ -6,17 +6,21 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics;
 public class DirectoriesDeletedStatistics : IStatistics
 {
     private readonly bool _force;
-    public DirectoriesDeletedStatistics(bool force)
+    private readonly ILogger _logger;
+
+    public DirectoriesDeletedStatistics(ILogger logger, bool force)
     {
+        _logger = logger;
         _force = force;
+        FileErrors = new ErrorCollection(logger);
     }
 
     public int DirectoriesFound { get; set; }
     public int DirectoriesDeleted { get; set; }
 
-    public IReadOnlyFileError FileError { get; } = new FileError();
+    public IReadOnlyErrorCollection FileErrors { get; } 
 
-    public void Log(ILogger logger)
+    public void Log()
     {
         var info = "-> Found {DirectoriesFound} directories";
 
@@ -25,11 +29,11 @@ public class DirectoriesDeletedStatistics : IStatistics
             > 0 when _force => ", deleted {DirectoriesDeleted} directories",
             _ => ", skipped deleting {DirectoriesDeleted} directories due to dry run",
         };
-        logger.LogInformation(info, DirectoriesFound, DirectoriesDeleted);
+        _logger.LogInformation(info, DirectoriesFound, DirectoriesDeleted);
 
-        foreach (var error in FileError.Errors)
+        foreach (var error in FileErrors.Errors)
         {
-            logger.LogError(error.ErrorMessage);
+            _logger.LogError(error.ErrorMessage);
         }
     }
 }

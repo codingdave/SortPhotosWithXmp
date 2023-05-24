@@ -2,12 +2,12 @@ using System.Linq;
 
 namespace SortPhotosWithXmpByExifDateCli.Statistics
 {
-    internal class MergedFileError : IReadOnlyFileError
+    internal class MergedFileError : IReadOnlyErrorCollection
     {
-        private readonly IReadOnlyFileError _errorCollection1;
-        private readonly IReadOnlyFileError _errorCollection2;
+        private readonly IReadOnlyErrorCollection _errorCollection1;
+        private readonly IReadOnlyErrorCollection _errorCollection2;
 
-        public MergedFileError(IReadOnlyFileError errorCollection1, IReadOnlyFileError errorCollection2)
+        public MergedFileError(IReadOnlyErrorCollection errorCollection1, IReadOnlyErrorCollection errorCollection2)
         {
             _errorCollection1 = errorCollection1;
             _errorCollection2 = errorCollection2;

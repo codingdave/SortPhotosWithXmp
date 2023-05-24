@@ -1,73 +1,108 @@
+using System.Reflection.Metadata;
 using Microsoft.Extensions.Logging;
 
 namespace SortPhotosWithXmpByExifDateCli.Statistics
 {
     public static class CopyErrorFilesHelper
     {
-        public static void CopyErrorFiles(this IReadOnlyFileError errorCollection, ILogger logger)
+        public static void CopyErrorFiles(this IReadOnlyErrorCollection errorCollection, ILogger logger)
         {
-            if (errorCollection.Errors.Any())
+            var errors = errorCollection.Errors.OfType<FileAlreadyExistsError>().ToList();
+            if (errors.Any())
             {
-                var distincsErrorFiles = errorCollection.Errors.Select(e => e.FileInfo).Distinct();
                 var errorBaseDirectory = new DirectoryInfo("ErrorFiles");
                 logger.LogError($"Could not copy all files due to collisions. Please check {errorBaseDirectory.FullName}");
 
-                if (errorBaseDirectory.Exists)
-                {
-                    var time = File.GetLastWriteTime(errorBaseDirectory.FullName).ToString("yyyyMMddTHHmmss");
-                    var parentDirectory = errorBaseDirectory.Parent ?? throw new InvalidOperationException("Path does not exist");
-                    var directoryName = errorBaseDirectory.Name;
-                    var newName = Path.Combine(parentDirectory.FullName, directoryName + "_" + time);
-                    Directory.Move(errorBaseDirectory.FullName, newName);
-                }
+                RenamePossiblyExistingErrorDirectory(errorBaseDirectory);
+                CreateErrorDirectory(logger, errorBaseDirectory);
 
-                logger.LogTrace($"Copy {distincsErrorFiles.Count()} files to {errorBaseDirectory.FullName}");
-                foreach (var errorFileInfo in distincsErrorFiles)
+                logger.LogTrace($"Copy {errors.Count} files to {errorBaseDirectory.FullName}");
+                foreach (var error in errors)
                 {
-                    if (!Directory.Exists(errorBaseDirectory.FullName))
-                    {
-                        logger.LogTrace($"Creating {errorBaseDirectory.FullName}");
-                        Directory.CreateDirectory(errorBaseDirectory.FullName);
-                    }
+                    logger.LogTrace($"Handling collision between {error.FileInfo} and {error.OtherFile}!");
 
                     // if we have a collision, we create a directory and copy all collisions with appended number into it
-                    // collision case 1) We already have directory, that means we have at least 2 items in it
-                    // collision case 2) We are not having a directory but this file is already placed in the target directory 
-                    
-                    var (filename, extension) = SplitFileNameAndExtension(errorFileInfo.Name);
+                    // A collision happens when we have several files with the same name and the same target directory
+                    // All possible collision cases are captured by FileAlreadyExistsErrors:
+                    // lets assume we have the images a/1.jpg, b/1.jpg, c/1.jpg that shall all get moved into the directory 20230101
+                    // processing a/1.jpg: move a/1.jpg to 20230101/1.jpg
+                    // processing b/1.jpg: moving b/1.jpg to 20230101/1.jpg fails with FileAlreadyExistsError("20230101/1.jpg", "b/1.jpg")
+                    // processing c/1.jpg: moving c/1.jpg to 20230101/1.jpg fails with FileAlreadyExistsError("20230101/1.jpg", "c/1.jpg")
+                    // handling the errors (this function) will receive 2 FileAlreadyExistsErrors and process them
+                    // - process 1st FileAlreadyExistsError: 
+                    //  * create collision directory ErrorFiles/20230101
+                    //  * move error1.FileInfo ("20230101/1.jpg") to ErrorFiles/20230101/1.jpg
+                    //  * copy error1.OtherFile with appended number to ErrorFiles/20230101/1_1.jpg
+                    // - process 2nd FileAlreadyExistsError: 
+                    //  * skip creating collision directory ErrorFiles/20230101
+                    //  * skip moving error2.FileInfo ("20230101/1.jpg") to ErrorFiles/20230101/1.jpg
+                    //  * copy error2.OtherFile with appended number to ErrorFiles/20230101/1_2.jpg
+
+                    string filenameWithExtension = error.FileInfo.Name;
+                    var (filename, extension) = SplitFileNameAndExtension(filenameWithExtension);
                     var collisionDirectoryInfo = new DirectoryInfo(Path.Combine(errorBaseDirectory.FullName, filename));
-                    var collisionFileInfo = new FileInfo(Path.Combine(errorBaseDirectory.FullName, errorFileInfo.Name));
+                    var collisionFileInfo = new FileInfo(Path.Combine(errorBaseDirectory.FullName, filenameWithExtension));
 
-                    logger.LogTrace($"{collisionDirectoryInfo.FullName} Exists: {collisionDirectoryInfo.Exists}");
-                    logger.LogTrace($"{collisionFileInfo.FullName} Exists: {collisionFileInfo.Exists}");
-                    if (collisionDirectoryInfo.Exists || collisionFileInfo.Exists)
+                    // 1: make sure directory exists
+                    CreateCollisionDirectory(logger, collisionDirectoryInfo, collisionFileInfo);
+
+                    // 2: move the already copied file to the other duplicates s.t. we can investigate easily
+                    MoveBack(logger, error, collisionDirectoryInfo, collisionFileInfo);
+
+                    if (collisionFileInfo.Exists)
                     {
-                        logger.LogTrace($"Collision detected for {collisionFileInfo}!");
-
-                        // make sure directory exists
-                        if (!collisionDirectoryInfo.Exists)
-                        {
-                            logger.LogTrace($"Creating {collisionFileInfo.FullName}");
-                            collisionDirectoryInfo.Create();
-                        }
-
-                        // we have the file already copied, so move it into the subdirectory
-                        if (collisionFileInfo.Exists)
-                        {
-                            var targetPath = Path.Combine(collisionDirectoryInfo.FullName, collisionFileInfo.Name);
-                            logger.LogTrace($"Moving {collisionFileInfo.FullName} to {targetPath}");
-                            File.Move(collisionFileInfo.FullName, targetPath);
-                        }
-
-                        // copy this file into subdirectory with appended _number
-                        CopyFileWithAppendedNumber(logger, errorFileInfo, collisionFileInfo, filename, extension);
+                        throw new InvalidOperationException("3: we have the file already copied to the ErrorFiles, so move it into the subdirectory");
                     }
-                    else
-                    {
-                        // if there is no collision, we are just copying
-                        Helpers.Copy(errorFileInfo.FullName, Path.Join(errorBaseDirectory.FullName, errorFileInfo.Name));
-                    }
+
+                    // 3: copy the other file into subdirectory with appended _number
+                    CopyFileWithAppendedNumber(logger, error.OtherFile, collisionFileInfo, filename, extension);
                 }
+            }
+        }
+
+        private static void MoveBack(ILogger logger, FileAlreadyExistsError fileAlreadyExistsError, DirectoryInfo collisionDirectoryInfo, FileInfo collisionFileInfo)
+        {
+            var targetPath = Path.Combine(collisionDirectoryInfo.FullName, collisionFileInfo.Name);
+
+            if (fileAlreadyExistsError.FileInfo.Exists)
+            {
+                logger.LogTrace($"Moving back {fileAlreadyExistsError.OtherFile.FullName} to where we store all the collisions: {targetPath}");
+                File.Move(fileAlreadyExistsError.FileInfo.FullName, targetPath);
+            }
+            else
+            {
+                logger.LogTrace($"{fileAlreadyExistsError.OtherFile.FullName} has already been moved to {targetPath}");
+            }
+        }
+
+        private static void CreateCollisionDirectory(ILogger logger, DirectoryInfo collisionDirectoryInfo, FileInfo collisionFileInfo)
+        {
+            if (!collisionDirectoryInfo.Exists)
+            {
+                logger.LogTrace($"Creating {collisionFileInfo.FullName}");
+                collisionDirectoryInfo.Create();
+            }
+        }
+
+        private static void CreateErrorDirectory(ILogger logger, DirectoryInfo errorBaseDirectory)
+        {
+            if (!Directory.Exists(errorBaseDirectory.FullName))
+            {
+                logger.LogTrace($"Creating {errorBaseDirectory.FullName}");
+                Directory.CreateDirectory(errorBaseDirectory.FullName);
+            }
+        }
+
+        private static void RenamePossiblyExistingErrorDirectory(DirectoryInfo errorBaseDirectory)
+        {
+            // rename possibly existing ErrorFiles directory (add lastWriteTime to the end)
+            if (errorBaseDirectory.Exists)
+            {
+                var time = File.GetLastWriteTime(errorBaseDirectory.FullName).ToString("yyyyMMddTHHmmss");
+                var parentDirectory = errorBaseDirectory.Parent ?? throw new InvalidOperationException("Path does not exist");
+                var directoryName = errorBaseDirectory.Name;
+                var newName = Path.Combine(parentDirectory.FullName, directoryName + "_" + time);
+                Directory.Move(errorBaseDirectory.FullName, newName);
             }
         }
 

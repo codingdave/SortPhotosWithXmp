@@ -4,6 +4,6 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics;
 
 public interface IStatistics
 {
-    void Log(ILogger logger);
-    IReadOnlyFileError FileError { get; }
+    void Log();
+    IReadOnlyErrorCollection FileErrors { get; }
 }

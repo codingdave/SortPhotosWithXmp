@@ -56,8 +56,6 @@ internal class CommandLine
         AddDeleteEmptyDirectoryCommand();
         AddRearrangeByExifCommand();
 
-        // TODO: Add command to print files whose filenames contain a timestamp and for which the xmp time information differs. Also allow to specify the format for the time, like yyyy/MM/dd
-        // TODO Allow to specify the format for the time, like yyyy/MM/dd
         AddCheckIfFileNameContainsDateDifferentToExifDatesCommand();
         AddRearrangeByCameraManufacturerCommand();
         AddRearrangeBySoftwareCommand();
@@ -91,7 +89,7 @@ internal class CommandLine
     {
         void SortImagesByExif(DirectoryInfo sourcePath, DirectoryInfo destinationPath, bool force, bool move)
         {
-            Run(new SortImageByExif(sourcePath, destinationPath, _extensions, force, move));
+            Run(new SortImageByExif(_logger, sourcePath, destinationPath, _extensions, force, move));
         }
 
         var rearrangeByExifCommand = new Command("rearrangeByExif",
@@ -196,8 +194,8 @@ internal class CommandLine
         try
         {
             var statstics = f.Run(_logger);
-            statstics.Log(_logger);
-            statstics.FileError.CopyErrorFiles(_logger);
+            statstics.Log();
+            statstics.FileErrors.CopyErrorFiles(_logger);
         }
         catch (Exception e)
         {

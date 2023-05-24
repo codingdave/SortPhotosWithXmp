@@ -1,7 +1,7 @@
 namespace SortPhotosWithXmpByExifDateCli.Statistics
 {
 
-    public interface IReadOnlyFileError
+    public interface IReadOnlyErrorCollection
     {
         public IReadOnlyList<IError> Errors { get; }
     }

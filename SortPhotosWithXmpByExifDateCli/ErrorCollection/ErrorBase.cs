@@ -1,18 +1,23 @@
 namespace SortPhotosWithXmpByExifDateCli.Statistics;
 
-public class MultipleErrors : IError
+public abstract class ErrorBase : IError
 {
-    readonly IEnumerable<string> _messages;
-
-    public MultipleErrors(FileInfo fileInfo, IEnumerable<string> messages)
+    public ErrorBase(FileInfo fileInfo, IEnumerable<string> messages)
     {
         FileInfo = fileInfo;
         _messages = messages;
     }
+
+    private IEnumerable<string> _messages;
 
     public string ErrorMessage => string.Join(Environment.NewLine, _messages);
 
     public bool HasErrors => true;
 
     public FileInfo FileInfo { get; }
+
+    public void AddMessage(string errorMessage)
+    {
+        _messages = _messages.Append(errorMessage);
+    }
 }

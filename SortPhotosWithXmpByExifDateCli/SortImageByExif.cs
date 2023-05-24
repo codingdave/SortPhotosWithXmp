@@ -14,14 +14,14 @@ internal class SortImageByExif : IRun
     private readonly bool _force;
     private readonly bool _move;
 
-    internal SortImageByExif(DirectoryInfo sourceDirectoryInfo, DirectoryInfo destinationDirectoryInfo, IEnumerable<string> extensions, bool force, bool move)
+    internal SortImageByExif(ILogger logger, DirectoryInfo sourceDirectoryInfo, DirectoryInfo destinationDirectoryInfo, IEnumerable<string> extensions, bool force, bool move)
     {
         _sourceDirectory = sourceDirectoryInfo ?? throw new ArgumentNullException(nameof(sourceDirectoryInfo));
         _destinationDirectory = destinationDirectoryInfo ?? throw new ArgumentNullException(nameof(destinationDirectoryInfo));
         _extensions = extensions;
         _force = force;
         _move = move;
-        _statistics = new ImagesAndXmpFoundStatistics(force, move);
+        _statistics = new ImagesAndXmpFoundStatistics(logger, force, move);
     }
 
     private IEnumerable<FileInfo> GetFileInfos() =>
@@ -53,7 +53,7 @@ internal class SortImageByExif : IRun
             {
                 var errorMessage = new List<string>() { "No time found." };
                 errorMessage.AddRange(Helpers.GetMetadata(metaDataDirectories));
-                error = Helpers.GetError(fileInfo, errorMessage);
+                error = new NoTimeFoundError(fileInfo, errorMessage);
                 if (error.HasErrors)
                 {
                     _statistics.AddError(error);
@@ -61,7 +61,7 @@ internal class SortImageByExif : IRun
             }
         }
 
-        var statistics = new DirectoriesDeletedStatistics(_force);
+        var statistics = new DirectoriesDeletedStatistics(logger, _force);
         Helpers.RecursivelyDeleteEmptyDirectories(_sourceDirectory, statistics, _force);
         return new ImagesAndXmpCopiedDirectoriesDeletedStatistics(_statistics, statistics);
     }

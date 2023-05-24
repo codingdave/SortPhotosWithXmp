@@ -12,13 +12,13 @@ public class ImagesAndXmpCopiedDirectoriesDeletedStatistics : IStatistics
         DirectoriesDeletedStatistics directoriesStatistics)
     {
         (_imagesStatistics, _directoriesStatistics) = (imagesStatistics, directoriesStatistics);
-       FileError = new MergedFileError(errorCollection1: _imagesStatistics.FileError, errorCollection2: _directoriesStatistics.FileError) ;
+       FileErrors = new MergedFileError(errorCollection1: _imagesStatistics.FileErrors, errorCollection2: _directoriesStatistics.FileErrors) ;
     }
 
-    public IReadOnlyFileError FileError { get; }
-    public void Log(ILogger logger)
+    public IReadOnlyErrorCollection FileErrors { get; }
+    public void Log()
     {
-        _imagesStatistics.Log(logger);
-        _directoriesStatistics.Log(logger);
+        _imagesStatistics.Log();
+        _directoriesStatistics.Log();
     }
 }
