@@ -103,7 +103,7 @@ public static class Helpers
                 {
                     if (move)
                     {
-                        File.Move(file.FullName, targetName.FullName);
+                        Move(file.FullName, targetName.FullName);
                     }
                     else
                     {
@@ -129,9 +129,14 @@ public static class Helpers
         }
     }
 
-    public static void Copy(string errorfile, string fullname)
+    public static void Copy(string sourceFileName, string destFileName)
     {
-        File.Copy(errorfile, fullname);
+        File.Copy(sourceFileName, destFileName);
+    }
+
+    public static void Move(string sourceFileName, string destFileName)
+    {
+        File.Move(sourceFileName, destFileName);
     }
 
     public static void RecursivelyDeleteEmptyDirectories(DirectoryInfo directory, DirectoriesDeletedStatistics statistics, bool force, bool isFirstRun = true)

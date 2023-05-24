@@ -67,7 +67,7 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
             if (fileAlreadyExistsError.FileInfo.Exists)
             {
                 logger.LogTrace($"Moving back {fileAlreadyExistsError.OtherFile.FullName} to where we store all the collisions: {targetPath}");
-                File.Move(fileAlreadyExistsError.FileInfo.FullName, targetPath);
+                Helpers.Move(fileAlreadyExistsError.FileInfo.FullName, targetPath);
             }
             else
             {
