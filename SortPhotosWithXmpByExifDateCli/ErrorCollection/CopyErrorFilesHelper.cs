@@ -89,12 +89,13 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
             {
                 var isLengthIdentical = error.FileInfo.Length == error.OtherFile.Length;
 
+                ResourceLimits.LimitMemory(new Percentage(90));
                 using var copiedImage = new MagickImage(error.FileInfo);
                 using var otherImage = new MagickImage(error.OtherFile);
                 var distortion = copiedImage.Compare(otherImage, ErrorMetric.Absolute);
                 var isDistorted = distortion > .000001;
 
-                isDuplicate = 
+                isDuplicate =
                     isLengthIdentical &&
                     !isDistorted;
 
