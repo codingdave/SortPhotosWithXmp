@@ -24,7 +24,7 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
                 {
                     if (IsDuplicate(logger, error, statistics))
                     {
-                        logger.LogInformation($"ignoring duplicate {error.OtherFile} of {error.FileInfo}");
+                        logger.LogDebug($"ignoring duplicate {error.OtherFile} of {error.FileInfo}");
                     }
                     else
                     {
@@ -80,24 +80,17 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
 
         private static bool AreImagesDuplicates(ILogger logger, FileAlreadyExistsError error, IFoundStatistics statistics)
         {
-            var isDuplicate = false;
-            // do exact an comparison, not a fuzzy one: We expect equality on
-            // * filesize
-            // * Hash
-            // * identical dimensions in width and height
+            bool isDuplicate = false;
+
             try
             {
-                var isLengthIdentical = error.FileInfo.Length == error.OtherFile.Length;
-
                 ResourceLimits.LimitMemory(new Percentage(90));
                 using var copiedImage = new MagickImage(error.FileInfo);
                 using var otherImage = new MagickImage(error.OtherFile);
                 var distortion = copiedImage.Compare(otherImage, ErrorMetric.Absolute);
                 var isDistorted = distortion > .000001;
 
-                isDuplicate =
-                    isLengthIdentical &&
-                    !isDistorted;
+                isDuplicate = !isDistorted;
 
                 if (isDuplicate)
                 {
