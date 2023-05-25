@@ -25,7 +25,9 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
                 {
                     if (IsDuplicate(logger, error, statistics))
                     {
-                        logger.LogDebug($"ignoring duplicate {error.OtherFile} of {error.FileInfo}");
+                        logger.LogDebug($"removing duplicate {error.OtherFile} of {error.FileInfo}");
+                        #warning Deleting file
+                        error.OtherFile.Delete();
                     }
                     else
                     {
