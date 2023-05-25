@@ -1,5 +1,9 @@
 using System.CommandLine;
 using System.Diagnostics;
+using System.Net;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SortPhotosWithXmpByExifDateCli.Statistics;
 
@@ -35,18 +39,28 @@ internal class CommandLine
         _offsetOption = OptionsHelper.GetOffsetOption();
         _forceOption = OptionsHelper.GetForceOption();
         _moveOption = OptionsHelper.GetMoveOption();
-        _logger = LoggerFactory.Create(c =>
+        var host = Host.CreateDefaultBuilder()
+        .ConfigureServices(services => { })
+        .ConfigureLogging(context =>
         {
-            if (Debugger.IsAttached)
-            {
-                _ = c.AddDebug();
-            }
-            else
-            {
-                _ = c.AddConsole();
-            }
-            // _ = c.SetMinimumLevel(LogLevel.Trace);
-        }).CreateLogger<CommandLine>();
+            _ = Debugger.IsAttached ? context.AddDebug() : context.AddConsole();
+        })
+        .ConfigureAppConfiguration(builder =>
+        {
+            builder.AddJsonFile("appsettings.json",
+            optional: true,
+            reloadOnChange: true);
+        })
+        .Build();
+
+        _logger = host.Services.GetRequiredService<ILogger<CommandLine>>();
+        _logger.Log(LogLevel.Trace, "Trace");
+        _logger.Log(LogLevel.Debug, "Debug");
+        _logger.Log(LogLevel.Information, "Information");
+        _logger.Log(LogLevel.Warning, "Warning");
+        _logger.Log(LogLevel.Error, "Error");
+        _logger.Log(LogLevel.Critical, "Critical");
+        _logger.Log(LogLevel.None, "None");
 
         _rootCommand = new RootCommand("Rearrange files containing Exif data")
         {

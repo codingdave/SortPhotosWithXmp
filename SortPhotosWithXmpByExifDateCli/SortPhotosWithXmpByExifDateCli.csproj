@@ -17,10 +17,18 @@
     <ItemGroup>
       <PackageReference Include="Magick.NET-Q8-x64" Version="13.1.2" />
       <PackageReference Include="MetadataExtractor" Version="2.7.2" />
+      <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
       <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
       <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
       <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="7.0.0" />
       <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Include="appsettings.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+      </None>
+    </ItemGroup>
+    
 </Project>

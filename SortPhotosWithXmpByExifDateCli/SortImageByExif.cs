@@ -32,7 +32,7 @@ internal class SortImageByExif : IRun
     {
         DateTimeResolver dateTimeResolver = new(logger);
         var operation = _move ? "move" : "copy";
-        logger.LogInformation($"Starting {nameof(SortPhotosWithXmpByExifDateCli)}.{nameof(Run)} with search path: '{_sourceDirectory}' and destination path '{_destinationDirectory}'. force: {_force}, operation: {operation}");
+        logger.LogTrace($"Starting {nameof(SortPhotosWithXmpByExifDateCli)}.{nameof(Run)} with search path: '{_sourceDirectory}' and destination path '{_destinationDirectory}'. force: {_force}, operation: {operation}");
 
         foreach (var fileInfo in GetFileInfos())
         {
