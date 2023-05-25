@@ -74,7 +74,7 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
             {
                 statistics.SkippedXmps++;
 // #warning deleting file
-                error.OtherFile.Delete();
+                // error.OtherFile.Delete();
             }
 
             return isHashIdentical;
@@ -98,7 +98,7 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
                 {
                     statistics.SkippedImages++;
 // #warning deleting file
-                    error.OtherFile.Delete();
+                    // error.OtherFile.Delete();
                 }
             }
             catch (Exception e)

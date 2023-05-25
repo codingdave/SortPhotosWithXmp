@@ -25,10 +25,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Include="appsettings.json">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        <CopyToPublishDirectory>Always</CopyToPublishDirectory>
-      </None>
+      <None Include="appsettings.json" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always"/>
     </ItemGroup>
     
 </Project>

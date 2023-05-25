@@ -40,11 +40,16 @@ internal class CommandLine
         _forceOption = OptionsHelper.GetForceOption();
         _moveOption = OptionsHelper.GetMoveOption();
         var host = Host.CreateDefaultBuilder()
-        // .ConfigureServices(services => { })
-        // .ConfigureAppConfiguration(builder => { })
-        .ConfigureLogging(context =>
+        // .ConfigureServices(serviceCollection => { })
+        .ConfigureAppConfiguration(configurationBuilder =>
         {
-            _ = Debugger.IsAttached ? context.AddDebug() : context.AddConsole();
+            _ = configurationBuilder
+                .SetBasePath(GetBasePath())
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+        })
+        .ConfigureLogging(loggingBuilder =>
+        {
+            _ = Debugger.IsAttached ? loggingBuilder.AddDebug() : loggingBuilder.AddConsole();
         })
         .Build();
 
@@ -69,6 +74,15 @@ internal class CommandLine
         AddRearrangeByCameraManufacturerCommand();
         AddRearrangeBySoftwareCommand();
         AddFixExifDateByOffsetCommand();
+    }
+
+    private static string GetBasePath()
+    {
+        // using var processModule = Process.GetCurrentProcess().MainModule;
+        // return Path.GetDirectoryName(processModule?.FileName) ?? string.Empty;
+        // return Directory.GetCurrentDirectory();
+        // return Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
+        return System.AppContext.BaseDirectory;
     }
 
     public async Task<int> InvokeAsync(string[] args)
