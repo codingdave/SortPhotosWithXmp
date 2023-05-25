@@ -65,9 +65,9 @@ public static class Helpers
         return ret;
     }
 
-    public static IError GetError(FileInfo fileInfo, IReadOnlyList<MetadataExtractor.Directory> metaDataDirectories)
+    public static IEnumerable<string> GetErrorsFromMetadata(IReadOnlyList<MetadataExtractor.Directory> metaDataDirectories)
     {
-        return new MetaDataError(fileInfo, metaDataDirectories.SelectMany(t => t.Errors));
+        return metaDataDirectories.SelectMany(t => t.Errors);
     }
 
     public static List<string> GetMetadata(IReadOnlyList<MetadataExtractor.Directory> directories)

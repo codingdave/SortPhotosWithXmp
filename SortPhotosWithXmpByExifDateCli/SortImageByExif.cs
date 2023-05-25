@@ -32,14 +32,18 @@ internal class SortImageByExif : IRun
     {
         DateTimeResolver dateTimeResolver = new(logger);
         var operation = _move ? "move" : "copy";
-        logger.LogTrace($"Starting {nameof(SortPhotosWithXmpByExifDateCli)}.{nameof(Run)} with search path: '{_sourceDirectory}' and destination path '{_destinationDirectory}'. force: {_force}, operation: {operation}");
+        logger.LogInformation($"Starting {nameof(SortPhotosWithXmpByExifDateCli)}.{nameof(Run)} with search path: '{_sourceDirectory}' and destination path '{_destinationDirectory}'. force: {_force}, operation: {operation}");
 
         foreach (var fileInfo in GetFileInfos())
         {
             try
             {
                 var metaDataDirectories = ImageMetadataReader.ReadMetadata(fileInfo.FullName);
-                _statistics.AddError(Helpers.GetError(fileInfo, metaDataDirectories));
+                var errors = Helpers.GetErrorsFromMetadata(metaDataDirectories);
+                if (errors.Any())
+                {
+                    _statistics.AddError(new MetaDataError(fileInfo, errors));
+                }
 
                 var dateTime = dateTimeResolver.GetDateTimeFromImage(metaDataDirectories);
                 if (dateTime != DateTime.MinValue)
