@@ -16,7 +16,7 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
                 var errorBaseDirectory = new DirectoryInfo("ErrorFiles");
                 logger.LogError($"Could not copy all files due to collisions. Please check {errorBaseDirectory.FullName}");
 
-                RenamePossiblyExistingErrorDirectory(errorBaseDirectory);
+                RenamePossiblyExistingErrorDirectory(logger, errorBaseDirectory);
                 CreateErrorDirectory(logger, errorBaseDirectory);
 
                 logger.LogTrace($"Copy {errors.Count} files to {errorBaseDirectory.FullName}");
@@ -169,7 +169,7 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
         {
             if (!collisionDirectoryInfo.Exists)
             {
-                logger.LogTrace($"Creating {collisionFileInfo.FullName}");
+                logger.LogTrace("Creating {newDirectory}", collisionFileInfo.FullName);
                 collisionDirectoryInfo.Create();
             }
         }
@@ -178,12 +178,12 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
         {
             if (!Directory.Exists(errorBaseDirectory.FullName))
             {
-                logger.LogTrace($"Creating {errorBaseDirectory.FullName}");
+                logger.LogTrace("Creating {newDirector}", errorBaseDirectory.FullName);
                 Directory.CreateDirectory(errorBaseDirectory.FullName);
             }
         }
 
-        private static void RenamePossiblyExistingErrorDirectory(DirectoryInfo errorBaseDirectory)
+        private static void RenamePossiblyExistingErrorDirectory(ILogger logger, DirectoryInfo errorBaseDirectory)
         {
             // rename possibly existing ErrorFiles directory (add lastWriteTime to the end)
             if (errorBaseDirectory.Exists)
@@ -192,6 +192,7 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
                 var parentDirectory = errorBaseDirectory.Parent ?? throw new InvalidOperationException("Path does not exist");
                 var directoryName = errorBaseDirectory.Name;
                 var newName = Path.Combine(parentDirectory.FullName, directoryName + "_" + time);
+                logger.LogTrace("Renaming {oldDirectory} to {newDirectory}", errorBaseDirectory.FullName, newName);
                 Directory.Move(errorBaseDirectory.FullName, newName);
             }
         }
