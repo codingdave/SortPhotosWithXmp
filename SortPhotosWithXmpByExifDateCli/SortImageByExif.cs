@@ -45,9 +45,10 @@ internal class SortImageByExif : IRun
                     _statistics.AddError(new MetaDataError(fileInfo, errors));
                 }
 
-                var dateTime = dateTimeResolver.GetDateTimeFromImage(metaDataDirectories);
-                if (dateTime != DateTime.MinValue)
+                var possibleDateTime = dateTimeResolver.GetDateTimeFromImage(metaDataDirectories);
+                if (possibleDateTime is DateTime dateTime)
                 {
+                    logger.LogTrace("Extracted date {date} from {file}", dateTime, fileInfo.FullName);
                     var xmpFiles = Helpers.GetCorrespondingXmpFiles(fileInfo);
                     Helpers.MoveImageAndXmpToExifPath(logger, fileInfo, xmpFiles, dateTime, _destinationDirectory, _statistics, _force, _move);
                 }

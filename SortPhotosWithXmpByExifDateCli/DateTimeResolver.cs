@@ -5,6 +5,9 @@ using MetadataExtractor.Formats.Xmp;
 using DirectoryExtensions = MetadataExtractor.DirectoryExtensions;
 using System.Globalization;
 using Microsoft.Extensions.Logging;
+using MetadataExtractor;
+using System.Net;
+using MetadataExtractor.Formats.FileSystem;
 
 namespace SortPhotosWithXmpByExifDateCli;
 
@@ -17,7 +20,7 @@ public class DateTimeResolver
         _logger = staticLogger;
     }
 
-    public DateTime GetDateTimeFromImage(IReadOnlyList<MetadataExtractor.Directory> directories)
+    public DateTime? GetDateTimeFromImage(IReadOnlyList<MetadataExtractor.Directory> directories)
     {
         // Exif IFD0 - Date/Time = 2023:01:18 10:54:28
         // Exif SubIFD - Date/Time Digitized = 2023:01:18 10:17:32
@@ -27,12 +30,11 @@ public class DateTimeResolver
         // IPTC - Digital Time Created = 10:17:32+0100
         // IPTC - Time Created = 10:17:32+0100
 
-        DateTime ret = DateTime.MinValue;
+        DateTime? ret = null;
 
-        Func<IReadOnlyList<MetadataExtractor.Directory>, DateTime>[] functions = new[]
+        Func<IReadOnlyList<MetadataExtractor.Directory>, DateTime?>[] functions = new[]
         {
             DateTimeFromExif,
-            DateTimeFromExifSubIf,
             DateTimeFromIptc,
             DateTimeFromQuicktime,
             DateTimeFromXmp
@@ -40,7 +42,7 @@ public class DateTimeResolver
 
         foreach (var f in functions)
         {
-            if (ret == DateTime.MinValue)
+            if (ret == null)
             {
                 ret = f(directories);
             }
@@ -49,24 +51,29 @@ public class DateTimeResolver
         return ret;
     }
 
-    private DateTime DateTimeFromXmp(IReadOnlyList<MetadataExtractor.Directory> directories)
+    private DateTime? DateTimeFromXmp(IReadOnlyList<MetadataExtractor.Directory> directories)
     {
-        var ret = DateTime.MinValue;
+        DateTime? ret = null;
         // my own modifications are like: exif:DateTimeOriginal: 2015-12-06T00:00:01+00:00
         var format = "yyyy-MM-ddTHH:mm:ss+00:00";
         var xmpString = "exif:DateTimeOriginal";
-        foreach (var xmpDirectory in directories.OfType<XmpDirectory>())
+
+        var typedDirectories = directories.OfType<XmpDirectory>();
+        if (typedDirectories != null)
         {
-            if (xmpDirectory.XmpMeta != null)
+            foreach (var directory in typedDirectories)
             {
-                foreach (var property in xmpDirectory.XmpMeta.Properties)
+                if (directory.XmpMeta != null)
                 {
-                    var exifProperty = xmpString.Equals(property.Path);
-                    if (exifProperty)
+                    foreach (var property in directory.XmpMeta.Properties)
                     {
-                        var parsedDateTime = DateTime.ParseExact(property.Value, format, CultureInfo.InvariantCulture);
-                        _logger.LogTrace($"{parsedDateTime} was found in XMP: '{xmpString}:{property.Value}'.");
-                        ret = parsedDateTime;
+                        var exifProperty = xmpString.Equals(property.Path);
+                        if (exifProperty)
+                        {
+                            var parsedDateTime = DateTime.ParseExact(property.Value, format, CultureInfo.InvariantCulture);
+                            _logger.LogTrace($"{parsedDateTime} was found in XMP: '{xmpString}:{property.Value}'.");
+                            ret = parsedDateTime;
+                        }
                     }
                 }
             }
@@ -75,85 +82,96 @@ public class DateTimeResolver
         return ret;
     }
 
-    private DateTime DateTimeFromQuicktime(IReadOnlyList<MetadataExtractor.Directory> directories)
+    private DateTime? DateTimeFromQuicktime(IReadOnlyList<MetadataExtractor.Directory> directories)
     {
-        var ret = DateTime.MinValue;
-        var quickTimeMovieHeaderDirectory = directories.OfType<QuickTimeMovieHeaderDirectory>().FirstOrDefault();
-        if (quickTimeMovieHeaderDirectory != null)
+        var tags = new int[]
         {
-            if (DirectoryExtensions.TryGetDateTime(quickTimeMovieHeaderDirectory, QuickTimeMovieHeaderDirectory.TagCreated, out var tagCreated))
+            QuickTimeMovieHeaderDirectory.TagCreated,
+        };
+        return DateTimeFrom<QuickTimeMovieHeaderDirectory>(directories, tags);
+    }
+
+    private static DateTime? DateTimeFromIptc(IReadOnlyList<MetadataExtractor.Directory> directories)
+    {
+        DateTime? ret = null;
+
+        var exifDates = new Dictionary<int, DateTime>();
+        var tags = new int[] { 1, 2 };
+
+        var typedDirectories = directories.OfType<IptcDirectory>();
+        if (typedDirectories != null)
+        {
+            foreach (var directory in typedDirectories)
             {
-                ret = tagCreated;
+                DateTimeOffset? date = directory.GetDateCreated();
+                if (date is DateTimeOffset dto)
+                {
+                    exifDates.Add(1, dto.DateTime);
+                }
+
+                date = directory.GetDigitalDateCreated();
+                if (date is DateTimeOffset dto2)
+                {
+                    exifDates.Add(2, dto2.DateTime);
+                }
+            }
+        }
+
+        foreach (var tag in tags)
+        {
+            var isFound = exifDates.TryGetValue(tag, out var dateTime);
+            if (isFound)
+            {
+                ret = dateTime;
+                break;
             }
         }
 
         return ret;
     }
 
-    private DateTime DateTimeFromIptc(IReadOnlyList<MetadataExtractor.Directory> directories)
+    private static DateTime? DateTimeFromExif(IReadOnlyList<MetadataExtractor.Directory> directories)
     {
-        var ret = DateTime.MinValue;
-        var iptcDirectory = directories.OfType<IptcDirectory>().FirstOrDefault();
-        if (iptcDirectory != null)
+        var tags = new int[]
         {
-            if (DirectoryExtensions.TryGetDateTime(iptcDirectory, IptcDirectory.TagDateCreated, out var tagDateCreated))
+            ExifDirectoryBase.TagDateTimeOriginal,
+            ExifDirectoryBase.TagDateTime,
+            ExifDirectoryBase.TagDateTimeDigitized,
+        };
+        return DateTimeFrom<ExifDirectoryBase>(directories, tags);
+    }
+
+    private static DateTime? DateTimeFrom<T>(IReadOnlyList<MetadataExtractor.Directory> directories, int[] tags) where T : MetadataExtractor.Directory
+    {
+        DateTime? ret = null;
+
+        var exifDates = new Dictionary<int, DateTime>();
+
+        var typedDirectories = directories.OfType<T>();
+        if (typedDirectories != null)
+        {
+            foreach (var directory in typedDirectories)
             {
-                ret = tagDateCreated;
+                foreach (var tag in tags)
+                {
+                    if (DirectoryExtensions.TryGetDateTime(directory, tag, out var dateTime))
+                    {
+                        exifDates.Add(tag, dateTime);
+                    }
+                }
             }
-            else if (DirectoryExtensions.TryGetDateTime(iptcDirectory, IptcDirectory.TagTimeCreated, out var tagTimeCreated))
+        }
+
+        foreach (var tag in tags)
+        {
+            var isFound = exifDates.TryGetValue(tag, out var dateTime);
+            if (isFound)
             {
-                ret = tagTimeCreated;
-            }
-            else if (DirectoryExtensions.TryGetDateTime(iptcDirectory, IptcDirectory.TagDigitalDateCreated, out var tagDigitalDateCreated))
-            {
-                ret = tagDigitalDateCreated;
-            }
-            else if (DirectoryExtensions.TryGetDateTime(iptcDirectory, IptcDirectory.TagDigitalTimeCreated, out var tagDigitalTimeCreated))
-            {
-                ret = tagDigitalTimeCreated;
+                ret = dateTime;
+                break;
             }
         }
 
         return ret;
     }
-
-    private DateTime DateTimeFromExifSubIf(IReadOnlyList<MetadataExtractor.Directory> directories)
-    {
-        var ret = DateTime.MinValue;
-        var subIfdDirectory = directories.OfType<ExifSubIfdDirectory>().FirstOrDefault();
-        if (subIfdDirectory != null)
-        {
-            if (DirectoryExtensions.TryGetDateTime(subIfdDirectory, ExifDirectoryBase.TagDateTimeOriginal, out var tagDateTimeOriginal))
-            {
-                ret = tagDateTimeOriginal;
-            }
-        }
-
-        return ret;
-    }
-
-    private DateTime DateTimeFromExif(IReadOnlyList<MetadataExtractor.Directory> directories)
-    {
-        var ret = DateTime.MinValue;
-        var exifDirectoryBase = directories.OfType<ExifDirectoryBase>().FirstOrDefault();
-        if (exifDirectoryBase != null)
-        {
-            if (DirectoryExtensions.TryGetDateTime(exifDirectoryBase, ExifDirectoryBase.TagDateTime, out var tagDateTime))
-            {
-                ret = tagDateTime;
-            }
-            else if (DirectoryExtensions.TryGetDateTime(exifDirectoryBase, ExifDirectoryBase.TagDateTimeDigitized, out var tagDateTimeDigitized))
-            {
-                ret = tagDateTimeDigitized;
-            }
-            else if (DirectoryExtensions.TryGetDateTime(exifDirectoryBase, ExifDirectoryBase.TagDateTimeOriginal, out var tagDateTimeOriginal))
-            {
-                ret = tagDateTimeOriginal;
-            }
-        }
-
-        return ret;
-    }
-
-
 }
