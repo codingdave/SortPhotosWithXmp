@@ -49,6 +49,7 @@ internal class CommandLine
         })
         .ConfigureLogging(loggingBuilder =>
         {
+            _ = loggingBuilder.ClearProviders();
             _ = Debugger.IsAttached ? loggingBuilder.AddDebug() : loggingBuilder.AddConsole();
         })
         .Build();
