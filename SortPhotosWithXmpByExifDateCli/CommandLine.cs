@@ -220,7 +220,7 @@ internal class CommandLine
             var statistics = f.Run(_logger);
             if (statistics is IFoundStatistics filesFoundStatistics)
             {
-                statistics.FileErrors.CopyErrorFiles(_logger, filesFoundStatistics);
+                statistics.FileErrors.HandleErrorFiles(_logger, filesFoundStatistics);
             }
             statistics.Log();
         }

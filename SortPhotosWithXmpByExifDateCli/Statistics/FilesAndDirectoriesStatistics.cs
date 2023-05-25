@@ -4,8 +4,8 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics;
 
 public class FilesAndDirectoriesStatistics : IStatistics, IFoundStatistics
 {
-    readonly FilesFoundStatistics _imagesStatistics;
-    readonly DirectoriesDeletedStatistics _directoriesStatistics;
+    private readonly FilesFoundStatistics _imagesStatistics;
+    private readonly DirectoriesDeletedStatistics _directoriesStatistics;
 
     public FilesAndDirectoriesStatistics(
         FilesFoundStatistics filesStatistics,
