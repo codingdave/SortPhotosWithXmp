@@ -40,27 +40,22 @@ internal class CommandLine
         _forceOption = OptionsHelper.GetForceOption();
         _moveOption = OptionsHelper.GetMoveOption();
         var host = Host.CreateDefaultBuilder()
-        .ConfigureServices(services => { })
+        // .ConfigureServices(services => { })
+        // .ConfigureAppConfiguration(builder => { })
         .ConfigureLogging(context =>
         {
             _ = Debugger.IsAttached ? context.AddDebug() : context.AddConsole();
         })
-        .ConfigureAppConfiguration(builder =>
-        {
-            builder.AddJsonFile("appsettings.json",
-            optional: true,
-            reloadOnChange: true);
-        })
         .Build();
 
         _logger = host.Services.GetRequiredService<ILogger<CommandLine>>();
-        _logger.Log(LogLevel.Trace, "Trace");
-        _logger.Log(LogLevel.Debug, "Debug");
-        _logger.Log(LogLevel.Information, "Information");
-        _logger.Log(LogLevel.Warning, "Warning");
-        _logger.Log(LogLevel.Error, "Error");
-        _logger.Log(LogLevel.Critical, "Critical");
-        _logger.Log(LogLevel.None, "None");
+        _logger.Log(LogLevel.Trace, "Trace messages will show up");
+        _logger.Log(LogLevel.Debug, "Debug messages will show up");
+        _logger.Log(LogLevel.Information, "Information messages will show up");
+        _logger.Log(LogLevel.Warning, "Warning messages will show up");
+        _logger.Log(LogLevel.Error, "Error messages will show up");
+        _logger.Log(LogLevel.Critical, "Critical messages will show up");
+        _logger.Log(LogLevel.None, "None messages will show up");
 
         _rootCommand = new RootCommand("Rearrange files containing Exif data")
         {
