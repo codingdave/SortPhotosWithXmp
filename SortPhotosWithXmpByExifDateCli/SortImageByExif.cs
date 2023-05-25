@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using MetadataExtractor;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using SortPhotosWithXmpByExifDateCli.Statistics;
 
 namespace SortPhotosWithXmpByExifDateCli;
@@ -61,6 +62,11 @@ internal class SortImageByExif : IRun
             {
                 _statistics.AddError(new ImageProcessingExceptionError(fileInfo, e));
             }
+            catch (Exception e)
+            {
+                logger.LogError("Failed processing {filename}: {stacktrace}", fileInfo, e.StackTrace);
+                _statistics.AddError(new ExceptionError(fileInfo, e));
+            }             
         }
 
         var statistics = new DirectoriesDeletedStatistics(logger, _force);

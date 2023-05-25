@@ -1,14 +1,10 @@
 using MetadataExtractor;
 
 namespace SortPhotosWithXmpByExifDateCli.Statistics;
-
-public sealed class ImageProcessingExceptionError : ErrorBase
+public sealed class ImageProcessingExceptionError : ExceptionError
 {
     public ImageProcessingExceptionError(FileInfo fileInfo, ImageProcessingException exception)
-    : base(fileInfo, new List<string>() { nameof(ImageProcessingException) + ": " + exception.Message })
+    : base(fileInfo, exception, new List<string>() { nameof(ImageProcessingException) + ": " + exception.Message })
     {
-        Exception = exception;
     }
-
-    public ImageProcessingException Exception { get; }
 }
