@@ -100,8 +100,8 @@ public class DateTimeResolver
                                 {
                                     _logger.LogTrace($"{ret} was found in XMP: '{xmpString}:{property.Value}' with {format}");
                                 }
-                                else 
-                                { 
+                                else
+                                {
                                     _logger.LogWarning($"DateTime.Parse failed in XMP: '{xmpString}:{property.Value}' with {format}");
                                 }
                             }
@@ -197,28 +197,32 @@ public class DateTimeResolver
         foreach (var tag in tags)
         {
             var found = exifDates.Where(t => t.tag == tag).ToList();
-            if (found.Count > 1)
+            if (found.Any())
             {
-                var foundDates = found.Select(d => d.dateTime).Distinct().ToList();
-                Debug.Assert(foundDates.Count > 0);
-
-                if (foundDates.Count == 1)
+                // inform if more than 1 match exists
+                if (found.Count > 1)
                 {
-                    logger.LogDebug("Several identical tags have been found");
-                }
-                else
-                {
-                    var message = $"Found several different entries for tag {tag}:" + Environment.NewLine;
+                    var distinctDates = found.Select(d => d.dateTime).Distinct().ToList();
+                    Debug.Assert(distinctDates.Count > 0);
 
-                    foreach (var t in foundDates)
+                    if (distinctDates.Count == 1)
                     {
-                        message += t.ToString(CultureInfo.InvariantCulture) + Environment.NewLine;
+                        logger.LogDebug("Several identical tags have been found");
                     }
+                    else
+                    {
+                        var messages = new List<string>() { $"Found several different entries for tag {tag}:" };
 
-                    logger.LogError(message);
+                        foreach (var t in distinctDates)
+                        {
+                            messages.Add(t.ToString(CultureInfo.InvariantCulture));
+                        }
+
+                        logger.LogError(string.Join(Environment.NewLine, messages));
+                    }
                 }
 
-                ret = foundDates.First();
+                ret = found.First().dateTime;
                 break;
             }
         }

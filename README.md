@@ -9,6 +9,7 @@ Sort your Photos and Videos by exif time. If you have .xmp files, this tool will
 * move videos out of image directory? Currently it will be sorted like the images
 * Currently we delete the "other file" for a collision
 * WHY do we have a collision when the exif is different? 
+* Move NoTimeError files into its own NoTimeError directory
 
 ## TODO-Compiler wise
 * The logging message template should not vary between calls to 'LoggerExtensions.LogInformation(ILogger, string?, params object?[])' 

@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using ImageMagick;
 using System.Diagnostics;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace SortPhotosWithXmpByExifDateCli.Statistics
 {
