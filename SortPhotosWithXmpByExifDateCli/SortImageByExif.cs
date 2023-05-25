@@ -46,7 +46,7 @@ internal class SortImageByExif : IRun
                     _statistics.AddError(new MetaDataError(fileInfo, errors));
                 }
 
-                var possibleDateTime = dateTimeResolver.GetDateTimeFromImage(metaDataDirectories);
+                var possibleDateTime = dateTimeResolver.GetDateTimeFromImage(logger, metaDataDirectories);
                 if (possibleDateTime is DateTime dateTime)
                 {
                     logger.LogTrace("Extracted date {date} from {file}", dateTime, fileInfo.FullName);

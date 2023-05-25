@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using MetadataExtractor;
 using System.Net;
 using MetadataExtractor.Formats.FileSystem;
+using System.Diagnostics;
 
 namespace SortPhotosWithXmpByExifDateCli;
 
@@ -20,7 +21,7 @@ public class DateTimeResolver
         _logger = staticLogger;
     }
 
-    public DateTime? GetDateTimeFromImage(IReadOnlyList<MetadataExtractor.Directory> directories)
+    public DateTime? GetDateTimeFromImage(ILogger logger, IReadOnlyList<MetadataExtractor.Directory> directories)
     {
         // Exif IFD0 - Date/Time = 2023:01:18 10:54:28
         // Exif SubIFD - Date/Time Digitized = 2023:01:18 10:17:32
@@ -32,7 +33,7 @@ public class DateTimeResolver
 
         DateTime? ret = null;
 
-        Func<IReadOnlyList<MetadataExtractor.Directory>, DateTime?>[] functions = new[]
+        Func<ILogger, IReadOnlyList<MetadataExtractor.Directory>, DateTime?>[] functions = new[]
         {
             DateTimeFromExif,
             DateTimeFromIptc,
@@ -44,14 +45,14 @@ public class DateTimeResolver
         {
             if (ret == null)
             {
-                ret = f(directories);
+                ret = f(logger, directories);
             }
         }
 
         return ret;
     }
 
-    private DateTime? DateTimeFromXmp(IReadOnlyList<MetadataExtractor.Directory> directories)
+    private DateTime? DateTimeFromXmp(ILogger logger, IReadOnlyList<MetadataExtractor.Directory> directories)
     {
         DateTime? ret = null;
         // my own modifications are like: exif:DateTimeOriginal: 2015-12-06T00:00:01+00:00
@@ -82,16 +83,16 @@ public class DateTimeResolver
         return ret;
     }
 
-    private DateTime? DateTimeFromQuicktime(IReadOnlyList<MetadataExtractor.Directory> directories)
+    private DateTime? DateTimeFromQuicktime(ILogger logger, IReadOnlyList<MetadataExtractor.Directory> directories)
     {
         var tags = new int[]
         {
             QuickTimeMovieHeaderDirectory.TagCreated,
         };
-        return DateTimeFrom<QuickTimeMovieHeaderDirectory>(directories, tags);
+        return DateTimeFrom<QuickTimeMovieHeaderDirectory>(logger, directories, tags);
     }
 
-    private static DateTime? DateTimeFromIptc(IReadOnlyList<MetadataExtractor.Directory> directories)
+    private static DateTime? DateTimeFromIptc(ILogger logger, IReadOnlyList<MetadataExtractor.Directory> directories)
     {
         DateTime? ret = null;
 
@@ -130,7 +131,7 @@ public class DateTimeResolver
         return ret;
     }
 
-    private static DateTime? DateTimeFromExif(IReadOnlyList<MetadataExtractor.Directory> directories)
+    private static DateTime? DateTimeFromExif(ILogger logger, IReadOnlyList<MetadataExtractor.Directory> directories)
     {
         var tags = new int[]
         {
@@ -138,16 +139,16 @@ public class DateTimeResolver
             ExifDirectoryBase.TagDateTime,
             ExifDirectoryBase.TagDateTimeDigitized,
         };
-        return DateTimeFrom<ExifDirectoryBase>(directories, tags);
+        return DateTimeFrom<ExifDirectoryBase>(logger, directories, tags);
     }
 
-    private static DateTime? DateTimeFrom<T>(IReadOnlyList<MetadataExtractor.Directory> directories, int[] tags) where T : MetadataExtractor.Directory
+    private static DateTime? DateTimeFrom<T>(ILogger logger, IReadOnlyList<MetadataExtractor.Directory> directories, int[] tags) where T : MetadataExtractor.Directory
     {
         DateTime? ret = null;
 
-        var exifDates = new Dictionary<int, DateTime>();
+        var exifDates = new List<(int tag, DateTime dateTime)>();
 
-        var typedDirectories = directories.OfType<T>();
+        var typedDirectories = directories.OfType<T>().ToList();
         if (typedDirectories != null)
         {
             foreach (var directory in typedDirectories)
@@ -156,7 +157,7 @@ public class DateTimeResolver
                 {
                     if (DirectoryExtensions.TryGetDateTime(directory, tag, out var dateTime))
                     {
-                        exifDates.Add(tag, dateTime);
+                        exifDates.Add((tag, dateTime));
                     }
                 }
             }
@@ -164,10 +165,29 @@ public class DateTimeResolver
 
         foreach (var tag in tags)
         {
-            var isFound = exifDates.TryGetValue(tag, out var dateTime);
-            if (isFound)
+            var found = exifDates.Where(t => t.tag == tag).ToList();
+            if (found.Count > 1)
             {
-                ret = dateTime;
+                var foundDates = found.Select(d => d.dateTime).Distinct().ToList();
+                Debug.Assert(foundDates.Count > 0);
+
+                if (foundDates.Count == 1)
+                {
+                    logger.LogDebug("Several identical tags have been found");
+                }
+                else
+                {
+                    var message = $"Found several different entries for tag {tag}:" + Environment.NewLine;
+
+                    foreach (var t in foundDates)
+                    {
+                        message += t.ToString(CultureInfo.InvariantCulture) + Environment.NewLine;
+                    }
+
+                    logger.LogError(message);
+                }
+
+                ret = foundDates.First();
                 break;
             }
         }
