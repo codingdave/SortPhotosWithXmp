@@ -103,7 +103,8 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
             }
             catch (Exception e)
             {
-                logger.LogError(e + Environment.NewLine + e.StackTrace);
+                logger.LogError(e.ToString());
+                logger.LogTrace(e.StackTrace);
             }
 
             return isDuplicate;

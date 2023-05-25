@@ -226,7 +226,8 @@ internal class CommandLine
         }
         catch (Exception e)
         {
-            _logger.LogError(e.Message + Environment.NewLine + e.StackTrace);
+            _logger.LogError(e.Message);
+            _logger.LogTrace(e.StackTrace);
         };
     }
 }

@@ -9,6 +9,7 @@ using MetadataExtractor;
 using System.Net;
 using MetadataExtractor.Formats.FileSystem;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SortPhotosWithXmpByExifDateCli;
 
@@ -56,7 +57,8 @@ public class DateTimeResolver
     {
         DateTime? ret = null;
         // my own modifications are like: exif:DateTimeOriginal: 2015-12-06T00:00:01+00:00
-        var format = "yyyy-MM-ddTHH:mm:ss+00:00";
+        // var format = "yyyy-MM-ddTHH:mm:ss+00:00";
+        var format = "yyyy-MM-dd'T'HH:mm:sszzz";
         var xmpString = "exif:DateTimeOriginal";
 
         var typedDirectories = directories.OfType<XmpDirectory>();
@@ -71,9 +73,38 @@ public class DateTimeResolver
                         var exifProperty = xmpString.Equals(property.Path);
                         if (exifProperty)
                         {
-                            var parsedDateTime = DateTime.ParseExact(property.Value, format, CultureInfo.InvariantCulture);
-                            _logger.LogTrace($"{parsedDateTime} was found in XMP: '{xmpString}:{property.Value}'.");
-                            ret = parsedDateTime;
+
+                            try
+                            {
+                                var parsedDateTime = DateTime.ParseExact(property.Value, format, CultureInfo.InvariantCulture);
+                                ret = parsedDateTime;
+                            }
+                            catch (Exception e)
+                            {
+                                _logger.LogWarning(e.Message + $" with {format}");
+                                _logger.LogTrace(e.StackTrace);
+
+                                try
+                                {
+                                    var parsedDateTime = DateTime.Parse(property.Value);
+                                    ret = parsedDateTime;
+                                }
+                                catch (Exception e2)
+                                {
+                                    _logger.LogWarning("DateTime.Parse failed: {exception}", e2);
+                                }
+                            }
+                            finally
+                            {
+                                if (ret != null)
+                                {
+                                    _logger.LogTrace($"{ret} was found in XMP: '{xmpString}:{property.Value}' with {format}");
+                                }
+                                else 
+                                { 
+                                    _logger.LogWarning($"DateTime.Parse failed in XMP: '{xmpString}:{property.Value}' with {format}");
+                                }
+                            }
                         }
                     }
                 }
