@@ -94,6 +94,7 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
                                               CopyFileOperation copyFileOperation,
                                               MoveFileOperation moveFileOperation)
         {
+            var deleteFileOperation = new DeleteFileOperation(copyFileOperation.IsChanging);
             if (errors.Any())
             {
                 var errorBaseDirectory = new DirectoryInfo(nameof(FileAlreadyExistsError));
@@ -110,8 +111,7 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
                         if (IsDuplicate(logger, error, statistics))
                         {
                             logger.LogDebug($"removing duplicate {error.OtherFile} of {error.FileInfo}");
-#warning Deleting duplicate
-                            error.OtherFile.Delete();
+                            deleteFileOperation.Delete(error.OtherFile.FullName);
                         }
                         else
                         {
@@ -168,8 +168,6 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
             if (isHashIdentical)
             {
                 statistics.SkippedXmps++;
-                // #warning deleting file
-                // error.OtherFile.Delete();
             }
 
             return isHashIdentical;
@@ -194,8 +192,6 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
                 if (isDuplicate)
                 {
                     statistics.SkippedImages++;
-                    // #warning deleting file
-                    // error.OtherFile.Delete();
                 }
             }
             catch (Exception e)
@@ -256,8 +252,7 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
 
             if (error.FileInfo.Exists)
             {
-                logger.LogTrace($"Moving {error.FileInfo.FullName} to where we store similar: {targetPath}");
-#warning we move instead of respecting command line parameter
+                logger.LogTrace($"{error.FileInfo.FullName}: {moveFileOperation.ToString()} to where we store similar ones {targetPath}");
                 moveFileOperation.ChangeFile(error.FileInfo.FullName, targetPath);
             }
             else

@@ -1,12 +1,13 @@
+using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 
 namespace SortPhotosWithXmpByExifDateCli
 {
-    public class CopyFileOperation : IFileOperation
+    public class DeleteFileOperation : IFileOperation
     {
         private readonly ILogger _logger;
 
-        internal CopyFileOperation(ILogger logger, bool force)
+        internal DeleteFileOperation(ILogger logger, bool force)
         {
             _logger = logger;
             IsChanging = force;
@@ -14,22 +15,27 @@ namespace SortPhotosWithXmpByExifDateCli
 
         public bool IsChanging { get; }
 
-        public void ChangeFile(string sourceFileName, string destFileName)
+        public void ChangeFile(string path, string otherFile)
+        {
+            throw new NotImplementedException("The interface is not SOLID, it break the interface seggregation principle");
+        }
+
+        public void Delete(string path)
         {
             if (IsChanging)
             {
-                File.Copy(sourceFileName, destFileName);
+                File.Delete(path);
             }
             else
             {
-                _logger.LogTrace($"File.Copy({sourceFileName}, {destFileName});");
+                _logger.LogTrace($"File.Delete({path});");
             }
         }
 
         public override string ToString()
         {
             var message = IsChanging ? "performing" : "simulating";
-            message += " copy";
+            message += " delete";
             return message;
         }
     }
