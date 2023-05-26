@@ -1,6 +1,5 @@
 using System.CommandLine;
 using System.Diagnostics;
-using System.Net;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -113,7 +112,10 @@ internal class CommandLine
     {
         void SortImagesByExif(DirectoryInfo sourcePath, DirectoryInfo destinationPath, bool force, bool move)
         {
-            Run(new SortImageByExif(_logger, sourcePath, destinationPath, _extensions, force, move));
+            var operationPerformer = OperationPerformerFactory.GetOperationPerformer(_logger, force, move);
+            var deleteDirectoryPerformer = new DeleteDirectoryOperation(_logger, force);
+
+            Run(new SortImageByExif(_logger, sourcePath, destinationPath, _extensions, operationPerformer, deleteDirectoryPerformer));
         }
 
         var rearrangeByExifCommand = new Command("rearrangeByExif",

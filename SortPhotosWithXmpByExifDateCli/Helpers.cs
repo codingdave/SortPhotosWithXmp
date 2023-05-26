@@ -78,7 +78,7 @@ public static class Helpers
     }
 
     public static void MoveImageAndXmpToExifPath(ILogger logger, FileInfo imageFile, FileInfo[] xmpFiles, DateTime dateTime,
-        DirectoryInfo destinationDirectory, FilesFoundStatistics statistics, bool force, bool move)
+        DirectoryInfo destinationDirectory, FilesFoundStatistics statistics, IFileOperation operationPerformer)
     {
         var destinationSuffix = dateTime.ToString("yyyy/MM/dd");
         var finalDestinationPath = Path.Combine(destinationDirectory.FullName, destinationSuffix);
@@ -99,28 +99,7 @@ public static class Helpers
 
             if (!targetName.Exists)
             {
-                if (force)
-                {
-                    if (move)
-                    {
-                        Move(file.FullName, targetName.FullName);
-                    }
-                    else
-                    {
-                        Copy(file.FullName, targetName.FullName);
-                    }
-                }
-                else
-                {
-                    if (move)
-                    {
-                        logger.LogInformation($"File.Move({file.FullName}, {targetName});");
-                    }
-                    else
-                    {
-                        logger.LogInformation($"File.Copy({file.FullName}, {targetName});");
-                    }
-                }
+                operationPerformer.ChangeFile(file.FullName, targetName.FullName);
             }
             else
             {
@@ -139,7 +118,7 @@ public static class Helpers
         File.Move(sourceFileName, destFileName);
     }
 
-    public static void RecursivelyDeleteEmptyDirectories(DirectoryInfo directory, DirectoriesDeletedStatistics statistics, bool force, bool isFirstRun = true)
+    public static void RecursivelyDeleteEmptyDirectories(DirectoryInfo directory, DirectoriesDeletedStatistics statistics, DeleteDirectoryOperation deleteDirectoryPerformer, bool isFirstRun = true)
     {
         void DeleteDirectoryIfEmpty(DirectoryInfo d)
         {
@@ -148,16 +127,13 @@ public static class Helpers
                !d.GetFiles().Any())
             {
                 statistics.DirectoriesDeleted++;
-                if (force)
-                {
-                    Directory.Delete(d.FullName, false);
-                }
+                deleteDirectoryPerformer.DeleteDirectory(d.FullName);
             }
         }
 
         foreach (var d in directory.GetDirectories())
         {
-            RecursivelyDeleteEmptyDirectories(d, statistics, false);
+            RecursivelyDeleteEmptyDirectories(d, statistics, deleteDirectoryPerformer);
             DeleteDirectoryIfEmpty(d);
         }
 

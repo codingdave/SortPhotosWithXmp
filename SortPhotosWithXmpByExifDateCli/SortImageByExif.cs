@@ -1,7 +1,5 @@
-using System.Diagnostics;
 using MetadataExtractor;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using SortPhotosWithXmpByExifDateCli.Statistics;
 
 namespace SortPhotosWithXmpByExifDateCli;
@@ -12,17 +10,22 @@ internal class SortImageByExif : IRun
     private readonly DirectoryInfo _sourceDirectory;
     private readonly IEnumerable<string> _extensions;
     private readonly FilesFoundStatistics _statistics;
-    private readonly bool _force;
-    private readonly bool _move;
+    private readonly IFileOperation _operationPerformer;
+    private readonly DeleteDirectoryOperation _deleteDirectoryPerformer;
 
-    internal SortImageByExif(ILogger logger, DirectoryInfo sourceDirectoryInfo, DirectoryInfo destinationDirectoryInfo, IEnumerable<string> extensions, bool force, bool move)
+    internal SortImageByExif(ILogger logger,
+                             DirectoryInfo sourceDirectoryInfo,
+                             DirectoryInfo destinationDirectoryInfo,
+                             IEnumerable<string> extensions,
+                             IFileOperation operationPerformer,
+                             DeleteDirectoryOperation deleteDirectoryPerformer)
     {
         _sourceDirectory = sourceDirectoryInfo ?? throw new ArgumentNullException(nameof(sourceDirectoryInfo));
         _destinationDirectory = destinationDirectoryInfo ?? throw new ArgumentNullException(nameof(destinationDirectoryInfo));
         _extensions = extensions;
-        _force = force;
-        _move = move;
-        _statistics = new FilesFoundStatistics(logger, force, move);
+        _statistics = new FilesFoundStatistics(logger, operationPerformer);
+        _operationPerformer = operationPerformer;
+        _deleteDirectoryPerformer = deleteDirectoryPerformer;
     }
 
     private IEnumerable<FileInfo> GetFileInfos() =>
@@ -32,8 +35,7 @@ internal class SortImageByExif : IRun
     public IStatistics Run(ILogger logger)
     {
         DateTimeResolver dateTimeResolver = new(logger);
-        var operation = _move ? "move" : "copy";
-        logger.LogInformation($"Starting {nameof(SortPhotosWithXmpByExifDateCli)}.{nameof(Run)} with search path: '{_sourceDirectory}' and destination path '{_destinationDirectory}'. force: {_force}, operation: {operation}");
+        logger.LogInformation($"Starting {nameof(SortPhotosWithXmpByExifDateCli)}.{nameof(Run)} with search path: '{_sourceDirectory}' and destination path '{_destinationDirectory}'. {_operationPerformer}");
 
         foreach (var fileInfo in GetFileInfos())
         {
@@ -51,7 +53,7 @@ internal class SortImageByExif : IRun
                 {
                     logger.LogTrace("Extracted date {date} from {file}", dateTime, fileInfo.FullName);
                     var xmpFiles = Helpers.GetCorrespondingXmpFiles(fileInfo);
-                    Helpers.MoveImageAndXmpToExifPath(logger, fileInfo, xmpFiles, dateTime, _destinationDirectory, _statistics, _force, _move);
+                    Helpers.MoveImageAndXmpToExifPath(logger, fileInfo, xmpFiles, dateTime, _destinationDirectory, _statistics, _operationPerformer);
                 }
                 else
                 {
@@ -66,11 +68,11 @@ internal class SortImageByExif : IRun
             {
                 logger.LogError("Failed processing {filename}: {stacktrace}", fileInfo, e.StackTrace);
                 _statistics.AddError(new ExceptionError(fileInfo, e));
-            }             
+            }
         }
 
-        var statistics = new DirectoriesDeletedStatistics(logger, _force);
-        Helpers.RecursivelyDeleteEmptyDirectories(_sourceDirectory, statistics, _force);
+        var statistics = new DirectoriesDeletedStatistics(logger, _deleteDirectoryPerformer);
+        Helpers.RecursivelyDeleteEmptyDirectories(_sourceDirectory, statistics, _deleteDirectoryPerformer);
         return new FilesAndDirectoriesStatistics(_statistics, statistics);
     }
 }

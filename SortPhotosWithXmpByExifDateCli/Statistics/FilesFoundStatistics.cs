@@ -5,10 +5,9 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics;
 public class FilesFoundStatistics : IStatistics, IModifiableErrorCollection, IFoundStatistics
 {
     private readonly ILogger _logger;
-    private readonly bool _force;
-    private readonly bool _move;
-    public FilesFoundStatistics(ILogger logger, bool force, bool move) =>
-    (_logger, _force, _move, _errors) = (logger, force, move, new ErrorCollection(logger));
+    private readonly IFileOperation _operationPerformer;
+    public FilesFoundStatistics(ILogger logger, IFileOperation operationPerformer) =>
+    (_logger, _operationPerformer, _errors) = (logger, operationPerformer, new ErrorCollection(logger));
 
     public int FoundXmps { get; set; }
     public int FoundImages { get; set; }
@@ -25,15 +24,9 @@ public class FilesFoundStatistics : IStatistics, IModifiableErrorCollection, IFo
 
     public void Log()
     {
-        if (_force)
-        {
-            var operation = _move ? "moved" : "copied";
-            _logger.LogInformation("-> Found and {operation} {FoundImages} images and {FoundXmps} xmps. Skipped {SkippedImages} images and {SkippedXmps} xmps", operation, FoundImages, FoundXmps, SkippedImages, SkippedXmps);
-        }
-        else
-        {
-            _logger.LogInformation("-> Found {FoundImages} images and {FoundXmps} xmps. Since we are running in dry mode no action has been performed", FoundImages, FoundXmps);
-        }
+        // if (_operationPerformer)
+        var operation = _operationPerformer.ToString(); // performing/simulating move/copy
+        _logger.LogInformation("-> {operation}. Found {FoundImages} individual images and {FoundXmps} xmps ({SkippedImages}/{SkippedXmps} duplicates).", operation, FoundImages, FoundXmps, SkippedImages, SkippedXmps);
 
         foreach (var error in FileErrors.Errors)
         {

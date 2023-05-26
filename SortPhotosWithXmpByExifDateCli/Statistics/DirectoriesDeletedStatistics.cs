@@ -1,3 +1,4 @@
+using System.Data;
 using MetadataExtractor;
 using Microsoft.Extensions.Logging;
 
@@ -5,13 +6,13 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics;
 
 public class DirectoriesDeletedStatistics : IStatistics
 {
-    private readonly bool _force;
+    private readonly DeleteDirectoryOperation _deleteDirectoryPerformer;
     private readonly ILogger _logger;
 
-    public DirectoriesDeletedStatistics(ILogger logger, bool force)
+    public DirectoriesDeletedStatistics(ILogger logger, DeleteDirectoryOperation deleteDirectoryPerformer)
     {
         _logger = logger;
-        _force = force;
+        _deleteDirectoryPerformer = deleteDirectoryPerformer;
         FileErrors = new ErrorCollection(logger);
     }
 
@@ -22,14 +23,7 @@ public class DirectoriesDeletedStatistics : IStatistics
 
     public void Log()
     {
-        var info = "-> Found {DirectoriesFound} directories";
-
-        info += DirectoriesDeleted switch
-        {
-            > 0 when _force => ", deleted {DirectoriesDeleted} directories",
-            _ => ", skipped deleting {DirectoriesDeleted} directories due to dry run",
-        };
-        _logger.LogInformation(info, DirectoriesFound, DirectoriesDeleted);
+        _logger.LogInformation("-> {operation}. Found {DirectoriesFound} directories", _deleteDirectoryPerformer.ToString(), DirectoriesFound, DirectoriesDeleted);
 
         foreach (var error in FileErrors.Errors)
         {
