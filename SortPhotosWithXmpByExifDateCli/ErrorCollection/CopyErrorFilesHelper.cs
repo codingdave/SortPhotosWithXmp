@@ -18,72 +18,55 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
             CollectMetadataErrors(logger, errorCollection.Errors.OfType<MetaDataError>(), moveFileOperation);
         }
 
-        private static void CollectMetadataErrors(ILogger logger, IEnumerable<MetaDataError> errors, MoveFileOperation moveFileOperation)
+        private static void CollectMetadataErrors(ILogger logger,
+                                                  IEnumerable<MetaDataError> errors,
+                                                  MoveFileOperation moveFileOperation)
         {
-#warning This is pretty much a copy. Extract identical base.
             if (errors.Any())
             {
-                var baseDirectory = new DirectoryInfo(nameof(MetaDataError));
-                logger.LogError($"Issue when reading metadata. Please check {baseDirectory.FullName}");
-
-                RenamePossiblyExistingDirectory(logger, baseDirectory);
-                CreateDirectory(logger, baseDirectory);
-
-                logger.LogTrace($"Move {errors.Count()} files to {baseDirectory.FullName}");
-                foreach (var error in errors)
-                {
-                    try
-                    {
-                        string filenameWithExtension = error.FileInfo.Name;
-                        var (filename, extension) = SplitFileNameAndExtension(filenameWithExtension);
-                        var directoryInfo = new DirectoryInfo(Path.Combine(baseDirectory.FullName, filename));
-                        var fileInfo = new FileInfo(Path.Combine(baseDirectory.FullName, filenameWithExtension));
-
-                        // 1: make sure directory exists
-                        CreateDirectory(logger, directoryInfo, fileInfo);
-
-                        // 2: move the already copied file to the other duplicates s.t. we can investigate easily
-                        Move(logger, error, directoryInfo, fileInfo, moveFileOperation);
-                    }
-                    catch (Exception e)
-                    {
-                        logger.LogExceptionError(e);
-                    }
-                }
+                var directoryName = nameof(MetaDataError);
+                MoveIssuesToCommonDirectory(logger, errors, moveFileOperation, directoryName);
             }
         }
 
-        private static void CollectNoTimeFoundErrors(ILogger logger, IEnumerable<NoTimeFoundError> errors, MoveFileOperation moveFileOperation)
+        private static void CollectNoTimeFoundErrors(ILogger logger,
+                                                     IEnumerable<NoTimeFoundError> errors,
+                                                     MoveFileOperation moveFileOperation)
         {
-#warning This is pretty much a copy. Extract identical base.
             if (errors.Any())
             {
-                var baseDirectory = new DirectoryInfo(nameof(NoTimeFoundError));
-                logger.LogError($"Could not detect time information from all images. Please check {baseDirectory.FullName}");
+                var directoryName = nameof(NoTimeFoundError);
+                MoveIssuesToCommonDirectory(logger, errors, moveFileOperation, directoryName);
+            }
+        }
 
-                RenamePossiblyExistingDirectory(logger, baseDirectory);
-                CreateDirectory(logger, baseDirectory);
+        private static void MoveIssuesToCommonDirectory(ILogger logger, IEnumerable<ErrorBase> errors, MoveFileOperation moveFileOperation, string directoryName)
+        {
 
-                logger.LogTrace($"Move {errors.Count()} files to {baseDirectory.FullName}");
-                foreach (var error in errors)
+            var baseDirectory = new DirectoryInfo(directoryName);
+            logger.LogError($"{errors.Count()} {directoryName} issues will be located in {baseDirectory.FullName}");
+
+            RenamePossiblyExistingDirectory(logger, baseDirectory);
+            CreateDirectory(logger, baseDirectory);
+
+            foreach (var error in errors)
+            {
+                try
                 {
-                    try
-                    {
-                        string filenameWithExtension = error.FileInfo.Name;
-                        var (filename, extension) = SplitFileNameAndExtension(filenameWithExtension);
-                        var directoryInfo = new DirectoryInfo(Path.Combine(baseDirectory.FullName, filename));
-                        var fileInfo = new FileInfo(Path.Combine(baseDirectory.FullName, filenameWithExtension));
+                    string filenameWithExtension = error.FileInfo.Name;
+                    var (filename, extension) = SplitFileNameAndExtension(filenameWithExtension);
+                    var directoryInfo = new DirectoryInfo(Path.Combine(baseDirectory.FullName, filename));
+                    var fileInfo = new FileInfo(Path.Combine(baseDirectory.FullName, filenameWithExtension));
 
-                        // 1: make sure directory exists
-                        CreateDirectory(logger, directoryInfo, fileInfo);
+                    // 1: make sure directory exists
+                    CreateDirectory(logger, directoryInfo, fileInfo);
 
-                        // 2: move the already copied file to the other duplicates s.t. we can investigate easily
-                        Move(logger, error, directoryInfo, fileInfo, moveFileOperation);
-                    }
-                    catch (Exception e)
-                    {
-                        logger.LogExceptionError(e);
-                    }
+                    // 2: move the already copied file to the other duplicates s.t. we can investigate easily
+                    Move(logger, error, directoryInfo, fileInfo, moveFileOperation);
+                }
+                catch (Exception e)
+                {
+                    logger.LogExceptionError(e);
                 }
             }
         }
@@ -94,7 +77,7 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
                                               CopyFileOperation copyFileOperation,
                                               MoveFileOperation moveFileOperation)
         {
-            var deleteFileOperation = new DeleteFileOperation(copyFileOperation.IsChanging);
+            var deleteFileOperation = new DeleteFileOperation(logger, copyFileOperation.IsChanging);
             if (errors.Any())
             {
                 var errorBaseDirectory = new DirectoryInfo(nameof(FileAlreadyExistsError));
