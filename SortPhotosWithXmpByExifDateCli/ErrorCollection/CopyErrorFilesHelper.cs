@@ -14,28 +14,17 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
             var copyFileOperation = new CopyFileOperation(logger, statistics.FileOperation.IsChanging);
             var moveFileOperation = new MoveFileOperation(logger, statistics.FileOperation.IsChanging);
             CollectCollisions(logger, statistics, errorCollection.Errors.OfType<FileAlreadyExistsError>(), copyFileOperation, moveFileOperation);
-            CollectNoTimeFoundErrors(logger, errorCollection.Errors.OfType<NoTimeFoundError>(), moveFileOperation);
-            CollectMetadataErrors(logger, errorCollection.Errors.OfType<MetaDataError>(), moveFileOperation);
+            CollectErrors(logger, errorCollection.Errors.OfType<NoTimeFoundError>(), moveFileOperation);
+            CollectErrors(logger, errorCollection.Errors.OfType<MetaDataError>(), moveFileOperation);
         }
 
-        private static void CollectMetadataErrors(ILogger logger,
-                                                  IEnumerable<MetaDataError> errors,
-                                                  MoveFileOperation moveFileOperation)
+        private static void CollectErrors<T>(ILogger logger,
+                                             IEnumerable<T> errors,
+                                             MoveFileOperation moveFileOperation) where T: ErrorBase
         {
             if (errors.Any())
             {
-                var directoryName = nameof(MetaDataError);
-                MoveIssuesToCommonDirectory(logger, errors, moveFileOperation, directoryName);
-            }
-        }
-
-        private static void CollectNoTimeFoundErrors(ILogger logger,
-                                                     IEnumerable<NoTimeFoundError> errors,
-                                                     MoveFileOperation moveFileOperation)
-        {
-            if (errors.Any())
-            {
-                var directoryName = nameof(NoTimeFoundError);
+                var directoryName = nameof(T);
                 MoveIssuesToCommonDirectory(logger, errors, moveFileOperation, directoryName);
             }
         }
