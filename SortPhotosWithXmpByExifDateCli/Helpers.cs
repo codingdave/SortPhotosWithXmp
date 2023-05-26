@@ -108,16 +108,6 @@ public static class Helpers
         }
     }
 
-    public static void Copy(string sourceFileName, string destFileName)
-    {
-        File.Copy(sourceFileName, destFileName);
-    }
-
-    public static void Move(string sourceFileName, string destFileName)
-    {
-        File.Move(sourceFileName, destFileName);
-    }
-
     public static void RecursivelyDeleteEmptyDirectories(DirectoryInfo directory, DirectoriesDeletedStatistics statistics, DeleteDirectoryOperation deleteDirectoryPerformer, bool isFirstRun = true)
     {
         void DeleteDirectoryIfEmpty(DirectoryInfo d)

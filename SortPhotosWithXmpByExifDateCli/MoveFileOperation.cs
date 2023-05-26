@@ -2,11 +2,11 @@ using Microsoft.Extensions.Logging;
 
 namespace SortPhotosWithXmpByExifDateCli
 {
-    public class CopyOperationPerformer : IFileOperation
+    public class MoveFileOperation : IFileOperation
     {
         private readonly ILogger _logger;
-        
-        public CopyOperationPerformer(ILogger logger, bool force)
+
+        internal MoveFileOperation(ILogger logger, bool force)
         {
             _logger = logger;
             IsChanging = force;
@@ -18,19 +18,18 @@ namespace SortPhotosWithXmpByExifDateCli
         {
             if (IsChanging)
             {
-                File.Copy(sourceFileName, destFileName);
+                File.Move(sourceFileName, destFileName);
             }
             else
             {
-                _logger.LogInformation($"File.Copy({sourceFileName}, {destFileName});");
+                _logger.LogInformation($"File.Move({sourceFileName}, {destFileName});");
             }
         }
-
 
         public override string ToString()
         {
             var message = IsChanging ? "performing" : "simulating";
-            message += " copy";
+            message += " move";
             return message;
         }
     }

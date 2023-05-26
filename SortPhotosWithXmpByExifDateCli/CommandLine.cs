@@ -16,6 +16,7 @@ internal class CommandLine
         ".nef",
         ".gif",
         ".png",
+        ".psd",
         ".cr3",
         ".arw",
         ".mp4",
@@ -228,8 +229,7 @@ internal class CommandLine
         }
         catch (Exception e)
         {
-            _logger.LogError(e.Message);
-            _logger.LogTrace(e.StackTrace);
+            _logger.LogError(e);
         };
     }
 }

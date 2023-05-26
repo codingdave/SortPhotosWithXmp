@@ -2,12 +2,12 @@ using Microsoft.Extensions.Logging;
 
 namespace SortPhotosWithXmpByExifDateCli.Statistics;
 
-public class FilesFoundStatistics : IStatistics, IModifiableErrorCollection, IFoundStatistics
+public class FilesFoundStatistics : IStatistics, IModifiableErrorCollection, IFoundStatistics, IFileOperationStatistics
 {
     private readonly ILogger _logger;
-    private readonly IFileOperation _operationPerformer;
-    public FilesFoundStatistics(ILogger logger, IFileOperation operationPerformer) =>
-    (_logger, _operationPerformer, _errors) = (logger, operationPerformer, new ErrorCollection(logger));
+    public IFileOperation FileOperation { get; }
+    public FilesFoundStatistics(ILogger logger, IFileOperation fileOperation) =>
+    (_logger, FileOperation, _errors) = (logger, fileOperation, new ErrorCollection(logger));
 
     public int FoundXmps { get; set; }
     public int FoundImages { get; set; }
@@ -25,7 +25,7 @@ public class FilesFoundStatistics : IStatistics, IModifiableErrorCollection, IFo
     public void Log()
     {
         // if (_operationPerformer)
-        var operation = _operationPerformer.ToString(); // performing/simulating move/copy
+        var operation = FileOperation.ToString(); // performing/simulating move/copy
         _logger.LogInformation("-> {operation}. Found {FoundImages} individual images and {FoundXmps} xmps ({SkippedImages}/{SkippedXmps} duplicates).", operation, FoundImages, FoundXmps, SkippedImages, SkippedXmps);
 
         foreach (var error in FileErrors.Errors)
@@ -39,8 +39,7 @@ public class FilesFoundStatistics : IStatistics, IModifiableErrorCollection, IFo
                     _logger.LogError("{FileInfo}. {ErrorMessage}", error.FileInfo, error.ErrorMessage + Environment.NewLine + error);
                     break;
                 case ImageProcessingExceptionError ipe:
-                    _logger.LogError("{FileInfo}. {ErrorMessage}", error.FileInfo, error.ErrorMessage);
-                    _logger.LogTrace("{Stacktrace}", ipe.Exception.StackTrace);
+                    _logger.LogError(error.FileInfo.FullName, ipe);
                     break;
                 case FileAlreadyExistsError:
                     // nothing to do over here

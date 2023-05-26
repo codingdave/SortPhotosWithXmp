@@ -6,13 +6,13 @@ namespace SortPhotosWithXmpByExifDateCli
     {
         internal static IFileOperation GetOperationPerformer(ILogger logger, bool force, bool move)
         {
-            if (force)
+            if (move)
             {
-                return new MoveOperationPerformer(logger, force);
+                return new MoveFileOperation(logger, force);
             }
             else
             {
-                return new CopyOperationPerformer(logger, force);
+                return new CopyFileOperation(logger, force);
             }
         }
     }

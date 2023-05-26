@@ -11,12 +11,14 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
     {
         public static void HandleErrorFiles(this IReadOnlyErrorCollection errorCollection, ILogger logger, IFoundStatistics statistics)
         {
-            CollectCollisions(logger, statistics, errorCollection.Errors.OfType<FileAlreadyExistsError>());
-            CollectNoTimeFoundErrors(logger, errorCollection.Errors.OfType<NoTimeFoundError>());
-            CollectMetadataErrors(logger, errorCollection.Errors.OfType<MetaDataError>());
+            var copyFileOperation = new CopyFileOperation(logger, statistics.FileOperation.IsChanging);
+            var moveFileOperation = new MoveFileOperation(logger, statistics.FileOperation.IsChanging);
+            CollectCollisions(logger, statistics, errorCollection.Errors.OfType<FileAlreadyExistsError>(), copyFileOperation, moveFileOperation);
+            CollectNoTimeFoundErrors(logger, errorCollection.Errors.OfType<NoTimeFoundError>(), moveFileOperation);
+            CollectMetadataErrors(logger, errorCollection.Errors.OfType<MetaDataError>(), moveFileOperation);
         }
 
-        private static void CollectMetadataErrors(ILogger logger, IEnumerable<MetaDataError> errors)
+        private static void CollectMetadataErrors(ILogger logger, IEnumerable<MetaDataError> errors, MoveFileOperation moveFileOperation)
         {
 #warning This is pretty much a copy. Extract identical base.
             if (errors.Any())
@@ -30,21 +32,28 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
                 logger.LogTrace($"Move {errors.Count()} files to {baseDirectory.FullName}");
                 foreach (var error in errors)
                 {
-                    string filenameWithExtension = error.FileInfo.Name;
-                    var (filename, extension) = SplitFileNameAndExtension(filenameWithExtension);
-                    var directoryInfo = new DirectoryInfo(Path.Combine(baseDirectory.FullName, filename));
-                    var fileInfo = new FileInfo(Path.Combine(baseDirectory.FullName, filenameWithExtension));
+                    try
+                    {
+                        string filenameWithExtension = error.FileInfo.Name;
+                        var (filename, extension) = SplitFileNameAndExtension(filenameWithExtension);
+                        var directoryInfo = new DirectoryInfo(Path.Combine(baseDirectory.FullName, filename));
+                        var fileInfo = new FileInfo(Path.Combine(baseDirectory.FullName, filenameWithExtension));
 
-                    // 1: make sure directory exists
-                    CreateDirectory(logger, directoryInfo, fileInfo);
+                        // 1: make sure directory exists
+                        CreateDirectory(logger, directoryInfo, fileInfo);
 
-                    // 2: move the already copied file to the other duplicates s.t. we can investigate easily
-                    Move(logger, error, directoryInfo, fileInfo);
+                        // 2: move the already copied file to the other duplicates s.t. we can investigate easily
+                        Move(logger, error, directoryInfo, fileInfo, moveFileOperation);
+                    }
+                    catch (Exception e)
+                    {
+                        logger.LogError(e);
+                    }
                 }
             }
         }
 
-        private static void CollectNoTimeFoundErrors(ILogger logger, IEnumerable<NoTimeFoundError> errors)
+        private static void CollectNoTimeFoundErrors(ILogger logger, IEnumerable<NoTimeFoundError> errors, MoveFileOperation moveFileOperation)
         {
 #warning This is pretty much a copy. Extract identical base.
             if (errors.Any())
@@ -58,21 +67,32 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
                 logger.LogTrace($"Move {errors.Count()} files to {baseDirectory.FullName}");
                 foreach (var error in errors)
                 {
-                    string filenameWithExtension = error.FileInfo.Name;
-                    var (filename, extension) = SplitFileNameAndExtension(filenameWithExtension);
-                    var directoryInfo = new DirectoryInfo(Path.Combine(baseDirectory.FullName, filename));
-                    var fileInfo = new FileInfo(Path.Combine(baseDirectory.FullName, filenameWithExtension));
+                    try
+                    {
+                        string filenameWithExtension = error.FileInfo.Name;
+                        var (filename, extension) = SplitFileNameAndExtension(filenameWithExtension);
+                        var directoryInfo = new DirectoryInfo(Path.Combine(baseDirectory.FullName, filename));
+                        var fileInfo = new FileInfo(Path.Combine(baseDirectory.FullName, filenameWithExtension));
 
-                    // 1: make sure directory exists
-                    CreateDirectory(logger, directoryInfo, fileInfo);
+                        // 1: make sure directory exists
+                        CreateDirectory(logger, directoryInfo, fileInfo);
 
-                    // 2: move the already copied file to the other duplicates s.t. we can investigate easily
-                    Move(logger, error, directoryInfo, fileInfo);
+                        // 2: move the already copied file to the other duplicates s.t. we can investigate easily
+                        Move(logger, error, directoryInfo, fileInfo, moveFileOperation);
+                    }
+                    catch (Exception e)
+                    {
+                        logger.LogError(e);
+                    }
                 }
             }
         }
 
-        private static void CollectCollisions(ILogger logger, IFoundStatistics statistics, IEnumerable<FileAlreadyExistsError> errors)
+        private static void CollectCollisions(ILogger logger,
+                                              IFoundStatistics statistics,
+                                              IEnumerable<FileAlreadyExistsError> errors,
+                                              CopyFileOperation copyFileOperation,
+                                              MoveFileOperation moveFileOperation)
         {
             if (errors.Any())
             {
@@ -85,21 +105,30 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
                 logger.LogTrace($"Copy {errors.Count()} files to {errorBaseDirectory.FullName}");
                 foreach (var error in errors)
                 {
-                    if (IsDuplicate(logger, error, statistics))
+                    try
                     {
-                        logger.LogDebug($"removing duplicate {error.OtherFile} of {error.FileInfo}");
+                        if (IsDuplicate(logger, error, statistics))
+                        {
+                            logger.LogDebug($"removing duplicate {error.OtherFile} of {error.FileInfo}");
 #warning Deleting duplicate
-                        error.OtherFile.Delete();
+                            error.OtherFile.Delete();
+                        }
+                        else
+                        {
+                            HandleCollision(logger, errorBaseDirectory, error, copyFileOperation, moveFileOperation);
+                        }
                     }
-                    else
+                    catch (Exception e)
                     {
-                        HandleCollision(logger, errorBaseDirectory, error);
+                        logger.LogError(e);
                     }
                 }
             }
         }
 
-        private static bool IsDuplicate(ILogger logger, FileAlreadyExistsError error, IFoundStatistics statistics)
+        private static bool IsDuplicate(ILogger logger,
+                                        FileAlreadyExistsError error,
+                                        IFoundStatistics statistics)
         {
             // when are 2 images identical?
             var isDuplicate = false;
@@ -125,7 +154,8 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
             return isDuplicate;
         }
 
-        private static bool AreXmpsDuplicates(FileAlreadyExistsError error, IFoundStatistics statistics)
+        private static bool AreXmpsDuplicates(FileAlreadyExistsError error,
+                                              IFoundStatistics statistics)
         {
             // xmps are identical, if their hash is identical
 
@@ -145,7 +175,9 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
             return isHashIdentical;
         }
 
-        private static bool AreImagesDuplicates(ILogger logger, FileAlreadyExistsError error, IFoundStatistics statistics)
+        private static bool AreImagesDuplicates(ILogger logger,
+                                                FileAlreadyExistsError error,
+                                                IFoundStatistics statistics)
         {
             bool isDuplicate = false;
 
@@ -168,14 +200,17 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
             }
             catch (Exception e)
             {
-                logger.LogError(e.ToString());
-                logger.LogTrace(e.StackTrace);
+                logger.LogError(e);
             }
 
             return isDuplicate;
         }
 
-        private static void HandleCollision(ILogger logger, DirectoryInfo errorBaseDirectory, FileAlreadyExistsError error)
+        private static void HandleCollision(ILogger logger,
+                                            DirectoryInfo errorBaseDirectory,
+                                            FileAlreadyExistsError error,
+                                            CopyFileOperation copyFileOperation,
+                                            MoveFileOperation moveFileOperation)
         {
             logger.LogTrace($"Handling collision between {error.FileInfo} and {error.OtherFile}!");
 
@@ -205,13 +240,17 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
             CreateDirectory(logger, directoryInfo, fileInfo);
 
             // 2: move the already copied file to the other duplicates s.t. we can investigate easily
-            Move(logger, error, directoryInfo, fileInfo);
+            Move(logger, error, directoryInfo, fileInfo, moveFileOperation);
 
             // 3: copy the other file into subdirectory with appended _number
-            CopyFileWithAppendedNumber(logger, error.OtherFile, fileInfo, filename, extension);
+            CopyFileWithAppendedNumber(logger, error.OtherFile, fileInfo, filename, extension, copyFileOperation);
         }
 
-        private static void Move(ILogger logger, ErrorBase error, DirectoryInfo collisionDirectoryInfo, FileInfo collisionFileInfo)
+        private static void Move(ILogger logger,
+                                 ErrorBase error,
+                                 DirectoryInfo collisionDirectoryInfo,
+                                 FileInfo collisionFileInfo,
+                                 MoveFileOperation moveFileOperation)
         {
             var targetPath = Path.Combine(collisionDirectoryInfo.FullName, collisionFileInfo.Name);
 
@@ -219,7 +258,7 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
             {
                 logger.LogTrace($"Moving {error.FileInfo.FullName} to where we store similar: {targetPath}");
 #warning we move instead of respecting command line parameter
-                Helpers.Move(error.FileInfo.FullName, targetPath);
+                moveFileOperation.ChangeFile(error.FileInfo.FullName, targetPath);
             }
             else
             {
@@ -270,7 +309,12 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
             return ret;
         }
 
-        private static void CopyFileWithAppendedNumber(ILogger logger, FileInfo errorFileInfo, FileInfo collisionFileInfo, string filename, string extension)
+        private static void CopyFileWithAppendedNumber(ILogger logger,
+                                                       FileInfo errorFileInfo,
+                                                       FileInfo collisionFileInfo,
+                                                       string filename,
+                                                       string extension,
+                                                       CopyFileOperation copyFileOperation)
         {
             // copy this file into subdirectory with appended _number
             var directory = collisionFileInfo.Directory ?? throw new InvalidOperationException("Directory does not exist");
@@ -278,7 +322,7 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
             var fileCount = Directory.GetFiles(subdirectory, "*" + extension).Length;
             var fullname = Path.Combine(subdirectory, filename + "_" + fileCount + extension);
             logger.LogDebug("Collision for {errorFileInfo}. Copy next to others as {fullname}", errorFileInfo, fullname);
-            Helpers.Copy(errorFileInfo.FullName, fullname);
+            copyFileOperation.ChangeFile(errorFileInfo.FullName, fullname);
         }
     }
 }

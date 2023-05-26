@@ -21,6 +21,8 @@ public class FilesAndDirectoriesStatistics : IStatistics, IFoundStatistics
     public int SkippedXmps { get { return _imagesStatistics.SkippedXmps; } set { _imagesStatistics.SkippedXmps = value; } }
     public int SkippedImages { get { return _imagesStatistics.SkippedImages; } set { _imagesStatistics.SkippedImages = value; } }
 
+    public IFileOperation FileOperation => _imagesStatistics.FileOperation;
+
     public void Log()
     {
         _imagesStatistics.Log();

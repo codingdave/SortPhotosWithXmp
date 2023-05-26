@@ -81,8 +81,7 @@ public class DateTimeResolver
                             }
                             catch (Exception e)
                             {
-                                _logger.LogWarning(e.Message + $" with {format}");
-                                _logger.LogTrace(e.StackTrace);
+                                _logger.LogWarning($"using format {format}:", e);
 
                                 try
                                 {
