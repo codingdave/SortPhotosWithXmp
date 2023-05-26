@@ -22,7 +22,7 @@ namespace SortPhotosWithXmpByExifDateCli
             }
             else
             {
-                _logger.LogInformation("Directory.Delete({path});", path);
+                _logger.LogTrace("Directory.Delete({path});", path);
             }
         }
 

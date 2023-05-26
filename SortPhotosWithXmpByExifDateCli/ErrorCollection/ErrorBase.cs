@@ -18,4 +18,9 @@ public abstract class ErrorBase : IError
     {
         _messages = _messages.Append(errorMessage);
     }
+
+    public override string ToString()
+    {
+        return $"{FileInfo}. {ErrorMessage}";
+    }
 }

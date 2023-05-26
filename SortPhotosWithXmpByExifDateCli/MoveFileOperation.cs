@@ -22,7 +22,7 @@ namespace SortPhotosWithXmpByExifDateCli
             }
             else
             {
-                _logger.LogInformation($"File.Move({sourceFileName}, {destFileName});");
+                _logger.LogTrace($"File.Move({sourceFileName}, {destFileName});");
             }
         }
 

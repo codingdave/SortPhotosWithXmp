@@ -10,6 +10,7 @@ using System.Net;
 using MetadataExtractor.Formats.FileSystem;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using SortPhotosWithXmpByExifDateCli.Statistics;
 
 namespace SortPhotosWithXmpByExifDateCli;
 
@@ -81,7 +82,7 @@ public class DateTimeResolver
                             }
                             catch (Exception e)
                             {
-                                _logger.LogWarning($"using format {format}:", e);
+                                _logger.LogExceptionWarning($"using format {format}:", e);
 
                                 try
                                 {
@@ -90,7 +91,7 @@ public class DateTimeResolver
                                 }
                                 catch (Exception e2)
                                 {
-                                    _logger.LogWarning("DateTime.Parse failed: {exception}", e2);
+                                    _logger.LogExceptionWarning("DateTime.Parse failed: {exception}", e2);
                                 }
                             }
                             finally

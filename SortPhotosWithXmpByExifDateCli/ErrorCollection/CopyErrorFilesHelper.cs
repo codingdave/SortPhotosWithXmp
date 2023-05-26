@@ -47,7 +47,7 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
                     }
                     catch (Exception e)
                     {
-                        logger.LogError(e);
+                        logger.LogExceptionError(e);
                     }
                 }
             }
@@ -82,7 +82,7 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
                     }
                     catch (Exception e)
                     {
-                        logger.LogError(e);
+                        logger.LogExceptionError(e);
                     }
                 }
             }
@@ -120,7 +120,7 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
                     }
                     catch (Exception e)
                     {
-                        logger.LogError(e);
+                        logger.LogExceptionError(e);
                     }
                 }
             }
@@ -200,7 +200,7 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
             }
             catch (Exception e)
             {
-                logger.LogError(e);
+                logger.LogExceptionError(e);
             }
 
             return isDuplicate;

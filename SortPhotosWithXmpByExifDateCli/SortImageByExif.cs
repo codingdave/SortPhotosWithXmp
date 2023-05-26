@@ -66,8 +66,7 @@ internal class SortImageByExif : IRun
             }
             catch (Exception e)
             {
-                logger.LogError("Failed processing {filename}:", fileInfo);
-                logger.LogError(e);
+                logger.LogExceptionError($"Failed processing {fileInfo}:", e);
                 _statistics.AddError(new ExceptionError(fileInfo, e));
             }
         }
