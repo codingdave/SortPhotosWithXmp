@@ -72,7 +72,7 @@ internal class SortImageByExif : IRun
         }
 
         var statistics = new DirectoriesDeletedStatistics(logger, _deleteDirectoryOperation);
-        Helpers.RecursivelyDeleteEmptyDirectories(_sourceDirectory, _deleteDirectoryOperation);
+        Helpers.RecursivelyDeleteEmptyDirectories(logger, _sourceDirectory, _deleteDirectoryOperation);
         return new FilesAndDirectoriesStatistics(_statistics, statistics);
     }
 }

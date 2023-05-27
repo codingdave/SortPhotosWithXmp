@@ -108,21 +108,31 @@ public static class Helpers
         }
     }
 
-    public static void RecursivelyDeleteEmptyDirectories(DirectoryInfo directory, DeleteDirectoryOperation deleteDirectoryPerformer, bool isFirstRun = true)
+    public static void RecursivelyDeleteEmptyDirectories(ILogger logger, DirectoryInfo directory, DeleteDirectoryOperation deleteDirectoryPerformer, bool isFirstRun = true)
     {
         void DeleteDirectoryIfEmpty(DirectoryInfo d)
         {
-            deleteDirectoryPerformer.Statistics.DirectoriesFound++;
-            if (!d.GetDirectories().Any() &&
-               !d.GetFiles().Any())
+            try
             {
-                deleteDirectoryPerformer.DeleteDirectory(d.FullName);
+                if (d.Exists)
+                {
+                    deleteDirectoryPerformer.Statistics.DirectoriesFound++;
+                    if (!d.GetDirectories().Any() &&
+                       !d.GetFiles().Any())
+                    {
+                        deleteDirectoryPerformer.DeleteDirectory(d.FullName);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                logger.LogExceptionError(e);
             }
         }
 
         foreach (var d in directory.GetDirectories())
         {
-            RecursivelyDeleteEmptyDirectories(d, deleteDirectoryPerformer);
+            RecursivelyDeleteEmptyDirectories(logger, d, deleteDirectoryPerformer);
             DeleteDirectoryIfEmpty(d);
         }
 

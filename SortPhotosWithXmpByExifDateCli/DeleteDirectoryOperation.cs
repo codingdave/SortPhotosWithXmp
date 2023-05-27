@@ -6,18 +6,16 @@ namespace SortPhotosWithXmpByExifDateCli
     public class DeleteDirectoryOperation : IOperation
     {
         private readonly ILogger _logger;
-        private readonly DirectoriesDeletedStatistics _statistics;
 
         public DeleteDirectoryOperation(ILogger logger, bool force)
         {
             _logger = logger;
             IsChanging = force;
-
-            _statistics = new DirectoriesDeletedStatistics(logger, this);
+            Statistics = new DirectoriesDeletedStatistics(logger, this);
         }
 
         public bool IsChanging { get; }
-        public DirectoriesDeletedStatistics Statistics { get; internal set; }
+        public DirectoriesDeletedStatistics Statistics { get; }
 
         public void DeleteDirectory(string path)
         {
@@ -29,7 +27,7 @@ namespace SortPhotosWithXmpByExifDateCli
             {
                 _logger.LogTrace("Directory.Delete({path});", path);
             }
-            _statistics.DirectoriesDeleted++;
+            Statistics.DirectoriesDeleted++;
         }
 
 
