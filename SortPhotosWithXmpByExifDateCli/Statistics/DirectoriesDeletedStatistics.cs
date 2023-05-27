@@ -6,13 +6,13 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics;
 
 public class DirectoriesDeletedStatistics : IStatistics
 {
-    private readonly DeleteDirectoryOperation _deleteDirectoryPerformer;
+    private readonly DeleteDirectoryOperation _deleteDirectoryOperation;
     private readonly ILogger _logger;
 
-    public DirectoriesDeletedStatistics(ILogger logger, DeleteDirectoryOperation deleteDirectoryPerformer)
+    public DirectoriesDeletedStatistics(ILogger logger, DeleteDirectoryOperation deleteDirectoryOperation)
     {
         _logger = logger;
-        _deleteDirectoryPerformer = deleteDirectoryPerformer;
+        _deleteDirectoryOperation = deleteDirectoryOperation;
         FileErrors = new ErrorCollection(logger);
     }
 
@@ -23,7 +23,7 @@ public class DirectoriesDeletedStatistics : IStatistics
 
     public void Log()
     {
-        _logger.LogInformation("-> {operation}. Found {DirectoriesFound}, deleted {DirectoriesDeleted} directories", _deleteDirectoryPerformer.ToString(), DirectoriesFound, DirectoriesDeleted);
+        _logger.LogInformation("-> {operation}. Found {DirectoriesFound}, deleted {DirectoriesDeleted} directories", _deleteDirectoryOperation.ToString(), DirectoriesFound, DirectoriesDeleted);
 
         foreach (var error in FileErrors.Errors)
         {

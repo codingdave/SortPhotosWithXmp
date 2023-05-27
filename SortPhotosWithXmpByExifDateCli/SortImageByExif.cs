@@ -11,7 +11,7 @@ internal class SortImageByExif : IRun
     private readonly IEnumerable<string> _extensions;
     private readonly FilesFoundStatistics _statistics;
     private readonly IFileOperation _operationPerformer;
-    private readonly DeleteDirectoryOperation _deleteDirectoryPerformer;
+    private readonly DeleteDirectoryOperation _deleteDirectoryOperation;
 
     internal SortImageByExif(ILogger logger,
                              DirectoryInfo sourceDirectoryInfo,
@@ -25,7 +25,7 @@ internal class SortImageByExif : IRun
         _extensions = extensions;
         _statistics = new FilesFoundStatistics(logger, operationPerformer);
         _operationPerformer = operationPerformer;
-        _deleteDirectoryPerformer = deleteDirectoryPerformer;
+        _deleteDirectoryOperation = deleteDirectoryPerformer;
     }
 
     private IEnumerable<FileInfo> GetFileInfos() =>
@@ -71,8 +71,8 @@ internal class SortImageByExif : IRun
             }
         }
 
-        var statistics = new DirectoriesDeletedStatistics(logger, _deleteDirectoryPerformer);
-        Helpers.RecursivelyDeleteEmptyDirectories(_sourceDirectory, statistics, _deleteDirectoryPerformer);
+        var statistics = new DirectoriesDeletedStatistics(logger, _deleteDirectoryOperation);
+        Helpers.RecursivelyDeleteEmptyDirectories(_sourceDirectory, _deleteDirectoryOperation);
         return new FilesAndDirectoriesStatistics(_statistics, statistics);
     }
 }
