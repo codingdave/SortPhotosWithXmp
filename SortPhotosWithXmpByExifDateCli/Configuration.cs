@@ -14,7 +14,7 @@ public static class Configuration
     {
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Verbose()
-            .WriteTo.File("logs/log.txt", rollingInterval: RollingInterval.Day, retainedFileCountLimit: 10, restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Verbose)
+            .WriteTo.File("logs/log.txt", /*rollingInterval: RollingInterval.Day, retainedFileCountLimit: 10, */restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Verbose)
             .CreateLogger();
 
         var host = Host.CreateDefaultBuilder()
