@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using Serilog.Configuration;
 using Serilog.Extensions.Logging;
 
 namespace SortPhotosWithXmpByExifDateCli;
@@ -12,8 +13,8 @@ public static class Configuration
     public static IHost CreateHost()
     {
         Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Debug()
-            .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Minute, retainedFileCountLimit: 10)
+            .MinimumLevel.Verbose()
+            .WriteTo.File("logs/log.txt", rollingInterval: RollingInterval.Day, retainedFileCountLimit: 10, restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Verbose)
             .CreateLogger();
 
         var host = Host.CreateDefaultBuilder()
