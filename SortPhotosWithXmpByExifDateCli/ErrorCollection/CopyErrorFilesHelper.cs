@@ -11,90 +11,85 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
     {
         public static void HandleErrorFiles(this IReadOnlyErrorCollection errorCollection, ILogger logger, IFoundStatistics statistics)
         {
-            var copyFileOperation = new CopyFileOperation(logger, statistics.FileOperation.IsChanging);
-            var moveFileOperation = new MoveFileOperation(logger, statistics.FileOperation.IsChanging);
-            CollectCollisions(logger, statistics, errorCollection.Errors.OfType<FileAlreadyExistsError>(), copyFileOperation, moveFileOperation);
-            CollectErrors(logger, errorCollection.Errors.OfType<NoTimeFoundError>(), moveFileOperation);
-            CollectErrors(logger, errorCollection.Errors.OfType<MetaDataError>(), moveFileOperation);
+            CopyFileOperation copyFileOperation = new CopyFileOperation(logger, statistics.FileOperation.IsChanging);
+            MoveFileOperation moveFileOperation = new MoveFileOperation(logger, statistics.FileOperation.IsChanging);
+
+            CollectCollisions(logger, errorCollection.Errors.OfType<FileAlreadyExistsError>(), statistics, copyFileOperation, moveFileOperation, HandleFileAlreadyExistsError);
+            CollectCollisions(logger, errorCollection.Errors.OfType<NoTimeFoundError>(), statistics, copyFileOperation, moveFileOperation, HandleCollisions);
+            CollectCollisions(logger, errorCollection.Errors.OfType<MetaDataError>(), statistics, copyFileOperation, moveFileOperation, HandleCollisions);
+
+            void HandleCollisions<T>(DirectoryInfo baseDirectory, T error) where T : ErrorBase
+            {
+                CreateDirectoryAndMoveFile(logger, moveFileOperation, baseDirectory, error);
+            }
+
+            void HandleFileAlreadyExistsError(DirectoryInfo baseDirectory, FileAlreadyExistsError error)
+            {
+                var deleteFileOperation = new DeleteFileOperation(logger, copyFileOperation.IsChanging);
+                HandleCollisionOrDuplicate(logger, statistics, copyFileOperation, moveFileOperation, deleteFileOperation, baseDirectory, error);
+            }
         }
 
-        private static void CollectErrors<T>(ILogger logger,
-                                             IEnumerable<T> errors,
-                                             MoveFileOperation moveFileOperation) where T: ErrorBase
+        private static void CollectCollisions<T>(ILogger logger,
+                                              IEnumerable<T> errors,
+                                              IFoundStatistics statistics,
+                                              CopyFileOperation copyFileOperation,
+                                              MoveFileOperation moveFileOperation,
+                                              Action<DirectoryInfo, T> action) where T : ErrorBase
         {
             if (errors.Any())
             {
                 var directoryName = nameof(T);
-                MoveIssuesToCommonDirectory(logger, errors, moveFileOperation, directoryName);
-            }
-        }
+                var baseDirectory = new DirectoryInfo(directoryName);
+                logger.LogError($"{errors.Count()} {directoryName} issues will be located in {baseDirectory.FullName}");
 
-        private static void MoveIssuesToCommonDirectory(ILogger logger, IEnumerable<ErrorBase> errors, MoveFileOperation moveFileOperation, string directoryName)
-        {
+                RenamePossiblyExistingDirectory(logger, baseDirectory);
+                CreateDirectory(logger, baseDirectory);
 
-            var baseDirectory = new DirectoryInfo(directoryName);
-            logger.LogError($"{errors.Count()} {directoryName} issues will be located in {baseDirectory.FullName}");
-
-            RenamePossiblyExistingDirectory(logger, baseDirectory);
-            CreateDirectory(logger, baseDirectory);
-
-            foreach (var error in errors)
-            {
-                try
-                {
-                    string filenameWithExtension = error.FileInfo.Name;
-                    var (filename, extension) = SplitFileNameAndExtension(filenameWithExtension);
-                    var directoryInfo = new DirectoryInfo(Path.Combine(baseDirectory.FullName, filename));
-                    var fileInfo = new FileInfo(Path.Combine(baseDirectory.FullName, filenameWithExtension));
-
-                    // 1: make sure directory exists
-                    CreateDirectory(logger, directoryInfo, fileInfo);
-
-                    // 2: move the already copied file to the other duplicates s.t. we can investigate easily
-                    Move(logger, error, directoryInfo, fileInfo, moveFileOperation);
-                }
-                catch (Exception e)
-                {
-                    logger.LogExceptionError(e);
-                }
-            }
-        }
-
-        private static void CollectCollisions(ILogger logger,
-                                              IFoundStatistics statistics,
-                                              IEnumerable<FileAlreadyExistsError> errors,
-                                              CopyFileOperation copyFileOperation,
-                                              MoveFileOperation moveFileOperation)
-        {
-            var deleteFileOperation = new DeleteFileOperation(logger, copyFileOperation.IsChanging);
-            if (errors.Any())
-            {
-                var errorBaseDirectory = new DirectoryInfo(nameof(FileAlreadyExistsError));
-                logger.LogError($"Could not copy all files due to collisions. Please check {errorBaseDirectory.FullName}");
-
-                RenamePossiblyExistingDirectory(logger, errorBaseDirectory);
-                CreateDirectory(logger, errorBaseDirectory);
-
-                logger.LogTrace($"Copy {errors.Count()} files to {errorBaseDirectory.FullName}");
                 foreach (var error in errors)
                 {
                     try
                     {
-                        if (IsDuplicate(logger, error, statistics))
-                        {
-                            logger.LogDebug($"removing duplicate {error.OtherFile} of {error.FileInfo}");
-                            deleteFileOperation.Delete(error.OtherFile.FullName);
-                        }
-                        else
-                        {
-                            HandleCollision(logger, errorBaseDirectory, error, copyFileOperation, moveFileOperation);
-                        }
+                        action(baseDirectory, error);
                     }
                     catch (Exception e)
                     {
                         logger.LogExceptionError(e);
                     }
                 }
+            }
+        }
+
+        private static void CreateDirectoryAndMoveFile(ILogger logger, MoveFileOperation moveFileOperation, DirectoryInfo baseDirectory, ErrorBase error)
+        {
+            string filenameWithExtension = error.FileInfo.Name;
+            var (filename, extension) = SplitFileNameAndExtension(filenameWithExtension);
+            var directoryInfo = new DirectoryInfo(Path.Combine(baseDirectory.FullName, filename));
+            var fileInfo = new FileInfo(Path.Combine(baseDirectory.FullName, filenameWithExtension));
+
+            // 1: make sure directory exists
+            CreateDirectory(logger, directoryInfo);
+
+            // 2: move the already copied file to the other duplicates s.t. we can investigate easily
+            Move(logger, error, directoryInfo, fileInfo, moveFileOperation);
+        }
+
+        private static void HandleCollisionOrDuplicate(ILogger logger,
+                                                       IFoundStatistics statistics,
+                                                       CopyFileOperation copyFileOperation,
+                                                       MoveFileOperation moveFileOperation,
+                                                       DeleteFileOperation deleteFileOperation,
+                                                       DirectoryInfo baseDirectory,
+                                                       FileAlreadyExistsError error)
+        {
+            if (IsDuplicate(logger, error, statistics))
+            {
+                logger.LogDebug($"removing duplicate {error.OtherFile} of {error.FileInfo}");
+                deleteFileOperation.Delete(error.OtherFile.FullName);
+            }
+            else
+            {
+                HandleCollision(logger, baseDirectory, error, copyFileOperation, moveFileOperation);
             }
         }
 
@@ -205,7 +200,7 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
             var fileInfo = new FileInfo(Path.Combine(errorBaseDirectory.FullName, filenameWithExtension));
 
             // 1: make sure directory exists
-            CreateDirectory(logger, directoryInfo, fileInfo);
+            CreateDirectory(logger, directoryInfo);
 
             // 2: move the already copied file to the other duplicates s.t. we can investigate easily
             Move(logger, error, directoryInfo, fileInfo, moveFileOperation);
@@ -233,21 +228,12 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
             }
         }
 
-        private static void CreateDirectory(ILogger logger, DirectoryInfo directoryInfo, FileInfo fileInfo)
+        private static void CreateDirectory(ILogger logger, DirectoryInfo directoryInfo)
         {
             if (!directoryInfo.Exists)
             {
-                logger.LogTrace("Creating {newDirectory}", fileInfo.FullName);
+                logger.LogTrace("Creating {newDirectory}", directoryInfo.FullName);
                 directoryInfo.Create();
-            }
-        }
-
-        private static void CreateDirectory(ILogger logger, DirectoryInfo errorBaseDirectory)
-        {
-            if (!Directory.Exists(errorBaseDirectory.FullName))
-            {
-                logger.LogTrace("Creating {newDirector}", errorBaseDirectory.FullName);
-                Directory.CreateDirectory(errorBaseDirectory.FullName);
             }
         }
 
