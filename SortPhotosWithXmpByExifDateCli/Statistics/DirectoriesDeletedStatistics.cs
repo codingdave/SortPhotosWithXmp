@@ -23,7 +23,7 @@ public class DirectoriesDeletedStatistics : IStatistics
 
     public void Log()
     {
-        _logger.LogInformation("-> {operation}. Found {DirectoriesFound} directories", _deleteDirectoryPerformer.ToString(), DirectoriesFound, DirectoriesDeleted);
+        _logger.LogInformation("-> {operation}. Found {DirectoriesFound}, deleted {DirectoriesDeleted} directories", _deleteDirectoryPerformer.ToString(), DirectoriesFound, DirectoriesDeleted);
 
         foreach (var error in FileErrors.Errors)
         {
