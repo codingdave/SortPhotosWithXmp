@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.IO.Enumeration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -10,11 +11,11 @@ namespace SortPhotosWithXmpByExifDateCli;
 
 public static class Configuration
 {
-    public static IHost CreateHost()
+    public static IHost CreateHost(FileInfo logFileName)
     {
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Verbose()
-            .WriteTo.File("logs/log.txt", /*rollingInterval: RollingInterval.Day, retainedFileCountLimit: 10, */restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Verbose)
+            .WriteTo.File(logFileName.FullName, /*rollingInterval: RollingInterval.Day, retainedFileCountLimit: 10, */restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Verbose)
             .CreateLogger();
 
         var host = Host.CreateDefaultBuilder()
@@ -31,9 +32,10 @@ public static class Configuration
         {
             _ = loggingBuilder.ClearProviders();
             _ = Debugger.IsAttached ? loggingBuilder.AddDebug() : loggingBuilder.AddConsole();
-            _= loggingBuilder.AddSerilog();
+            _ = loggingBuilder.AddSerilog();
         })
         .Build();
+
         return host;
     }
 
