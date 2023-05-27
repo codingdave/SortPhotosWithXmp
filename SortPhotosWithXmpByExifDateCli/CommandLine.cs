@@ -1,6 +1,4 @@
 using System.CommandLine;
-using System.Diagnostics;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -39,20 +37,7 @@ internal class CommandLine
         _offsetOption = OptionsHelper.GetOffsetOption();
         _forceOption = OptionsHelper.GetForceOption();
         _moveOption = OptionsHelper.GetMoveOption();
-        var host = Host.CreateDefaultBuilder()
-        // .ConfigureServices(serviceCollection => { })
-        .ConfigureAppConfiguration(configurationBuilder =>
-        {
-            _ = configurationBuilder
-                .SetBasePath(GetBasePath())
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
-        })
-        .ConfigureLogging(loggingBuilder =>
-        {
-            _ = loggingBuilder.ClearProviders();
-            _ = Debugger.IsAttached ? loggingBuilder.AddDebug() : loggingBuilder.AddConsole();
-        })
-        .Build();
+        IHost host = Configuration.CreateHost();
 
         _logger = host.Services.GetRequiredService<ILogger<CommandLine>>();
         _logger.Log(LogLevel.Trace, "Trace messages will show up");
@@ -75,15 +60,6 @@ internal class CommandLine
         AddRearrangeByCameraManufacturerCommand();
         AddRearrangeBySoftwareCommand();
         AddFixExifDateByOffsetCommand();
-    }
-
-    private static string GetBasePath()
-    {
-        // using var processModule = Process.GetCurrentProcess().MainModule;
-        // return Path.GetDirectoryName(processModule?.FileName) ?? string.Empty;
-        // return Directory.GetCurrentDirectory();
-        // return Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
-        return System.AppContext.BaseDirectory;
     }
 
     public async Task<int> InvokeAsync(string[] args)
