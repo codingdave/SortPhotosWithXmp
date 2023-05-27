@@ -14,4 +14,6 @@ public class ExceptionError : ErrorBase
     }
 
     public Exception Exception { get; }
+
+    public override string Name => nameof(ExceptionError);
 }

@@ -9,4 +9,6 @@ public sealed class FileAlreadyExistsError : ErrorBase
     }
 
     public FileInfo OtherFile { get; }
+
+    public override string Name => nameof(FileAlreadyExistsError);
 }

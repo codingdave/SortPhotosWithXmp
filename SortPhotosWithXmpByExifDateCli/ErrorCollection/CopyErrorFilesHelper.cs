@@ -39,7 +39,7 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
         {
             if (errors.Any())
             {
-                var directoryName = nameof(T);
+                var directoryName = errors.First().Name;
                 var baseDirectory = new DirectoryInfo(directoryName);
                 logger.LogError($"{errors.Count()} {directoryName} issues will be located in {baseDirectory.FullName}");
 

@@ -6,4 +6,6 @@ public sealed class NoTimeFoundError : ErrorBase
     : base(fileInfo, messages.Prepend(nameof(NoTimeFoundError)))
     {
     }
+
+    public override string Name => nameof(NoTimeFoundError);
 }

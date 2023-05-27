@@ -6,4 +6,6 @@ public sealed class MetaDataError : ErrorBase
     : base(fileInfo, messages)
     {
     }
+
+    public override string Name => nameof(MetaDataError);
 }

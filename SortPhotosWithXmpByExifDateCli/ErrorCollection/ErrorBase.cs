@@ -14,6 +14,8 @@ public abstract class ErrorBase : IError
 
     public FileInfo FileInfo { get; }
 
+    public abstract string Name { get; }
+
     public void AddMessage(string errorMessage)
     {
         _messages = _messages.Append(errorMessage);
