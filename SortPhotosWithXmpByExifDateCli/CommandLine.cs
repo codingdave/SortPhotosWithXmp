@@ -38,11 +38,10 @@ internal class CommandLine
         _offsetOption = OptionsHelper.GetOffsetOption();
         _forceOption = OptionsHelper.GetForceOption();
         _moveOption = OptionsHelper.GetMoveOption();
-        var logFileName = new FileInfo("logs/log.txt");
-        IHost host = Configuration.CreateHost(logFileName);
+        IHost host = Configuration.CreateHost();
 
         _logger = host.Services.GetRequiredService<ILogger<CommandLine>>();
-        _logger.LogInformation($"Logfile at {logFileName.FullName}");
+        _logger.LogInformation($"BasePath: {Configuration.GetBasePath()}");
         _logger.Log(LogLevel.Trace, "Trace messages will show up");
         _logger.Log(LogLevel.Debug, "Debug messages will show up");
         _logger.Log(LogLevel.Information, "Information messages will show up");
