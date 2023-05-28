@@ -70,7 +70,7 @@ internal static class OptionsHelper
                 }
                 else
                 {
-                    filePath = Helpers.FixPath(filePath);
+                    filePath = Path.GetFullPath(Helpers.FixPath(filePath));
 
                     if (!Directory.Exists(filePath))
                     {
@@ -101,7 +101,7 @@ internal static class OptionsHelper
                 }
                 else
                 {
-                    filePath = Helpers.FixPath(filePath);
+                    filePath = Path.GetFullPath(Helpers.FixPath(filePath));
 
                     if (!Directory.Exists(filePath))
                     {
