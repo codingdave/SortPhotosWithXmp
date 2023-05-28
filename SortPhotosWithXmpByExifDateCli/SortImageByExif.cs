@@ -53,7 +53,14 @@ internal class SortImageByExif : IRun
                 {
                     logger.LogTrace("Extracted date {date} from {file}", dateTime, file);
                     var xmpFiles = Helpers.GetCorrespondingXmpFiles(file);
-                    Helpers.MoveImageAndXmpToExifPath(logger, file, xmpFiles, dateTime, _destinationDirectory, _statistics, _operationPerformer);
+                    if (!errors.Any())
+                    {
+                        Helpers.MoveImageAndXmpToExifPath(file, xmpFiles, dateTime, _destinationDirectory, _statistics, _operationPerformer);
+                    }
+                    else
+                    {
+                        logger.LogTrace("Keep '{file}' as errors have happened. We will copy it later when dealing about the error.", file);
+                    }
                 }
                 else
                 {

@@ -8,22 +8,22 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
     {
         public static void HandleErrorFiles(this IReadOnlyErrorCollection errorCollection, ILogger logger, IFoundStatistics statistics)
         {
-            CopyFileOperation copyFileOperation = new CopyFileOperation(logger, statistics.FileOperation.IsChanging);
+            var copyFileOperation = new CopyFileOperation(logger, statistics.FileOperation.IsChanging);
+            var deleteFileOperation = new DeleteFileOperation(logger, statistics.FileOperation.IsChanging);
 
-            CollectCollisions(logger, errorCollection.Errors.OfType<FileAlreadyExistsError>(), HandleFileAlreadyExistsError);
-            CollectCollisions(logger, errorCollection.Errors.OfType<NoTimeFoundError>(), HandleCollisions);
-            CollectCollisions(logger, errorCollection.Errors.OfType<MetaDataError>(), HandleCollisions);
+            CollectCollisions(logger, errorCollection.Errors.OfType<FileAlreadyExistsError>(), (string baseDirectory, FileAlreadyExistsError error) => HandleFileAlreadyExistsError(baseDirectory, error, logger, statistics, copyFileOperation, deleteFileOperation));
+            CollectCollisions(logger, errorCollection.Errors.OfType<NoTimeFoundError>(), (string baseDirectory, NoTimeFoundError error) => HandleCollisions(baseDirectory, error, logger, copyFileOperation));
+            CollectCollisions(logger, errorCollection.Errors.OfType<MetaDataError>(), (string baseDirectory, MetaDataError error) => HandleCollisions(baseDirectory, error, logger, copyFileOperation));
+        }
 
-            void HandleCollisions<T>(string baseDirectory, T error) where T : ErrorBase
-            {
-                CreateDirectoryAndCopyFile(logger, baseDirectory, error, copyFileOperation);
-            }
+        private static void HandleCollisions<T>(string baseDirectory, T error, ILogger logger, CopyFileOperation copyFileOperation) where T : ErrorBase
+        {
+            CreateDirectoryAndCopyFile(logger, baseDirectory, error, copyFileOperation);
+        }
 
-            void HandleFileAlreadyExistsError(string baseDirectory, FileAlreadyExistsError error)
-            {
-                var deleteFileOperation = new DeleteFileOperation(logger, copyFileOperation.IsChanging);
-                HandleCollisionOrDuplicate(logger, statistics, copyFileOperation, deleteFileOperation, baseDirectory, error);
-            }
+        private static void HandleFileAlreadyExistsError(string baseDirectory, FileAlreadyExistsError error, ILogger logger, IFoundStatistics statistics, CopyFileOperation copyFileOperation, DeleteFileOperation deleteFileOperation)
+        {
+            HandleCollisionOrDuplicate(logger, statistics, copyFileOperation, deleteFileOperation, baseDirectory, error);
         }
 
         private static void CollectCollisions<T>(ILogger logger,
@@ -62,8 +62,8 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
             // 1: make sure directory exists
             CreateDirectory(logger, directoryInfo);
 
-            // 2: move the already copied file to the other duplicates s.t. we can investigate easily
-            Copy(logger, error, directoryInfo, file, copyFileOperation);
+            // 2: copy the first file of the collision to the other duplicates s.t. we can investigate easily
+            Copy(error, directoryInfo, file, copyFileOperation);
         }
 
         private static void HandleCollisionOrDuplicate(ILogger logger,
@@ -187,20 +187,19 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
             string filenameWithExtension = Path.GetFileName(error.File);
             var (filename, extension) = SplitFileNameAndExtension(filenameWithExtension);
             var directory = Path.Combine(errorBaseDirectory, filename);
-            var file = Path.Combine(errorBaseDirectory, filenameWithExtension);
+            var targetPath = Path.Combine(errorBaseDirectory, filenameWithExtension);
 
             // 1: make sure directory exists
             CreateDirectory(logger, directory);
 
-            // 2: copy the already copied file to the other collisions s.t. we can investigate easily
-            Copy(logger, error, directory, file, copyFileOperation);
+            // 2: copy the first file of the collision to the other duplicates s.t. we can investigate easily
+            Copy(error, directory, targetPath, copyFileOperation);
 
             // 3: copy the other file into subdirectory with appended _number
-            CopyFileWithAppendedNumber(logger, error.OtherFile, file, filename, extension, copyFileOperation);
+            CopyFileWithAppendedNumber(logger, error.OtherFile, targetPath, filename, extension, copyFileOperation);
         }
 
-        private static void Copy(ILogger logger,
-                                 ErrorBase error,
+        private static void Copy(ErrorBase error,
                                  string collisionDirectory,
                                  string collisionFile,
                                  CopyFileOperation fileOperation)
