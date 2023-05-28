@@ -25,13 +25,15 @@ public static class Helpers
             throw new ArgumentException($"'{nameof(file)}' cannot be null or whitespace.", nameof(file));
         }
 
+        var directory = Path.GetDirectoryName(file) ?? throw new InvalidOperationException("can not determine directory of file '{file}'");
+
         var searchPattern = Path.GetFileName(file) + "*.xmp";
         var options = new EnumerationOptions
         {
             MatchCasing = MatchCasing.CaseInsensitive,
             RecurseSubdirectories = false,
         };
-        return Directory.GetFiles(file, searchPattern, options);
+        return Directory.GetFiles(directory, searchPattern, options);
     }
 
     private static List<string> GetAllXmpData(IReadOnlyList<MetadataExtractor.Directory> directories)
