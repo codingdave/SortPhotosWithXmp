@@ -9,9 +9,10 @@ public static class Configuration
 {
     public static IHost CreateHost()
     {
+        var appsettings = GetBasePath() + "appsettings.json";
         var configuration = new ConfigurationBuilder()
             .SetBasePath(GetBasePath())
-            .AddJsonFile(GetBasePath() + "/appsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile(appsettings, optional: false, reloadOnChange: true)
             .Build();
 
         Log.Logger = new LoggerConfiguration()
@@ -24,7 +25,7 @@ public static class Configuration
         {
             _ = configurationBuilder
                 .SetBasePath(GetBasePath())
-                .AddJsonFile(GetBasePath() + "/appsettings.json", optional: false, reloadOnChange: true);
+                .AddJsonFile(appsettings, optional: false, reloadOnChange: true);
         })
         .ConfigureLogging(loggingBuilder =>
         {
@@ -33,6 +34,7 @@ public static class Configuration
         .UseSerilog()
         .Build();
 
+        Log.Information($"reading configuration from '{appsettings}'");
         return host;
     }
 
