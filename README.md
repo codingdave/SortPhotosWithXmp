@@ -8,8 +8,8 @@ Sort your Photos and Videos by exif time. If you have .xmp files, this tool will
 * Allow to specify the date format that describes how the files are structured yyyy/MM/dd
 * move videos out of image directory? Currently it will be sorted like the images
 * Currently we delete the "other file" for a collision
-* WHY do we have a collision when the exif is different? 
 * Move NoTimeError files into its own NoTimeError directory
+* configuration of Serilog does not really work? Console -> Error, File: Trace?
 
 ## TODO-Compiler wise
 * The logging message template should not vary between calls to 'LoggerExtensions.LogInformation(ILogger, string?, params object?[])' 

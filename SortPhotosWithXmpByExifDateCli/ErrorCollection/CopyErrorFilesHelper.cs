@@ -12,36 +12,32 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
         public static void HandleErrorFiles(this IReadOnlyErrorCollection errorCollection, ILogger logger, IFoundStatistics statistics)
         {
             CopyFileOperation copyFileOperation = new CopyFileOperation(logger, statistics.FileOperation.IsChanging);
-            MoveFileOperation moveFileOperation = new MoveFileOperation(logger, statistics.FileOperation.IsChanging);
 
-            CollectCollisions(logger, errorCollection.Errors.OfType<FileAlreadyExistsError>(), statistics, copyFileOperation, moveFileOperation, HandleFileAlreadyExistsError);
-            CollectCollisions(logger, errorCollection.Errors.OfType<NoTimeFoundError>(), statistics, copyFileOperation, moveFileOperation, HandleCollisions);
-            CollectCollisions(logger, errorCollection.Errors.OfType<MetaDataError>(), statistics, copyFileOperation, moveFileOperation, HandleCollisions);
+            CollectCollisions(logger, errorCollection.Errors.OfType<FileAlreadyExistsError>(), HandleFileAlreadyExistsError);
+            CollectCollisions(logger, errorCollection.Errors.OfType<NoTimeFoundError>(), HandleCollisions);
+            CollectCollisions(logger, errorCollection.Errors.OfType<MetaDataError>(), HandleCollisions);
 
             void HandleCollisions<T>(string baseDirectory, T error) where T : ErrorBase
             {
-                CreateDirectoryAndMoveFile(logger, moveFileOperation, baseDirectory, error);
+                CreateDirectoryAndCopyFile(logger, baseDirectory, error, copyFileOperation);
             }
 
             void HandleFileAlreadyExistsError(string baseDirectory, FileAlreadyExistsError error)
             {
                 var deleteFileOperation = new DeleteFileOperation(logger, copyFileOperation.IsChanging);
-                HandleCollisionOrDuplicate(logger, statistics, copyFileOperation, moveFileOperation, deleteFileOperation, baseDirectory, error);
+                HandleCollisionOrDuplicate(logger, statistics, copyFileOperation, deleteFileOperation, baseDirectory, error);
             }
         }
 
         private static void CollectCollisions<T>(ILogger logger,
                                               IEnumerable<T> errors,
-                                              IFoundStatistics statistics,
-                                              CopyFileOperation copyFileOperation,
-                                              MoveFileOperation moveFileOperation,
                                               Action<string, T> action) where T : ErrorBase
         {
             if (errors.Any())
             {
                 var directoryName = errors.First().Name;
-                var baseDirectory = directoryName;
-                logger.LogError($"{errors.Count()} {directoryName} issues will be located in {baseDirectory}");
+                var baseDirectory = new DirectoryInfo(directoryName).FullName;
+                logger.LogError($"{errors.Count()} {directoryName} issues will be located in the directory '{baseDirectory}'");
 
                 RenamePossiblyExistingDirectory(logger, baseDirectory);
                 CreateDirectory(logger, baseDirectory);

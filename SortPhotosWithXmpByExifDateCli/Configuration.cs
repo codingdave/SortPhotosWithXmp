@@ -11,7 +11,7 @@ public static class Configuration
     {
         var configuration = new ConfigurationBuilder()
             .SetBasePath(GetBasePath())
-            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile(GetBasePath() + "/appsettings.json", optional: false, reloadOnChange: true)
             .Build();
 
         Log.Logger = new LoggerConfiguration()
@@ -19,14 +19,12 @@ public static class Configuration
             .CreateLogger();
 
         var host = Host.CreateDefaultBuilder()
-        .ConfigureServices(serviceCollection =>
-        {
-        })
+        .ConfigureServices(serviceCollection => { })
         .ConfigureAppConfiguration(configurationBuilder =>
         {
             _ = configurationBuilder
                 .SetBasePath(GetBasePath())
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+                .AddJsonFile(GetBasePath() + "/appsettings.json", optional: false, reloadOnChange: true);
         })
         .ConfigureLogging(loggingBuilder =>
         {
