@@ -207,7 +207,7 @@ public class DateTimeResolver
 
                     if (distinctDates.Count == 1)
                     {
-                        logger.LogDebug("Several identical tags have been found");
+                        logger.LogTrace("Several identical tags have been found");
                     }
                     else
                     {
