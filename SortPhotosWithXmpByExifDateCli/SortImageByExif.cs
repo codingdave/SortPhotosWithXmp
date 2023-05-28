@@ -45,13 +45,14 @@ internal class SortImageByExif : IRun
                 var errors = Helpers.GetErrorsFromMetadata(metaDataDirectories);
                 if (errors.Any())
                 {
+                    logger.LogTrace("found errors while extracting metadata from '{file}'", file);
                     _statistics.AddError(new MetaDataError(file, errors));
                 }
 
                 var possibleDateTime = dateTimeResolver.GetDateTimeFromImage(logger, metaDataDirectories);
                 if (possibleDateTime is DateTime dateTime)
                 {
-                    logger.LogTrace("Extracted date {date} from {file}", dateTime, file);
+                    logger.LogTrace("Extracted date {dateTime} from '{file}'", dateTime, file);
                     var xmpFiles = Helpers.GetCorrespondingXmpFiles(file);
                     if (!errors.Any())
                     {
