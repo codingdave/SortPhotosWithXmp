@@ -2,6 +2,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using Serilog.Enrichers;
 
 namespace SortPhotosWithXmpByExifDateCli;
 
@@ -17,6 +18,7 @@ public static class Configuration
 
         Log.Logger = new LoggerConfiguration()
             .ReadFrom.Configuration(configuration)
+            .Enrich.FromLogContext()
             .CreateLogger();
 
         var host = Host.CreateDefaultBuilder()
