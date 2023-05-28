@@ -56,7 +56,7 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
             }
         }
 
-        private static void CreateDirectoryAndMoveFile(ILogger logger, MoveFileOperation moveFileOperation, string baseDirectory, ErrorBase error)
+        private static void CreateDirectoryAndCopyFile(ILogger logger, string baseDirectory, ErrorBase error, CopyFileOperation copyFileOperation)
         {
             string filenameWithExtension = Path.GetFileNameWithoutExtension(error.File);
             var directoryInfo = Path.Combine(baseDirectory, filenameWithExtension);
@@ -66,25 +66,24 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
             CreateDirectory(logger, directoryInfo);
 
             // 2: move the already copied file to the other duplicates s.t. we can investigate easily
-            Move(logger, error, directoryInfo, file, moveFileOperation);
+            Copy(logger, error, directoryInfo, file, copyFileOperation);
         }
 
         private static void HandleCollisionOrDuplicate(ILogger logger,
                                                        IFoundStatistics statistics,
                                                        CopyFileOperation copyFileOperation,
-                                                       MoveFileOperation moveFileOperation,
                                                        DeleteFileOperation deleteFileOperation,
                                                        string baseDirectory,
                                                        FileAlreadyExistsError error)
         {
             if (IsDuplicate(logger, error, statistics))
             {
-                logger.LogDebug($"removing duplicate {error.OtherFile} of {error.File}");
+                logger.LogDebug($"{error.OtherFile} is duplicate of {error.File}");
                 deleteFileOperation.Delete(error.OtherFile);
             }
             else
             {
-                HandleCollision(logger, baseDirectory, error, copyFileOperation, moveFileOperation);
+                HandleCollision(logger, baseDirectory, error, copyFileOperation);
             }
         }
 
@@ -167,8 +166,7 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
         private static void HandleCollision(ILogger logger,
                                             string errorBaseDirectory,
                                             FileAlreadyExistsError error,
-                                            CopyFileOperation copyFileOperation,
-                                            MoveFileOperation moveFileOperation)
+                                            CopyFileOperation copyFileOperation)
         {
             logger.LogTrace($"Handling collision between {error.File} and {error.OtherFile}!");
 
@@ -182,43 +180,43 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
             // handling the errors (this function) will receive 2 FileAlreadyExistsErrors and process them
             // - process 1st FileAlreadyExistsError: 
             //  * create collision directory ErrorFiles/20230101
-            //  * move error1.FileInfo ("20230101/1.jpg") to ErrorFiles/20230101/1.jpg
+            //  * copy error1.FileInfo ("20230101/1.jpg") to ErrorFiles/20230101/1.jpg
             //  * copy error1.OtherFile with appended number to ErrorFiles/20230101/1_1.jpg
             // - process 2nd FileAlreadyExistsError: 
             //  * skip creating collision directory ErrorFiles/20230101
-            //  * skip moving error2.FileInfo ("20230101/1.jpg") to ErrorFiles/20230101/1.jpg
+            //  * skip copying error2.FileInfo ("20230101/1.jpg") to ErrorFiles/20230101/1.jpg
             //  * copy error2.OtherFile with appended number to ErrorFiles/20230101/1_2.jpg
 
             string filenameWithExtension = Path.GetFileName(error.File);
             var (filename, extension) = SplitFileNameAndExtension(filenameWithExtension);
-            var directoryInfo = Path.Combine(errorBaseDirectory, filename);
+            var directory = Path.Combine(errorBaseDirectory, filename);
             var file = Path.Combine(errorBaseDirectory, filenameWithExtension);
 
             // 1: make sure directory exists
-            CreateDirectory(logger, directoryInfo);
+            CreateDirectory(logger, directory);
 
-            // 2: move the already copied file to the other duplicates s.t. we can investigate easily
-            Move(logger, error, directoryInfo, file, moveFileOperation);
+            // 2: copy the already copied file to the other collisions s.t. we can investigate easily
+            Copy(logger, error, directory, file, copyFileOperation);
 
             // 3: copy the other file into subdirectory with appended _number
             CopyFileWithAppendedNumber(logger, error.OtherFile, file, filename, extension, copyFileOperation);
         }
 
-        private static void Move(ILogger logger,
+        private static void Copy(ILogger logger,
                                  ErrorBase error,
                                  string collisionDirectory,
                                  string collisionFile,
-                                 MoveFileOperation moveFileOperation)
+                                 CopyFileOperation fileOperation)
         {
             var targetPath = Path.Combine(collisionDirectory, Path.GetFileName(collisionFile));
 
             if (File.Exists(error.File))
             {
-                moveFileOperation.ChangeFile(error.File, targetPath);
+                fileOperation.ChangeFile(error.File, targetPath);
             }
             else
             {
-                logger.LogError($"Cannot move {error.File}, as it does not exist.");
+                throw new FileNotFoundException($"'{error.File}' does not exist.");
             }
         }
 
@@ -226,7 +224,7 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
         {
             if (!Directory.Exists(directory))
             {
-                logger.LogTrace("Creating {newDirectory}", directory);
+                logger.LogTrace("Creating directory '{newDirectory}'", directory);
                 Directory.CreateDirectory(directory);
             }
         }
