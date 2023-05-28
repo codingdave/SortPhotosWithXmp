@@ -22,13 +22,11 @@ namespace SortPhotosWithXmpByExifDateCli
 
         public void Delete(string path)
         {
+            _logger.LogTrace($"File.Delete({path});");
+
             if (IsChanging)
             {
                 File.Delete(path);
-            }
-            else
-            {
-                _logger.LogTrace($"File.Delete({path});");
             }
         }
 

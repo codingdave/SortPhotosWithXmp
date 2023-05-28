@@ -108,19 +108,19 @@ public static class Helpers
         }
     }
 
-    public static void RecursivelyDeleteEmptyDirectories(ILogger logger, DirectoryInfo directory, DeleteDirectoryOperation deleteDirectoryPerformer, bool isFirstRun = true)
+    public static void RecursivelyDeleteEmptyDirectories(ILogger logger, string directory, DeleteDirectoryOperation deleteDirectoryPerformer, bool isFirstRun = true)
     {
-        void DeleteDirectoryIfEmpty(DirectoryInfo d)
+        void DeleteDirectoryIfEmpty(string directory)
         {
             try
             {
-                if (d.Exists)
+                if (Directory.Exists(directory))
                 {
                     deleteDirectoryPerformer.Statistics.DirectoriesFound++;
-                    if (!d.GetDirectories().Any() &&
-                       !d.GetFiles().Any())
+                    // if no directories and no files are within this directory
+                    if (!Directory.GetDirectories(directory).Any() && !Directory.GetFiles(directory).Any())
                     {
-                        deleteDirectoryPerformer.DeleteDirectory(d.FullName);
+                        deleteDirectoryPerformer.DeleteDirectory(directory);
                     }
                 }
             }
@@ -130,10 +130,10 @@ public static class Helpers
             }
         }
 
-        foreach (var d in directory.GetDirectories())
+        foreach (var subDirectory in Directory.GetDirectories(directory))
         {
-            RecursivelyDeleteEmptyDirectories(logger, d, deleteDirectoryPerformer);
-            DeleteDirectoryIfEmpty(d);
+            RecursivelyDeleteEmptyDirectories(logger, subDirectory, deleteDirectoryPerformer);
+            DeleteDirectoryIfEmpty(subDirectory);
         }
 
         if (isFirstRun)

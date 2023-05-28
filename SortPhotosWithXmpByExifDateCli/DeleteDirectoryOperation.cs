@@ -19,14 +19,14 @@ namespace SortPhotosWithXmpByExifDateCli
 
         public void DeleteDirectory(string path)
         {
+            _logger.LogTrace("Directory.Delete({path});", path);
+
             if (IsChanging)
             {
                 Directory.Delete(path, false);
             }
-            else
-            {
-                _logger.LogTrace("Directory.Delete({path});", path);
-            }
+
+            // when we simulate, we still want to count
             Statistics.DirectoriesDeleted++;
         }
 
