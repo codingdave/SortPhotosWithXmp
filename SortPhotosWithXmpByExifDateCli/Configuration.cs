@@ -1,21 +1,12 @@
-using System.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
-using Serilog.Configuration;
 
 namespace SortPhotosWithXmpByExifDateCli;
 
 public static class Configuration
 {
-    private static LoggerConfiguration AddConsoleOrDebug(this LoggerSinkConfiguration loggerSinkConfiguration)
-    {
-        return Debugger.IsAttached ?
-            loggerSinkConfiguration.Debug() :
-            loggerSinkConfiguration.Console();
-    }
-
     public static IHost CreateHost()
     {
         var configuration = new ConfigurationBuilder()
@@ -26,12 +17,6 @@ public static class Configuration
         Log.Logger = new LoggerConfiguration()
             .ReadFrom.Configuration(configuration)
             .CreateLogger();
-
-        // Log.Logger = new LoggerConfiguration()
-        //     .MinimumLevel.Verbose()
-        //     .WriteTo.File(logFileName.FullName, /*rollingInterval: RollingInterval.Day, retainedFileCountLimit: 10, */restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Verbose)
-        //     .WriteTo.AddConsoleOrDebug()
-        //     .CreateLogger();
 
         var host = Host.CreateDefaultBuilder()
         .ConfigureServices(serviceCollection =>
@@ -46,8 +31,6 @@ public static class Configuration
         .ConfigureLogging(loggingBuilder =>
         {
             _ = loggingBuilder.ClearProviders();
-            // _ = Debugger.IsAttached ? loggingBuilder.AddDebug() : loggingBuilder.AddConsole();
-            // _ = loggingBuilder.AddSerilog();
         })
         .UseSerilog()
         .Build();
