@@ -11,6 +11,7 @@ internal class CommandLine
     private static readonly string[] _extensions = new string[]
     {
         ".jpg",
+        ".jpeg",
         ".nef",
         ".gif",
         ".png",
