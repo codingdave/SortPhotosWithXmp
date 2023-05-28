@@ -218,7 +218,6 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
 
             if (File.Exists(error.File))
             {
-                logger.LogTrace($"{error.File}: {moveFileOperation.ToString()} to where we store similar ones {targetPath}");
                 moveFileOperation.ChangeFile(error.File, targetPath);
             }
             else

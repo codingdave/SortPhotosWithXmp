@@ -16,13 +16,10 @@ namespace SortPhotosWithXmpByExifDateCli
 
         public void ChangeFile(string sourceFileName, string destFileName)
         {
+            _logger.LogTrace($"File.Move({sourceFileName}, {destFileName});");
             if (IsChanging)
             {
                 File.Move(sourceFileName, destFileName);
-            }
-            else
-            {
-                _logger.LogTrace($"File.Move({sourceFileName}, {destFileName});");
             }
         }
 
