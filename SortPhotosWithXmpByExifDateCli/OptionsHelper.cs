@@ -2,7 +2,7 @@ using System.CommandLine;
 
 namespace SortPhotosWithXmpByExifDateCli;
 
-internal static class OptionsHelper 
+internal static class OptionsHelper
 {
     internal static Option<bool> GetForceOption()
     {
@@ -39,12 +39,12 @@ internal static class OptionsHelper
                 if (offset == null)
                 {
                     result.ErrorMessage = "No argument given";
-                } 
+                }
                 else if (TimeSpan.TryParse(offset, out var parsed))
                 {
                     ret = parsed;
                 }
-                else 
+                else
                 {
                     result.ErrorMessage = $"cannot parse TimeSpan '{offset}'";
                 }
@@ -53,22 +53,22 @@ internal static class OptionsHelper
             }
         );
     }
-    
-    internal static Option<DirectoryInfo?> GetDestinationOption()
+
+    internal static Option<string?> GetDestinationOption()
     {
-        return new Option<DirectoryInfo?>(
+        return new Option<string?>(
             name: "--destination",
             description: "The destination directory that contains the data.",
             isDefault: true,
             parseArgument: result =>
             {
-                DirectoryInfo? ret = null;
+                string? ret = null;
                 var filePath = result.Tokens.SingleOrDefault()?.Value;
                 if (filePath == null)
                 {
                     result.ErrorMessage = "No argument given";
-                } 
-                else 
+                }
+                else
                 {
                     filePath = Helpers.FixPath(filePath);
 
@@ -77,29 +77,29 @@ internal static class OptionsHelper
                         Directory.CreateDirectory(filePath);
                     }
 
-                    ret = new DirectoryInfo(filePath);
+                    ret = filePath;
                 }
-               
+
                 return ret;
             }
         );
     }
 
-    internal static Option<DirectoryInfo?> GetSourceOption()
+    internal static Option<string?> GetSourceOption()
     {
-        return new Option<DirectoryInfo?>(
+        return new Option<string?>(
             name: "--source",
             description: "The source directory that contains the data.",
             isDefault: true,
             parseArgument: result =>
             {
-                DirectoryInfo? ret = null;
+                string? ret = null;
                 var filePath = result.Tokens.SingleOrDefault()?.Value;
                 if (filePath == null)
                 {
                     result.ErrorMessage = "No argument given";
-                } 
-                else 
+                }
+                else
                 {
                     filePath = Helpers.FixPath(filePath);
 
@@ -109,7 +109,7 @@ internal static class OptionsHelper
                     }
                     else
                     {
-                        ret = new DirectoryInfo(filePath);
+                        ret = filePath;
                     }
                 }
 

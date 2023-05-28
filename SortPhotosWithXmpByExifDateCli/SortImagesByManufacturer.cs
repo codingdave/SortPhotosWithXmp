@@ -5,7 +5,7 @@ namespace SortPhotosWithXmpByExifDateCli;
 
 internal class SortImagesByManufacturer : IRun
 {
-    public SortImagesByManufacturer(DirectoryInfo source, DirectoryInfo destination, bool force)
+    public SortImagesByManufacturer(string source, string destination, bool force)
     {
         throw new NotImplementedException();
     }

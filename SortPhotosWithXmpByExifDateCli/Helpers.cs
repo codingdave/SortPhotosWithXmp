@@ -18,17 +18,20 @@ public static class Helpers
         return path;
     }
 
-    public static FileInfo[] GetCorrespondingXmpFiles(FileInfo fileInfo)
+    public static string[] GetCorrespondingXmpFiles(string file)
     {
-        if (fileInfo?.Directory is null) { throw new ArgumentNullException(nameof(fileInfo)); }
+        if (string.IsNullOrWhiteSpace(file))
+        {
+            throw new ArgumentException($"'{nameof(file)}' cannot be null or whitespace.", nameof(file));
+        }
 
-        var filename = fileInfo.Name + "*.xmp";
+        var searchPattern = Path.GetFileName(file) + "*.xmp";
         var options = new EnumerationOptions
         {
             MatchCasing = MatchCasing.CaseInsensitive,
             RecurseSubdirectories = false,
         };
-        return fileInfo.Directory.GetFiles(filename, options);
+        return Directory.GetFiles(file, searchPattern, options);
     }
 
     private static List<string> GetAllXmpData(IReadOnlyList<MetadataExtractor.Directory> directories)
@@ -77,11 +80,12 @@ public static class Helpers
         return ret;
     }
 
-    public static void MoveImageAndXmpToExifPath(ILogger logger, FileInfo imageFile, FileInfo[] xmpFiles, DateTime dateTime,
-        DirectoryInfo destinationDirectory, FilesFoundStatistics statistics, IFileOperation operationPerformer)
+    public static void MoveImageAndXmpToExifPath(ILogger logger, string imageFile, string[] xmpFiles, DateTime dateTime,
+        string destinationDirectory, FilesFoundStatistics statistics, IFileOperation operationPerformer)
     {
         var destinationSuffix = dateTime.ToString("yyyy/MM/dd");
-        var finalDestinationPath = Path.Combine(destinationDirectory.FullName, destinationSuffix);
+        var finalDestinationPath = Path.Combine(destinationDirectory, destinationSuffix);
+
         if (!Directory.Exists(finalDestinationPath))
         {
             Directory.CreateDirectory(finalDestinationPath);
@@ -95,15 +99,15 @@ public static class Helpers
 
         foreach (var file in allSourceFiles)
         {
-            var targetName = new FileInfo(Path.Combine(finalDestinationPath, file.Name));
+            var targetName = Path.Combine(finalDestinationPath, Path.GetFileName(file));
 
-            if (!targetName.Exists)
+            if (!File.Exists(targetName))
             {
-                operationPerformer.ChangeFile(file.FullName, targetName.FullName);
+                operationPerformer.ChangeFile(file, targetName);
             }
             else
             {
-                statistics.AddError(new FileAlreadyExistsError(targetName, file, $"File {file.FullName} already exists at {targetName}"));
+                statistics.AddError(new FileAlreadyExistsError(targetName, file, $"File {file} already exists at {targetName}"));
             }
         }
     }

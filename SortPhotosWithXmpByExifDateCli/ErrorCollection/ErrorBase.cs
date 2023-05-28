@@ -2,9 +2,9 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics;
 
 public abstract class ErrorBase : IError
 {
-    public ErrorBase(FileInfo fileInfo, IEnumerable<string> messages)
+    public ErrorBase(string file, IEnumerable<string> messages)
     {
-        FileInfo = fileInfo;
+        File = file;
         _messages = messages;
     }
 
@@ -12,7 +12,7 @@ public abstract class ErrorBase : IError
 
     public string ErrorMessage => string.Join(Environment.NewLine, _messages);
 
-    public FileInfo FileInfo { get; }
+    public string File { get; }
 
     public abstract string Name { get; }
 
@@ -23,6 +23,6 @@ public abstract class ErrorBase : IError
 
     public override string ToString()
     {
-        return $"{FileInfo}. {ErrorMessage}";
+        return $"{File}. {ErrorMessage}";
     }
 }

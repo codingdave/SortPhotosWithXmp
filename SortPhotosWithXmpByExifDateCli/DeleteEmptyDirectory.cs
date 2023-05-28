@@ -4,9 +4,9 @@ namespace SortPhotosWithXmpByExifDateCli;
 
 public class DeleteEmptyDirectory : IRun 
 {
-    private readonly DirectoryInfo _directory;
+    private readonly string _directory;
     private readonly bool _force;
-    public DeleteEmptyDirectory(DirectoryInfo directory, bool force) => 
+    public DeleteEmptyDirectory(string directory, bool force) => 
         (_directory, _force) = (directory, force);
     public IStatistics Run(ILogger logger)
     {

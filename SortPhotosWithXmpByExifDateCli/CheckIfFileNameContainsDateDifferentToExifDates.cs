@@ -4,7 +4,7 @@ namespace SortPhotosWithXmpByExifDateCli;
 
 internal class CheckIfFileNameContainsDateDifferentToExifDates : IRun
 {
-    public CheckIfFileNameContainsDateDifferentToExifDates(DirectoryInfo source, bool force)
+    public CheckIfFileNameContainsDateDifferentToExifDates(string source, bool force)
     {
         throw new NotImplementedException();
     }

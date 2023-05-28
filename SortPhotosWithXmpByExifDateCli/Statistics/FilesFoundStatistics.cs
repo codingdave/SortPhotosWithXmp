@@ -39,7 +39,7 @@ public class FilesFoundStatistics : IStatistics, IModifiableErrorCollection, IFo
                     _logger.LogError(error.ToString());
                     break;
                 case ImageProcessingExceptionError ipe:
-                    _logger.LogExceptionError(error.FileInfo.FullName, ipe.Exception);
+                    _logger.LogExceptionError(error.File, ipe.Exception);
                     break;
                 case FileAlreadyExistsError:
                     // nothing to do over here

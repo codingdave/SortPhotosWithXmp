@@ -22,8 +22,8 @@ internal class CommandLine
         ".mov"
     };
 
-    private readonly Option<DirectoryInfo?> _sourceOption;
-    private readonly Option<DirectoryInfo?> _destinationOption;
+    private readonly Option<string?> _sourceOption;
+    private readonly Option<string?> _destinationOption;
     private readonly Option<object?> _offsetOption;
     private readonly Option<bool> _forceOption;
     private readonly Option<bool> _moveOption;
@@ -71,7 +71,7 @@ internal class CommandLine
 
     private void AddDeleteEmptyDirectoryCommand()
     {
-        void DeleteEmptyDirectory(DirectoryInfo directory, bool force)
+        void DeleteEmptyDirectory(string directory, bool force)
         {
             Run(new DeleteEmptyDirectory(directory, force));
         }
@@ -89,7 +89,7 @@ internal class CommandLine
 
     private void AddRearrangeByExifCommand()
     {
-        void SortImagesByExif(DirectoryInfo sourcePath, DirectoryInfo destinationPath, bool force, bool move)
+        void SortImagesByExif(string sourcePath, string destinationPath, bool force, bool move)
         {
             var operationPerformer = OperationPerformerFactory.GetOperationPerformer(_logger, force, move);
             var deleteDirectoryPerformer = new DeleteDirectoryOperation(_logger, force);
@@ -113,7 +113,7 @@ internal class CommandLine
 
     private void AddCheckIfFileNameContainsDateDifferentToExifDatesCommand()
     {
-        void CheckIfFileNameContainsDateDifferentToExifDates(DirectoryInfo source, bool force)
+        void CheckIfFileNameContainsDateDifferentToExifDates(string source, bool force)
         {
             Run(new CheckIfFileNameContainsDateDifferentToExifDates(source, force));
         }
@@ -134,7 +134,7 @@ internal class CommandLine
 
     private void AddRearrangeByCameraManufacturerCommand()
     {
-        void SortImagesByManufacturer(DirectoryInfo source, DirectoryInfo destination, bool force)
+        void SortImagesByManufacturer(string source, string destination, bool force)
         {
             Run(new SortImagesByManufacturer(source, destination, force));
         }
@@ -154,7 +154,7 @@ internal class CommandLine
 
     private void AddRearrangeBySoftwareCommand()
     {
-        void RearrangeBySoftware(DirectoryInfo source, DirectoryInfo destination, bool force)
+        void RearrangeBySoftware(string source, string destination, bool force)
         {
             Run(new RearrangeBySoftware(source, destination, force));
         }
@@ -174,7 +174,7 @@ internal class CommandLine
 
     private void AddFixExifDateByOffsetCommand()
     {
-        void FixExifDateByOffset(DirectoryInfo directory, object offset, bool force)
+        void FixExifDateByOffset(string directory, object offset, bool force)
         {
             // https://github.com/dotnet/command-line-api/issues/2086
             Run(new FixExifDateByOffset(directory, (TimeSpan)offset, force));

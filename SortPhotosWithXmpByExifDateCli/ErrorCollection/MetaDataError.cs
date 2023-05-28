@@ -2,8 +2,8 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics;
 
 public sealed class MetaDataError : ErrorBase
 {
-    public MetaDataError(FileInfo fileInfo, IEnumerable<string> messages)
-    : base(fileInfo, messages)
+    public MetaDataError(string file, IEnumerable<string> messages)
+    : base(file, messages)
     {
     }
 

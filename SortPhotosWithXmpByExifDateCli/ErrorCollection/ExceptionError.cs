@@ -2,14 +2,14 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics;
 
 public class ExceptionError : ErrorBase
 {
-    public ExceptionError(FileInfo fileInfo, Exception exception, List<string> messages)
-    : base(fileInfo, messages)
+    public ExceptionError(string file, Exception exception, List<string> messages)
+    : base(file, messages)
     {
         Exception = exception;
     }
 
-    public ExceptionError(FileInfo fileInfo, Exception exception)
-    : this(fileInfo, exception, new List<string>() { nameof(ExceptionError) + ": " + exception.Message })
+    public ExceptionError(string file, Exception exception)
+    : this(file, exception, new List<string>() { nameof(ExceptionError) + ": " + exception.Message })
     {
     }
 

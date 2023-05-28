@@ -17,7 +17,7 @@ public class ErrorCollection : IErrorCollection, IReadOnlyErrorCollection
 
     public void Add(IError error)
     {
-        var existingError = _errors.FirstOrDefault(e => e.FileInfo.FullName == error.FileInfo.FullName);
+        var existingError = _errors.FirstOrDefault(e => string.Equals(e.File, error.File));
         if (existingError == null)
         {
             _errors.Add(error);
