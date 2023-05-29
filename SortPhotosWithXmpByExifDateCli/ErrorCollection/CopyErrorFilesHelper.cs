@@ -225,8 +225,7 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
             string filenameWithExtension = Path.GetFileName(errorFile);
             var (filename, extension) = SplitFileNameAndExtension(filenameWithExtension);
             var directory = Path.Combine(targetDirectory, filename);
-            var completeFilepath = Path.Combine(targetDirectory, filenameWithExtension);
-
+            var completeFilepath = Path.Combine(directory, filenameWithExtension);
 
             var targetFile = new FileDecomposition(completeFilepath, directory, filename, extension);
             Serilog.Log.Verbose($"{nameof(targetDirectory)}: {targetDirectory}, errorFile: {errorFile} => {nameof(targetFile)}: {targetFile}");
