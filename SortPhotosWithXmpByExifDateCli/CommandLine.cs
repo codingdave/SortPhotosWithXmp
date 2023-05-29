@@ -57,13 +57,12 @@ internal class CommandLine
 
         AddDeleteEmptyDirectoryCommand();
         AddRearrangeByExifCommand();
-
         AddCheckIfFileNameContainsDateDifferentToExifDatesCommand();
+        AddFixExifDateByOffsetCommand();
+        AddDeleteLonelyXmpCommand();
         AddRearrangeByCameraManufacturerCommand();
         AddRearrangeBySoftwareCommand();
-        AddFixExifDateByOffsetCommand();
     }
-
     public async Task<int> InvokeAsync(string[] args)
     {
         return await _rootCommand.InvokeAsync(args);
@@ -132,6 +131,51 @@ internal class CommandLine
         _rootCommand.AddCommand(checkIfFileNameContainsDateDifferentToExifDatesCommand);
     }
 
+
+    private void AddFixExifDateByOffsetCommand()
+    {
+        void FixExifDateByOffset(string directory, object offset, bool force)
+        {
+            // https://github.com/dotnet/command-line-api/issues/2086
+            Run(new FixExifDateByOffset(directory, (TimeSpan)offset, force));
+        }
+
+        var fixExifDateByOffsetCommand = new Command(
+            "fixExifDateByOffset",
+            "Fix their exif by identifying the offset.")
+        {
+            _sourceOption,
+            _offsetOption,
+            _forceOption
+        };
+
+        fixExifDateByOffsetCommand.SetHandler(FixExifDateByOffset!, _sourceOption!, _offsetOption!, _forceOption);
+
+        _rootCommand.AddCommand(fixExifDateByOffsetCommand);
+    }
+
+    private void AddDeleteLonelyXmpCommand()
+    {
+        void DeleteLonelyXmps(string directory, bool force)
+        {
+            // https://github.com/dotnet/command-line-api/issues/2086
+            // Run(new FixExifDateByOffset(directory, (TimeSpan)offset, force));
+            throw new NotImplementedException();
+        }
+
+        var deleteLeftoverXmpsCommand = new Command(
+            "deleteLeftoverXmpsCommand",
+            "Scan for lonely/leftover xmps and remove them.")
+        {
+            _sourceOption,
+            _forceOption
+        };
+
+        deleteLeftoverXmpsCommand.SetHandler(DeleteLonelyXmps!, _sourceOption!, _forceOption);
+
+        _rootCommand.AddCommand(deleteLeftoverXmpsCommand);
+    }
+
     private void AddRearrangeByCameraManufacturerCommand()
     {
         void SortImagesByManufacturer(string source, string destination, bool force)
@@ -170,28 +214,6 @@ internal class CommandLine
         rearrangeBySoftwareCommand.SetHandler(RearrangeBySoftware!, _sourceOption, _destinationOption, _forceOption);
 
         _rootCommand.AddCommand(rearrangeBySoftwareCommand);
-    }
-
-    private void AddFixExifDateByOffsetCommand()
-    {
-        void FixExifDateByOffset(string directory, object offset, bool force)
-        {
-            // https://github.com/dotnet/command-line-api/issues/2086
-            Run(new FixExifDateByOffset(directory, (TimeSpan)offset, force));
-        }
-
-        var fixExifDateByOffsetCommand = new Command(
-            "fixExifDateByOffset",
-            "Fix their exif by identifying the offset.")
-        {
-            _sourceOption,
-            _offsetOption,
-            _forceOption
-        };
-
-        fixExifDateByOffsetCommand.SetHandler(FixExifDateByOffset!, _sourceOption!, _offsetOption!, _forceOption);
-
-        _rootCommand.AddCommand(fixExifDateByOffsetCommand);
     }
 
     private void Run(IRun f)
