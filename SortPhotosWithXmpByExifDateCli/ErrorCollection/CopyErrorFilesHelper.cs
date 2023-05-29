@@ -64,7 +64,7 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
             var directory = Path.Combine(baseDirectory, filename);
             var completeFilepath = Path.Combine(baseDirectory, filenameWithExtension);
 
-            Serilog.Log.Verbose($"basedirectory: {baseDirectory}, errorFile: {errorFile} => completeFilepath: {completeFilepath}, directory: {directory}, filename: {filename}, basedirectory: {baseDirectory}, extension: {extension}");
+            Serilog.Log.Verbose($"basedirectory: {baseDirectory}, errorFile: {errorFile} => completeFilepath: {completeFilepath}, directory: {directory}, filename: {filename}, extension: {extension}");
 
             return (completeFilepath, directory, filename, extension);
         }
