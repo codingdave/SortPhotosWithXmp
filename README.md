@@ -11,6 +11,7 @@ Sort your Photos and Videos by exif time. If you have .xmp files, this tool will
   * First scan all images with ImageMagick to get image hash
   * with a HashSet look up for duplicates?
   * Maybe store the HashSet database on disk to speed up further iterations?
+* 0/0 duplicates found. Does it even work?
 
 ## TODO-Compiler wise
 * The logging message template should not vary between calls to 'LoggerExtensions.LogInformation(ILogger, string?, params object?[])' 
