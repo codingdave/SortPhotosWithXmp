@@ -244,7 +244,7 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
             var fileCount = Directory.GetFiles(directory, "*" + targetFile.Extension).Length;
             var numberString = fileCount > 0 ? "_" + fileCount : string.Empty;
             var fullname = Path.Combine(directory, targetFile.Name + numberString + targetFile.Extension);
-            logger.LogDebug("Collision for '{errorFile}'. Arrange next to others as '{fullname}'", errorFile, fullname);
+            logger.LogTrace("Collision for '{errorFile}'. Arrange next to others as '{fullname}'", errorFile, fullname);
             copyFileOperation.ChangeFile(errorFile, fullname);
         }
     }
