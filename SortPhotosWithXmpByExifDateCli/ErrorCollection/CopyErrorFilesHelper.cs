@@ -171,11 +171,11 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
             // handling the errors (this function) will receive 2 FileAlreadyExistsErrors and process them
             // - process 1st FileAlreadyExistsError: 
             //  * create collision directory ErrorFiles/20230101
-            //  * copy error1.FileInfo ("20230101/1.jpg") to ErrorFiles/20230101/1.jpg
+            //  * copy error1.File ("20230101/1.jpg") to ErrorFiles/20230101/1.jpg
             //  * copy error1.OtherFile with appended number to ErrorFiles/20230101/1_1.jpg
             // - process 2nd FileAlreadyExistsError: 
             //  * skip creating collision directory ErrorFiles/20230101
-            //  * skip copying error2.FileInfo ("20230101/1.jpg") to ErrorFiles/20230101/1.jpg
+            //  * skip copying error2.File ("20230101/1.jpg") to ErrorFiles/20230101/1.jpg
             //  * copy error2.OtherFile with appended number to ErrorFiles/20230101/1_2.jpg
 
             CreateDirectoryAndCopyFile(logger, error, targetFile, copyFileOperation);
@@ -244,7 +244,7 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
             var fileCount = Directory.GetFiles(directory, "*" + targetFile.Extension).Length;
             var numberString = fileCount > 0 ? "_" + fileCount : string.Empty;
             var fullname = Path.Combine(directory, targetFile.Name + numberString + targetFile.Extension);
-            logger.LogDebug("Collision for '{errorFileInfo}'. Arrange next to others as '{fullname}'", errorFile, fullname);
+            logger.LogDebug("Collision for '{errorFile}'. Arrange next to others as '{fullname}'", errorFile, fullname);
             copyFileOperation.ChangeFile(errorFile, fullname);
         }
     }
