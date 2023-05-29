@@ -11,8 +11,6 @@ Sort your Photos and Videos by exif time. If you have .xmp files, this tool will
   * First scan all images with ImageMagick to get image hash
   * with a HashSet look up for duplicates?
   * Maybe store the HashSet database on disk to speed up further iterations?
-* Instead of Copy use CopyFileWithAppendedNumber when dealing with HandleCollisions. Only append number if there is already another file in the directory
-* Use the function to destructure the filename into extension, directory, name, .... also inside CopyFileWithAppendedNumber
 
 ## TODO-Compiler wise
 * The logging message template should not vary between calls to 'LoggerExtensions.LogInformation(ILogger, string?, params object?[])' 

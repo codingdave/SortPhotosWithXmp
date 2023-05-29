@@ -51,17 +51,8 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
             CreateDirectory(logger, targetFile.Directory);
 
             // 2: copy the first file of the collision to the other duplicates s.t. we can investigate easily
-            var targetFilee = Path.Combine(targetFile.Directory, targetFile.Name + targetFile.Extension);
-            if (File.Exists(error.File))
-            {
-                copyFileOperation.ChangeFile(error.File, targetFilee);
-            }
-            else
-            {
-                throw new FileNotFoundException($"'{error.File}' does not exist.");
-            }
 
-            // CopyFileWithAppendedNumber(logger, error.File, targetFile, copyFileOperation);
+            CopyFileWithAppendedNumber(logger, error.File, targetFile, copyFileOperation);
         }
 
         private static void HandleCollisionOrDuplicate(ILogger logger,
@@ -239,7 +230,7 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
 
             var targetFile = new FileDecomposition(completeFilepath, directory, filename, extension);
             Serilog.Log.Verbose($"{nameof(targetDirectory)}: {targetDirectory}, errorFile: {errorFile} => {nameof(targetFile)}: {targetFile}");
-            
+
             return targetFile;
         }
 
@@ -249,11 +240,11 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
                                                        CopyFileOperation copyFileOperation)
         {
             // copy this file into subdirectory with appended _number
-            var directory = new FileInfo(targetFile.CompletePath).Directory ?? throw new InvalidOperationException("Directory does not exist");
-            var subdirectory = Path.Combine(directory.FullName, targetFile.Name);
-            var fileCount = Directory.GetFiles(subdirectory, "*" + targetFile.Extension).Length;
-            var fullname = Path.Combine(subdirectory, targetFile.Name + "_" + fileCount + targetFile.Extension);
-            logger.LogDebug("Collision for {errorFileInfo}. Arrange next to others as {fullname}", errorFile, fullname);
+            var directory = targetFile.Directory;
+            var fileCount = Directory.GetFiles(directory, "*" + targetFile.Extension).Length;
+            var numberString = fileCount > 0 ? "_" + fileCount : string.Empty;
+            var fullname = Path.Combine(directory, targetFile.Name + numberString + targetFile.Extension);
+            logger.LogDebug("Collision for '{errorFileInfo}'. Arrange next to others as '{fullname}'", errorFile, fullname);
             copyFileOperation.ChangeFile(errorFile, fullname);
         }
     }
