@@ -4,47 +4,38 @@ using System.Diagnostics;
 
 namespace SortPhotosWithXmpByExifDateCli.Statistics
 {
-    public static class CopyErrorFilesHelper
+    public static partial class CopyErrorFilesHelper
     {
         public static void HandleErrorFiles(this IReadOnlyErrorCollection errorCollection, ILogger logger, IFoundStatistics statistics)
         {
             var copyFileOperation = new CopyFileOperation(logger, statistics.FileOperation.IsChanging);
             var deleteFileOperation = new DeleteFileOperation(logger, statistics.FileOperation.IsChanging);
 
-            CollectCollisions(logger, errorCollection.Errors.OfType<FileAlreadyExistsError>(), (string baseDirectory, FileAlreadyExistsError error) => HandleFileAlreadyExistsError(baseDirectory, error, logger, statistics, copyFileOperation, deleteFileOperation));
-            CollectCollisions(logger, errorCollection.Errors.OfType<NoTimeFoundError>(), (string baseDirectory, NoTimeFoundError error) => HandleCollisions(baseDirectory, error, logger, copyFileOperation));
-            CollectCollisions(logger, errorCollection.Errors.OfType<MetaDataError>(), (string baseDirectory, MetaDataError error) => HandleCollisions(baseDirectory, error, logger, copyFileOperation));
-        }
-
-        private static void HandleCollisions<T>(string baseDirectory, T error, ILogger logger, CopyFileOperation copyFileOperation) where T : ErrorBase
-        {
-            var (completeFilePath, directory, _, _) = DecomposeFile(baseDirectory, error.File);
-            CreateDirectoryAndCopyFile(logger, completeFilePath, directory, error, copyFileOperation);
-        }
-
-        private static void HandleFileAlreadyExistsError(string baseDirectory, FileAlreadyExistsError error, ILogger logger, IFoundStatistics statistics, CopyFileOperation copyFileOperation, DeleteFileOperation deleteFileOperation)
-        {
-            HandleCollisionOrDuplicate(logger, statistics, copyFileOperation, deleteFileOperation, baseDirectory, error);
+            CollectCollisions(logger, errorCollection.Errors.OfType<FileAlreadyExistsError>(), (FileDecomposition targetFile, FileAlreadyExistsError error) => HandleCollisionOrDuplicate(logger, statistics, copyFileOperation, deleteFileOperation, error, targetFile));
+            CollectCollisions(logger, errorCollection.Errors.OfType<NoTimeFoundError>(), (FileDecomposition targetFile, NoTimeFoundError error) => CreateDirectoryAndCopyFile(logger, error, targetFile, copyFileOperation));
+            CollectCollisions(logger, errorCollection.Errors.OfType<MetaDataError>(), (FileDecomposition targetFile, MetaDataError error) => CreateDirectoryAndCopyFile(logger, error, targetFile, copyFileOperation));
         }
 
         private static void CollectCollisions<T>(ILogger logger,
                                               IEnumerable<T> errors,
-                                              Action<string, T> action) where T : ErrorBase
+                                              Action<FileDecomposition, T> action) where T : ErrorBase
         {
             if (errors.Any())
             {
                 var directoryName = errors.First().Name;
-                var baseDirectory = new DirectoryInfo(directoryName).FullName;
-                logger.LogError($"{errors.Count()} {directoryName} issues will be located in the directory '{baseDirectory}'");
+                var targetDirectory = new DirectoryInfo(directoryName).FullName;
 
-                RenamePossiblyExistingDirectory(logger, baseDirectory);
-                CreateDirectory(logger, baseDirectory);
+                logger.LogError($"{errors.Count()} {directoryName} issues will be located in the directory '{targetDirectory}'");
+
+                RenamePossiblyExistingDirectory(logger, targetDirectory);
+                CreateDirectory(logger, targetDirectory);
 
                 foreach (var error in errors)
                 {
                     try
                     {
-                        action(baseDirectory, error);
+                        var file = CreateFileDecompositionAtCollisionDirectory(targetDirectory, error.File);
+                        action(file, error);
                     }
                     catch (Exception e)
                     {
@@ -54,46 +45,46 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
             }
         }
 
-
-        private static (string completeFilepath, string directory, string filename, string extension) DecomposeFile(
-            string baseDirectory,
-            string errorFile)
-        {
-            string filenameWithExtension = Path.GetFileName(errorFile);
-            var (filename, extension) = SplitFileNameAndExtension(filenameWithExtension);
-            var directory = Path.Combine(baseDirectory, filename);
-            var completeFilepath = Path.Combine(baseDirectory, filenameWithExtension);
-
-            Serilog.Log.Verbose($"basedirectory: {baseDirectory}, errorFile: {errorFile} => completeFilepath: {completeFilepath}, directory: {directory}, filename: {filename}, extension: {extension}");
-
-            return (completeFilepath, directory, filename, extension);
-        }
-
-        private static void CreateDirectoryAndCopyFile(ILogger logger, string file, string directory, ErrorBase error, CopyFileOperation copyFileOperation)
+        private static void CreateDirectoryAndCopyFile(ILogger logger, ErrorBase error, FileDecomposition targetFile, CopyFileOperation copyFileOperation)
         {
             // 1: make sure directory exists
-            CreateDirectory(logger, directory);
+            CreateDirectory(logger, targetFile.Directory);
 
             // 2: copy the first file of the collision to the other duplicates s.t. we can investigate easily
-            Copy(error, directory, file, copyFileOperation);
+            var targetFilee = Path.Combine(targetFile.Directory, targetFile.Name + targetFile.Extension);
+            if (File.Exists(error.File))
+            {
+                copyFileOperation.ChangeFile(error.File, targetFilee);
+            }
+            else
+            {
+                throw new FileNotFoundException($"'{error.File}' does not exist.");
+            }
+
+            // CopyFileWithAppendedNumber(logger, error.File, targetFile, copyFileOperation);
         }
 
         private static void HandleCollisionOrDuplicate(ILogger logger,
                                                        IFoundStatistics statistics,
                                                        CopyFileOperation copyFileOperation,
                                                        DeleteFileOperation deleteFileOperation,
-                                                       string baseDirectory,
-                                                       FileAlreadyExistsError error)
+                                                       FileAlreadyExistsError error,
+                                                       FileDecomposition targetFile)
         {
             if (IsDuplicate(logger, error, statistics))
             {
-                logger.LogDebug($"{error.OtherFile} is duplicate of {error.File}");
-                deleteFileOperation.Delete(error.OtherFile);
+                HandleDuplicate(logger, deleteFileOperation, error);
             }
             else
             {
-                HandleCollision(logger, baseDirectory, error, copyFileOperation);
+                HandleCollision(logger, targetFile, error, copyFileOperation);
             }
+        }
+
+        private static void HandleDuplicate(ILogger logger, DeleteFileOperation deleteFileOperation, FileAlreadyExistsError error)
+        {
+            logger.LogDebug($"{error.OtherFile} is duplicate of {error.File}");
+            deleteFileOperation.Delete(error.OtherFile);
         }
 
         private static bool IsDuplicate(ILogger logger,
@@ -173,7 +164,7 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
         }
 
         private static void HandleCollision(ILogger logger,
-                                            string baseDirectory,
+                                            FileDecomposition targetFile,
                                             FileAlreadyExistsError error,
                                             CopyFileOperation copyFileOperation)
         {
@@ -196,30 +187,10 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
             //  * skip copying error2.FileInfo ("20230101/1.jpg") to ErrorFiles/20230101/1.jpg
             //  * copy error2.OtherFile with appended number to ErrorFiles/20230101/1_2.jpg
 
-
-            var ( completeFilepath, directory, filename, extension) = DecomposeFile(baseDirectory, error.File);
-
-            CreateDirectoryAndCopyFile(logger, completeFilepath, directory, error, copyFileOperation);
+            CreateDirectoryAndCopyFile(logger, error, targetFile, copyFileOperation);
 
             // 3: copy the other file into subdirectory with appended _number
-            CopyFileWithAppendedNumber(logger, error.OtherFile, completeFilepath, filename, extension, copyFileOperation);
-        }
-
-        private static void Copy(ErrorBase error,
-                                 string directory,
-                                 string file,
-                                 CopyFileOperation fileOperation)
-        {
-            var targetPath = Path.Combine(directory, Path.GetFileName(file));
-
-            if (File.Exists(error.File))
-            {
-                fileOperation.ChangeFile(error.File, targetPath);
-            }
-            else
-            {
-                throw new FileNotFoundException($"'{error.File}' does not exist.");
-            }
+            CopyFileWithAppendedNumber(logger, error.OtherFile, targetFile, copyFileOperation);
         }
 
         private static void CreateDirectory(ILogger logger, string directory)
@@ -246,29 +217,42 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
             }
         }
 
-        private static (string filename, string extension) SplitFileNameAndExtension(string name)
+        private static FileDecomposition CreateFileDecompositionAtCollisionDirectory(string targetDirectory, string errorFile)
         {
-            var ret = (string.Empty, string.Empty);
-            var dotPosition = name.IndexOf('.');
-            if (dotPosition > 0)
+            static (string filename, string extension) SplitFileNameAndExtension(string name)
             {
-                ret = (name[..dotPosition], name[dotPosition..]);
+                // supports "img1234.jpg.xmp" => ("img1234", ".jpg.xmp")
+                var ret = (string.Empty, string.Empty);
+                var dotPosition = name.IndexOf('.');
+                if (dotPosition > 0)
+                {
+                    ret = (name[..dotPosition], name[dotPosition..]);
+                }
+                return ret;
             }
-            return ret;
+
+            string filenameWithExtension = Path.GetFileName(errorFile);
+            var (filename, extension) = SplitFileNameAndExtension(filenameWithExtension);
+            var directory = Path.Combine(targetDirectory, filename);
+            var completeFilepath = Path.Combine(targetDirectory, filenameWithExtension);
+
+
+            var targetFile = new FileDecomposition(completeFilepath, directory, filename, extension);
+            Serilog.Log.Verbose($"{nameof(targetDirectory)}: {targetDirectory}, errorFile: {errorFile} => {nameof(targetFile)}: {targetFile}");
+            
+            return targetFile;
         }
 
         private static void CopyFileWithAppendedNumber(ILogger logger,
                                                        string errorFile,
-                                                       string collisionFile,
-                                                       string filename,
-                                                       string extension,
+                                                       FileDecomposition targetFile,
                                                        CopyFileOperation copyFileOperation)
         {
             // copy this file into subdirectory with appended _number
-            var directory = new FileInfo(collisionFile).Directory ?? throw new InvalidOperationException("Directory does not exist");
-            var subdirectory = Path.Combine(directory.FullName, filename);
-            var fileCount = Directory.GetFiles(subdirectory, "*" + extension).Length;
-            var fullname = Path.Combine(subdirectory, filename + "_" + fileCount + extension);
+            var directory = new FileInfo(targetFile.CompletePath).Directory ?? throw new InvalidOperationException("Directory does not exist");
+            var subdirectory = Path.Combine(directory.FullName, targetFile.Name);
+            var fileCount = Directory.GetFiles(subdirectory, "*" + targetFile.Extension).Length;
+            var fullname = Path.Combine(subdirectory, targetFile.Name + "_" + fileCount + targetFile.Extension);
             logger.LogDebug("Collision for {errorFileInfo}. Arrange next to others as {fullname}", errorFile, fullname);
             copyFileOperation.ChangeFile(errorFile, fullname);
         }
