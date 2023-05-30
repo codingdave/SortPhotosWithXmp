@@ -1,4 +1,4 @@
-namespace SortPhotosWithXmpByExifDateCli.Statistics
+namespace SortPhotosWithXmpByExifDateCli
 {
     public static partial class CopyErrorFilesHelper
     {

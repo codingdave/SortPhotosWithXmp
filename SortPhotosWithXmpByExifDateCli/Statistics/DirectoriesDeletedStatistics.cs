@@ -1,7 +1,7 @@
 using System.Data;
 using MetadataExtractor;
 using Microsoft.Extensions.Logging;
-
+using SortPhotosWithXmpByExifDateCli.ErrorCollection;
 namespace SortPhotosWithXmpByExifDateCli.Statistics;
 
 public class DirectoriesDeletedStatistics : IStatistics
@@ -13,7 +13,7 @@ public class DirectoriesDeletedStatistics : IStatistics
     {
         _logger = logger;
         _deleteDirectoryOperation = deleteDirectoryOperation;
-        FileErrors = new ErrorCollection(logger);
+        FileErrors = new ErrorCollection.ErrorCollection(logger);
     }
 
     public int DirectoriesFound { get; set; }

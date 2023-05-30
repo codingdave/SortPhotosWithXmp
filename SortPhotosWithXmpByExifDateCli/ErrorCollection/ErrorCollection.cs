@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 
-namespace SortPhotosWithXmpByExifDateCli.Statistics;
+namespace SortPhotosWithXmpByExifDateCli.ErrorCollection;
 
 public class ErrorCollection : IErrorCollection, IReadOnlyErrorCollection
 {

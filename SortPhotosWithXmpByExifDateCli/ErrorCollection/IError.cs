@@ -1,4 +1,4 @@
-namespace SortPhotosWithXmpByExifDateCli.Statistics
+namespace SortPhotosWithXmpByExifDateCli.ErrorCollection
 {
     public interface IError
     {

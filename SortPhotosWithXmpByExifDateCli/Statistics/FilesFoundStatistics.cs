@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using SortPhotosWithXmpByExifDateCli.ErrorCollection;
 
 namespace SortPhotosWithXmpByExifDateCli.Statistics;
 
@@ -6,8 +7,10 @@ public class FilesFoundStatistics : IStatistics, IModifiableErrorCollection, IFo
 {
     private readonly ILogger _logger;
     public IFileOperation FileOperation { get; }
-    public FilesFoundStatistics(ILogger logger, IFileOperation fileOperation) =>
-    (_logger, FileOperation, _errors) = (logger, fileOperation, new ErrorCollection(logger));
+    public FilesFoundStatistics(ILogger logger, IFileOperation fileOperation)
+    {
+        (_logger, FileOperation, _errors) = (logger, fileOperation, new ErrorCollection.ErrorCollection(logger));
+    }
 
     public int FoundXmps { get; set; }
     public int FoundImages { get; set; }

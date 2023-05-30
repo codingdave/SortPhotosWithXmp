@@ -1,8 +1,10 @@
 using Microsoft.Extensions.Logging;
 using ImageMagick;
 using System.Diagnostics;
+using SortPhotosWithXmpByExifDateCli.Statistics;
+using SortPhotosWithXmpByExifDateCli.ErrorCollection;
 
-namespace SortPhotosWithXmpByExifDateCli.Statistics
+namespace SortPhotosWithXmpByExifDateCli
 {
     public static partial class CopyErrorFilesHelper
     {

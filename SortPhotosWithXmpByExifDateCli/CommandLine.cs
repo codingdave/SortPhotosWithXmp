@@ -6,6 +6,7 @@ using CoenM.ImageHash.HashAlgorithms;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using SortPhotosWithXmpByExifDateCli.ErrorCollection;
 using SortPhotosWithXmpByExifDateCli.Statistics;
 
 namespace SortPhotosWithXmpByExifDateCli;
@@ -183,46 +184,20 @@ internal class CommandLine
 
     private void AddCheckForDuplicateImagesCommand()
     {
-        void CheckForDuplicateImages()
+        void CheckForDuplicateImages(string directory, bool force)
         {
-            try
-            {
-                var basePath = "/run/media/david/1.44.1-42962/";
-                var f1 = basePath + "Photos/Fotos/20150106/dsc_1491.JPG";
-                var f2 = basePath + "Photos/Fotos/20150601/dsc_1491.JPG";
-                // var hash1 = MD5.Create().ComputeHash(File.Open(f1, FileMode.Open));
-                // var hash2 = MD5.Create().ComputeHash(File.Open(f2, FileMode.Open));
-
-                var hashAlgorithm = new AverageHash();
-                // or one of the other available algorithms:
-                // var hashAlgorithm = new DifferenceHash();
-                // var hashAlgorithm = new PerceptualHash();
-
-                using var stream1 = File.OpenRead(f1);
-                ulong hash1 = hashAlgorithm.Hash(stream1);
-
-                using var stream2 = File.OpenRead(f2);
-                ulong hash2 = hashAlgorithm.Hash(stream2);
-
-                var percentageImageSimilarity = CompareHash.Similarity(hash1, hash2);
-
-                // 2015/01/06/dsc_1491.JPG and 2015/06/01/dsc_1491.JPG 
-                // Run(new FixExifDateByOffset(directory, (TimeSpan)offset, force));
-                // throw new NotImplementedException();
-            }
-            catch (Exception e)
-            {
-                _logger.LogExceptionError(e);
-            }
+            Run(new CheckForDuplicates.CheckForDuplicatesRunner(_logger, directory, force));
         }
 
         var checkForDuplicateImagesCommand = new Command(
             "checkForDuplicateImagesCommand",
             "Scan for images that are duplicates and remove them.")
         {
+            _sourceOption,
+            _forceOption
         };
 
-        checkForDuplicateImagesCommand.SetHandler(CheckForDuplicateImages!);
+        checkForDuplicateImagesCommand.SetHandler(CheckForDuplicateImages!, _sourceOption, _forceOption);
 
         _rootCommand.AddCommand(checkForDuplicateImagesCommand);
     }
