@@ -1,10 +1,9 @@
-using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 using SortPhotosWithXmpByExifDateCli.Statistics;
 
 namespace SortPhotosWithXmpByExifDateCli;
 
-internal interface IRun
+internal interface IRunAsync
 {
-    public IStatistics Run(ILogger logger);
+    public Task<IStatistics> RunAsync(ILogger logger);
 }

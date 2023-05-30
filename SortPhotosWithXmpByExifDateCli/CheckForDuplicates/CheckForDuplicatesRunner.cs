@@ -1,9 +1,10 @@
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using CoenM.ImageHash;
 using CoenM.ImageHash.HashAlgorithms;
 using Microsoft.Extensions.Logging;
-using SixLabors.ImageSharp.ColorSpaces;
-using SortPhotosWithXmpByExifDateCli;
+using SortPhotosWithXmpByExifDateCli.CheckForDuplicates.Store;
 using SortPhotosWithXmpByExifDateCli.ErrorCollection;
 using SortPhotosWithXmpByExifDateCli.Statistics;
 
@@ -15,8 +16,9 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
         private readonly string _directory;
         private readonly bool _force;
         private readonly int _similarity;
-        private readonly List<(ulong hash, string imagePath)> _imageHashes = new();
-        private readonly List<(byte[] hash, string xmpPath)> _xmpHashes = new();
+        private List<ImageHash> _imageHashes = new();
+        private List<XmpHash> _xmpHashes = new();
+        private readonly HashRepository _hashRepository;
         private readonly List<(double similarity, string imagePath1, string imagePath2)> _imageSimilarity = new();
         readonly IImageHash _hashAlgorithm = new AverageHash();
 
@@ -26,11 +28,12 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
             _directory = directory;
             _force = force;
             _similarity = similarity;
+            _hashRepository = new HashRepository(logger);
         }
 
         public IStatistics Run(ILogger logger)
         {
-            IOperation operation = null;
+            IFixDuplicatesOperation operation = new FixDuplicateOperation(_logger, _force);
             try
             {
                 CreateHashes();
@@ -45,7 +48,7 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
             return new DuplicatesDeletedStatistics();
         }
 
-        private void HandlyMostSimilarImages(int similarity, IOperation operation)
+        private void HandlyMostSimilarImages(int similarity, IFixDuplicatesOperation operation)
         {
             // images
             _imageSimilarity.Sort(new ImageSimilarityComparer());
@@ -53,11 +56,7 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
             {
                 if (imageSimilarity.similarity > similarity)
                 {
-                    _logger.LogInformation("image '{image1}' and image '{image2}' are duplicates with a similarity score of {similarity}",
-                                     imageSimilarity.imagePath1,
-                                     imageSimilarity.imagePath2,
-                                     imageSimilarity.similarity);
-                    // operation();
+                    operation.HandleDuplicates(imageSimilarity.imagePath1, imageSimilarity.imagePath2, imageSimilarity.similarity);
                 }
                 else
                 {
@@ -66,11 +65,10 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
             }
 
             // xmps: only supports 100% match
-            var xmpDuplicatesGroup = _xmpHashes.GroupBy(x => x.hash).Where(g => g.Count() > 1);
-            foreach (IGrouping<byte[], (byte[] hash, string xmpPath)>? duplicates in xmpDuplicatesGroup)
+            var xmpDuplicatesGroup = _xmpHashes.GroupBy(x => x.Hash).Where(g => g.Count() > 1);
+            foreach (var duplicates in xmpDuplicatesGroup)
             {
-                _logger.LogInformation("Found {amount} xmp files that are a duplicates: {images}", duplicates.Count(), duplicates.Select(s => s.xmpPath));
-
+                operation.HandleDuplicates(duplicates.Select(s => s.Filename));
             }
         }
 
@@ -79,18 +77,30 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
             // only doing for images. Not possible for xmps
             for (int i = 0; i < _imageHashes.Count; ++i)
             {
-                var (hash1, image1) = _imageHashes[i];
+                var imageHash1 = _imageHashes[i];
                 for (int j = i + 1; j < _imageHashes.Count; ++j)
                 {
-                    var (hash2, image2) = _imageHashes[j];
-                    var percentageImageSimilarity = CompareHash.Similarity(hash1, hash2);
-                    _imageSimilarity.Add((percentageImageSimilarity, image1, image2));
+                    var imageHash2 = _imageHashes[j];
+                    var percentageImageSimilarity = CompareHash.Similarity(imageHash1.Hash, imageHash2.Hash);
+                    _imageSimilarity.Add((percentageImageSimilarity, imageHash1.ImagePath, imageHash2.ImagePath));
                 }
             }
         }
 
         private void CreateHashes()
         {
+            (_xmpHashes, _imageHashes) = _hashRepository.ReadHashes();
+
+            void TickTimer(object? state)
+            {
+                _hashRepository.SaveHashes(_xmpHashes, _imageHashes);
+            }
+
+            using var saveStorageTimer = new Timer(new TimerCallback(TickTimer), null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
+
+            var options = new EnumerationOptions() { RecurseSubdirectories = true };
+            var files = Directory.EnumerateFiles(_directory, "*.*", options);
+            Parallel.ForEach(files, CreateHash);
 
             void CreateHash(string path)
             {
@@ -106,20 +116,13 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
                     CreateImageHash(path);
                 }
             }
-
-            var files = Directory.EnumerateFiles(_directory, "*.*", new EnumerationOptions()
-            {
-                RecurseSubdirectories = true
-            });
-
-            Parallel.ForEach(files, CreateHash);
         }
 
-        private void CreateXmpHash(HashAlgorithm hashAlgorithm, string path)
+        private void CreateXmpHash(HashAlgorithm hashAlgorithm, string xmpPath)
         {
-            using var stream = File.OpenRead(path);
+            using var stream = File.OpenRead(xmpPath);
             var hash = hashAlgorithm.ComputeHash(stream);
-            _xmpHashes.Add((hash, path));
+            _xmpHashes.Add(new XmpHash(xmpPath, hash, File.GetLastWriteTimeUtc(xmpPath)));
         }
 
         private void CreateImageHash(string imagePath)
@@ -128,7 +131,7 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
             {
                 using var imageStream = File.OpenRead(imagePath);
                 var hash = _hashAlgorithm.Hash(imageStream);
-                _imageHashes.Add((hash, imagePath));
+                _imageHashes.Add(new ImageHash(imagePath, hash, File.GetLastWriteTimeUtc(imagePath)));
             }
             catch (UnknownImageFormatException e)
             {

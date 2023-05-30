@@ -20,6 +20,8 @@ The default operation is copy, but move can be enforced.
   * with a HashSet look up for duplicates?
   * Maybe store the HashSet database on disk to speed up further iterations?
 * 0/0 duplicates found. Does it even work?
+* Duplicate command logs to console that it calculates hashes. Thats it?
+* Duplicate command crashes. It consumes all the available memory?
 
 ## TODO-Action wise
 * run for Pictures, sorted-Pictures, and all other unprocessed sources

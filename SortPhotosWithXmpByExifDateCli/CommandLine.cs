@@ -71,6 +71,7 @@ internal class CommandLine
         AddRearrangeByCameraManufacturerCommand();
         AddRearrangeBySoftwareCommand();
     }
+
     public async Task<int> InvokeAsync(string[] args)
     {
         return await _rootCommand.InvokeAsync(args);
@@ -250,6 +251,23 @@ internal class CommandLine
         try
         {
             var statistics = f.Run(_logger);
+            if (statistics is IFoundStatistics filesFoundStatistics)
+            {
+                statistics.FileErrors.HandleErrorFiles(_logger, filesFoundStatistics);
+            }
+            statistics.Log();
+        }
+        catch (Exception e)
+        {
+            _logger.LogExceptionError(e);
+        };
+    }
+
+    private async Task RunAsync(IRunAsync f)
+    {
+        try
+        {
+            var statistics = await f.RunAsync(_logger);
             if (statistics is IFoundStatistics filesFoundStatistics)
             {
                 statistics.FileErrors.HandleErrorFiles(_logger, filesFoundStatistics);
