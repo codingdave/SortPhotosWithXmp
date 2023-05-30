@@ -19,7 +19,6 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
         private readonly List<(byte[] hash, string xmpPath)> _xmpHashes = new();
         private readonly List<(double similarity, string imagePath1, string imagePath2)> _imageSimilarity = new();
         readonly IImageHash _hashAlgorithm = new AverageHash();
-        readonly HashAlgorithm _md5 = MD5.Create();
 
         public CheckForDuplicatesRunner(ILogger<CommandLine> logger, string directory, bool force, int similarity = 100)
         {
@@ -70,7 +69,7 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
             var xmpDuplicatesGroup = _xmpHashes.GroupBy(x => x.hash).Where(g => g.Count() > 1);
             foreach (IGrouping<byte[], (byte[] hash, string xmpPath)>? duplicates in xmpDuplicatesGroup)
             {
-                _logger.LogInformation("Found {amount} xmp files that are a duplicates:", duplicates.Count(), duplicates.Select(s => s.xmpPath));
+                _logger.LogInformation("Found {amount} xmp files that are a duplicates: {images}", duplicates.Count(), duplicates.Select(s => s.xmpPath));
 
             }
         }
@@ -92,11 +91,15 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
 
         private void CreateHashes()
         {
+
             void CreateHash(string path)
             {
+                _logger.LogInformation("Calculating hash for {path}", path);
+
+                using var md5 = MD5.Create();
                 if (path.EndsWith(".xmp"))
                 {
-                    CreateXmpHash(path);
+                    CreateXmpHash(md5, path);
                 }
                 else
                 {
@@ -108,13 +111,14 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
             {
                 RecurseSubdirectories = true
             });
-            
+
             Parallel.ForEach(files, CreateHash);
         }
 
-        private void CreateXmpHash(string path)
+        private void CreateXmpHash(HashAlgorithm hashAlgorithm, string path)
         {
-            var hash = _md5.ComputeHash(File.Open(path, FileMode.Open));
+            using var stream = File.OpenRead(path);
+            var hash = hashAlgorithm.ComputeHash(stream);
             _xmpHashes.Add((hash, path));
         }
 
