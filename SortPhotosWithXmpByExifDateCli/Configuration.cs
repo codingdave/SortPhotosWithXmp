@@ -11,32 +11,37 @@ public static class Configuration
     public static IHost CreateHost()
     {
         var appsettings = GetBasePath() + "appsettings.json";
-        var configuration = new ConfigurationBuilder()
+        var additionalAppsettings = GetBasePath() + $"appsettings.{Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Production"}.json";
+        var configurationBuilder = new ConfigurationBuilder()
             .SetBasePath(GetBasePath())
             .AddJsonFile(appsettings, optional: false, reloadOnChange: true)
-            .Build();
+            .AddJsonFile(additionalAppsettings, optional: true, reloadOnChange: true)
+            ;
+
+        var configurationRoot = configurationBuilder.Build();
 
         Log.Logger = new LoggerConfiguration()
-            .ReadFrom.Configuration(configuration)
+            .ReadFrom.Configuration(configurationRoot)
             .Enrich.FromLogContext()
             .CreateLogger();
 
         var host = Host.CreateDefaultBuilder()
-        .ConfigureServices(serviceCollection => { })
-        .ConfigureAppConfiguration(configurationBuilder =>
-        {
-            _ = configurationBuilder
-                .SetBasePath(GetBasePath())
-                .AddJsonFile(appsettings, optional: false, reloadOnChange: true);
-        })
-        .ConfigureLogging(loggingBuilder =>
-        {
-            _ = loggingBuilder.ClearProviders();
-        })
-        .UseSerilog()
-        .Build();
+            .ConfigureServices(serviceCollection => { })
+            .ConfigureAppConfiguration((hostBuilderContext, configurationBuilder) =>
+            {
+                _ = configurationBuilder
+                    .SetBasePath(GetBasePath())
+                    .AddJsonFile(appsettings, optional: false, reloadOnChange: true)
+                    .AddJsonFile(path: additionalAppsettings, optional: true);
+            })
+            .ConfigureLogging(loggingBuilder =>
+            {
+                _ = loggingBuilder.ClearProviders();
+            })
+            .UseSerilog()
+            .Build();
 
-        Log.Information($"reading configuration from '{appsettings}'");
+        Log.Information($"reading configuration from required '{appsettings}' and optional '{additionalAppsettings}'");
         return host;
     }
 
