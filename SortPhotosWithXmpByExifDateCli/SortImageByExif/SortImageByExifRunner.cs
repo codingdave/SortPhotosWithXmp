@@ -2,9 +2,9 @@ using MetadataExtractor;
 using Microsoft.Extensions.Logging;
 using SortPhotosWithXmpByExifDateCli.Statistics;
 
-namespace SortPhotosWithXmpByExifDateCli;
+namespace SortPhotosWithXmpByExifDateCli.SortImageByExif;
 
-internal class SortImageByExif : IRun
+internal class SortImageByExifRunner : IRun
 {
     private readonly string _destinationDirectory;
     private readonly string _sourceDirectory;
@@ -13,7 +13,7 @@ internal class SortImageByExif : IRun
     private readonly IFileOperation _operationPerformer;
     private readonly DeleteDirectoryOperation _deleteDirectoryOperation;
 
-    internal SortImageByExif(ILogger logger,
+    internal SortImageByExifRunner(ILogger logger,
                              string sourceDirectory,
                              string destinationDirectory,
                              IEnumerable<string> extensions,
@@ -68,7 +68,7 @@ internal class SortImageByExif : IRun
                     _statistics.AddError(new NoTimeFoundError(file, Helpers.GetMetadata(metaDataDirectories)));
                 }
             }
-            catch (ImageProcessingException e)
+            catch (MetadataExtractor.ImageProcessingException e)
             {
                 _statistics.AddError(new ImageProcessingExceptionError(file, e));
             }

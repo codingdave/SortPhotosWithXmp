@@ -98,7 +98,7 @@ internal class CommandLine
             var operationPerformer = OperationPerformerFactory.GetOperationPerformer(_logger, force, move);
             var deleteDirectoryPerformer = new DeleteDirectoryOperation(_logger, force);
 
-            Run(new SortImageByExif(_logger, sourcePath, destinationPath, _extensions, operationPerformer, deleteDirectoryPerformer));
+            Run(new SortImageByExif.SortImageByExifRunner(_logger, sourcePath, destinationPath, _extensions, operationPerformer, deleteDirectoryPerformer));
         }
 
         var rearrangeByExifCommand = new Command("rearrangeByExif",
