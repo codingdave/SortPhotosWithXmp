@@ -12,6 +12,7 @@ public static class Configuration
     {
         var appsettings = GetBasePath() + "appsettings.json";
         var additionalAppsettings = GetBasePath() + $"appsettings.{Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Production"}.json";
+        
         var configurationBuilder = new ConfigurationBuilder()
             .SetBasePath(GetBasePath())
             .AddJsonFile(appsettings, optional: false, reloadOnChange: true)
@@ -36,7 +37,7 @@ public static class Configuration
             })
             .ConfigureLogging(loggingBuilder =>
             {
-                _ = loggingBuilder.ClearProviders();
+                // _ = loggingBuilder.ClearProviders().AddConfiguration()
             })
             .UseSerilog()
             .Build();

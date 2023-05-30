@@ -54,8 +54,15 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
             {
                 if (imageSimilarity.similarity > similarity)
                 {
-                    _logger.LogTrace("image '{image1}' and image '{image2}' are duplicates with a similarity score of {similarity}", imageSimilarity.imagePath1, imageSimilarity.imagePath2, imageSimilarity.similarity);
+                    _logger.LogInformation("image '{image1}' and image '{image2}' are duplicates with a similarity score of {similarity}",
+                                     imageSimilarity.imagePath1,
+                                     imageSimilarity.imagePath2,
+                                     imageSimilarity.similarity);
                     // operation();
+                }
+                else
+                {
+                    break;
                 }
             }
 
@@ -63,7 +70,7 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
             var xmpDuplicatesGroup = _xmpHashes.GroupBy(x => x.hash).Where(g => g.Count() > 1);
             foreach (IGrouping<byte[], (byte[] hash, string xmpPath)>? duplicates in xmpDuplicatesGroup)
             {
-                _logger.LogTrace("Found {amount} xmp files that are a duplicates:", duplicates.Count(), duplicates.Select(s => s.xmpPath));
+                _logger.LogInformation("Found {amount} xmp files that are a duplicates:", duplicates.Count(), duplicates.Select(s => s.xmpPath));
 
             }
         }
@@ -74,7 +81,7 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
             for (int i = 0; i < _imageHashes.Count; ++i)
             {
                 var (hash1, image1) = _imageHashes[i];
-                for (int j = i; j < _imageHashes.Count; ++j)
+                for (int j = i + 1; j < _imageHashes.Count; ++j)
                 {
                     var (hash2, image2) = _imageHashes[j];
                     var percentageImageSimilarity = CompareHash.Similarity(hash1, hash2);
@@ -111,6 +118,10 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
                 using var imageStream = File.OpenRead(imagePath);
                 var hash = _hashAlgorithm.Hash(imageStream);
                 _imageHashes.Add((hash, imagePath));
+            }
+            catch(UnknownImageFormatException e)
+            {
+                _logger.LogExceptionWarning(imagePath, e);
             }
             catch (Exception e)
             {

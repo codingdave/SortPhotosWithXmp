@@ -6,6 +6,7 @@ using CoenM.ImageHash.HashAlgorithms;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Serilog;
 using SortPhotosWithXmpByExifDateCli.ErrorCollection;
 using SortPhotosWithXmpByExifDateCli.Statistics;
 
@@ -171,7 +172,7 @@ internal class CommandLine
         }
 
         var deleteLeftoverXmpsCommand = new Command(
-            "deleteLeftoverXmpsCommand",
+            "deleteLeftoverXmps",
             "Scan for lonely/leftover xmps and remove them.")
         {
             _sourceOption,
@@ -191,7 +192,7 @@ internal class CommandLine
         }
 
         var checkForDuplicateImagesCommand = new Command(
-            "checkForDuplicateImagesCommand",
+            "checkForDuplicateImages",
             "Scan for images that are duplicates and remove them.")
         {
             _sourceOption,
