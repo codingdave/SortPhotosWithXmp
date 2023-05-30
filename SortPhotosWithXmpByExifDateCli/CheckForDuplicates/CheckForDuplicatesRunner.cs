@@ -92,7 +92,7 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
 
         private void CreateHashes()
         {
-            foreach (var path in Directory.EnumerateFiles(_directory, "*.*", new EnumerationOptions() { RecurseSubdirectories = true }))
+            void CreateHash(string path)
             {
                 if (path.EndsWith(".xmp"))
                 {
@@ -103,6 +103,13 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
                     CreateImageHash(path);
                 }
             }
+
+            var files = Directory.EnumerateFiles(_directory, "*.*", new EnumerationOptions()
+            {
+                RecurseSubdirectories = true
+            });
+            
+            Parallel.ForEach(files, CreateHash);
         }
 
         private void CreateXmpHash(string path)
@@ -119,7 +126,7 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
                 var hash = _hashAlgorithm.Hash(imageStream);
                 _imageHashes.Add((hash, imagePath));
             }
-            catch(UnknownImageFormatException e)
+            catch (UnknownImageFormatException e)
             {
                 _logger.LogExceptionWarning(imagePath, e);
             }
