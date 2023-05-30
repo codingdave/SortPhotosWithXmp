@@ -8,7 +8,7 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
 
         public void Log()
         {
-            throw new NotImplementedException();
+            // throw new NotImplementedException();
         }
     }
 }

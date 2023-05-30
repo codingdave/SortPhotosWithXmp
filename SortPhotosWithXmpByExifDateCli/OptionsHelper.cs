@@ -1,4 +1,5 @@
 using System.CommandLine;
+using System.CommandLine.Parsing;
 
 namespace SortPhotosWithXmpByExifDateCli;
 
@@ -20,6 +21,14 @@ internal static class OptionsHelper
             description: "Operation on files, move if true. Defaults to copy.",
             getDefaultValue: () => false
         );
+    }
+
+    internal static Option<int> GetSimilarityOption()
+    {
+        return new Option<int>
+        (name: "--similarity",
+        description: "Number to indicate similarity to detect an image as a duplicate of anothe. Defaults to 100%.",
+        getDefaultValue: () => 100);
     }
 
     internal static Option<object?> GetOffsetOption()

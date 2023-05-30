@@ -32,6 +32,7 @@ internal class CommandLine
     private readonly Option<object?> _offsetOption;
     private readonly Option<bool> _forceOption;
     private readonly Option<bool> _moveOption;
+    private readonly Option<int> _similarityOption;
 
     private readonly ILogger<CommandLine> _logger;
     private readonly RootCommand _rootCommand;
@@ -43,8 +44,8 @@ internal class CommandLine
         _offsetOption = OptionsHelper.GetOffsetOption();
         _forceOption = OptionsHelper.GetForceOption();
         _moveOption = OptionsHelper.GetMoveOption();
+        _similarityOption = OptionsHelper.GetSimilarityOption();
         IHost host = Configuration.CreateHost();
-
         _logger = host.Services.GetRequiredService<ILogger<CommandLine>>();
         _logger.LogInformation($"BasePath: {Configuration.GetBasePath()}");
         _logger.Log(LogLevel.Trace, "Trace messages will show up");
@@ -184,9 +185,9 @@ internal class CommandLine
 
     private void AddCheckForDuplicateImagesCommand()
     {
-        void CheckForDuplicateImages(string directory, bool force)
+        void CheckForDuplicateImages(string directory, bool force, int similarity)
         {
-            Run(new CheckForDuplicates.CheckForDuplicatesRunner(_logger, directory, force));
+            Run(new CheckForDuplicates.CheckForDuplicatesRunner(_logger, directory, force, similarity));
         }
 
         var checkForDuplicateImagesCommand = new Command(
@@ -194,10 +195,11 @@ internal class CommandLine
             "Scan for images that are duplicates and remove them.")
         {
             _sourceOption,
+            _similarityOption,
             _forceOption
         };
 
-        checkForDuplicateImagesCommand.SetHandler(CheckForDuplicateImages!, _sourceOption, _forceOption);
+        checkForDuplicateImagesCommand.SetHandler(CheckForDuplicateImages!, _sourceOption, _forceOption, _similarityOption);
 
         _rootCommand.AddCommand(checkForDuplicateImagesCommand);
     }
