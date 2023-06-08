@@ -1,4 +1,4 @@
 namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
 {
-    public record struct ImageHash(string ImagePath, ulong Hash, DateTime LastWriteTimeUtc);
+    public record struct ImageHash(string Filename, ulong Hash, DateTime LastWriteTimeUtc) : HashBase;
 }

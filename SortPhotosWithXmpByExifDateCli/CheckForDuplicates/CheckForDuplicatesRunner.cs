@@ -1,5 +1,3 @@
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using CoenM.ImageHash;
 using CoenM.ImageHash.HashAlgorithms;
@@ -13,7 +11,7 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
     internal class CheckForDuplicatesRunner : IRun
     {
         private readonly ILogger<CommandLine> _logger;
-        private readonly string _directory;
+        private readonly string _imageDirectory;
         private readonly bool _force;
         private readonly int _similarity;
         private List<ImageHash> _imageHashes = new();
@@ -22,13 +20,13 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
         private readonly List<(double similarity, string imagePath1, string imagePath2)> _imageSimilarity = new();
         readonly IImageHash _hashAlgorithm = new AverageHash();
 
-        public CheckForDuplicatesRunner(ILogger<CommandLine> logger, string directory, bool force, int similarity = 100)
+        public CheckForDuplicatesRunner(ILogger<CommandLine> logger, string imageDirectory, HashRepository repository, bool force, int similarity = 100)
         {
             _logger = logger;
-            _directory = directory;
+            _imageDirectory = imageDirectory;
             _force = force;
             _similarity = similarity;
-            _hashRepository = new HashRepository(logger);
+            _hashRepository = repository;
         }
 
         public IStatistics Run(ILogger logger)
@@ -82,7 +80,7 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
                 {
                     var imageHash2 = _imageHashes[j];
                     var percentageImageSimilarity = CompareHash.Similarity(imageHash1.Hash, imageHash2.Hash);
-                    _imageSimilarity.Add((percentageImageSimilarity, imageHash1.ImagePath, imageHash2.ImagePath));
+                    _imageSimilarity.Add((percentageImageSimilarity, imageHash1.Filename, imageHash2.Filename ));
                 }
             }
         }
@@ -99,7 +97,7 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
             using var saveStorageTimer = new Timer(new TimerCallback(TickTimer), null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
 
             var options = new EnumerationOptions() { RecurseSubdirectories = true };
-            var files = Directory.EnumerateFiles(_directory, "*.*", options);
+            var files = Directory.EnumerateFiles(_imageDirectory, "*.*", options);
             Parallel.ForEach(files, CreateHash);
 
             void CreateHash(string path)

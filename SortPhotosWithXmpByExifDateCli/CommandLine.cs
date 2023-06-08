@@ -1,12 +1,8 @@
 using System.CommandLine;
-using System.ComponentModel;
-using System.Security.Cryptography;
-using CoenM.ImageHash;
-using CoenM.ImageHash.HashAlgorithms;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Serilog;
+using SortPhotosWithXmpByExifDateCli.CheckForDuplicates.Store;
 using SortPhotosWithXmpByExifDateCli.ErrorCollection;
 using SortPhotosWithXmpByExifDateCli.Statistics;
 
@@ -189,7 +185,8 @@ internal class CommandLine
     {
         void CheckForDuplicateImages(string directory, bool force, int similarity)
         {
-            Run(new CheckForDuplicates.CheckForDuplicatesRunner(_logger, directory, force, similarity));
+            var repository = new HashRepository(_logger, Configuration.GetBasePath());
+            Run(new CheckForDuplicates.CheckForDuplicatesRunner(_logger, directory, repository, force, similarity));
         }
 
         var checkForDuplicateImagesCommand = new Command(
