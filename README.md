@@ -20,8 +20,7 @@ The default operation is copy, but move can be enforced.
   * with a HashSet look up for duplicates?
   * Maybe store the HashSet database on disk to speed up further iterations?
 * 0/0 duplicates found. Does it even work?
-* Duplicate command logs to console that it calculates hashes. Thats it?
-* Duplicate command crashes. It consumes all the available memory?
-* _imageSimilarity can grow too heavy. Use threshold already when adding images
+* Duplicate command needs to move duplicates into directory structure if force is given. Currently it only logs to console that it calculates hashes.
+
 ## Issues
 * Hashing dies, thats why we save the hashes
