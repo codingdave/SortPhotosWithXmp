@@ -16,6 +16,8 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
         private readonly int _similarity;
         private Dictionary<string, ImageHash> _imageHashes = new();
         private Dictionary<string, XmpHash> _xmpHashes = new();
+        private readonly object _imageHashesLock = new object();
+        private readonly object _xmpHashesLock = new object();
         private readonly HashRepository _hashRepository;
         private readonly List<(double similarity, string imagePath1, string imagePath2)> _imageSimilarity = new();
         readonly IImageHash _hashAlgorithm = new AverageHash();
@@ -90,7 +92,22 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
         {
             (_xmpHashes, _imageHashes) = _hashRepository.ReadHashes();
 
-            void TickTimer(object? state) => _hashRepository.SaveHashes(_xmpHashes.Values.ToList(), _imageHashes.Values.ToList());
+            void TickTimer(object? state)
+            {
+                List<XmpHash> xmpHashesList;
+                lock (_xmpHashesLock)
+                {
+                    xmpHashesList = _xmpHashes.Values.ToList();
+                }
+
+                List<ImageHash> imageHashesList;
+                lock (_imageHashesLock)
+                {
+                    imageHashesList = _imageHashes.Values.ToList();
+                }
+
+                _hashRepository.SaveHashes(xmpHashesList, imageHashesList);
+            }
 
             using var saveStorageTimer = new Timer(TickTimer, null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
 
@@ -132,7 +149,10 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
         {
             using var stream = File.OpenRead(filename);
             var hash = hashAlgorithm.ComputeHash(stream);
-            _xmpHashes.Add(filename, new XmpHash(filename, hash, File.GetLastWriteTimeUtc(filename)));
+            lock (_xmpHashesLock)
+            {
+                _xmpHashes.Add(filename, new XmpHash(filename, hash, File.GetLastWriteTimeUtc(filename)));
+            }
         }
 
         private void CreateImageHash(string filename)
@@ -141,7 +161,10 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
             {
                 using var imageStream = File.OpenRead(filename);
                 var hash = _hashAlgorithm.Hash(imageStream);
-                _imageHashes.Add(filename, new ImageHash(filename, hash, File.GetLastWriteTimeUtc(filename)));
+                lock (_imageHashesLock)
+                {
+                    _imageHashes.Add(filename, new ImageHash(filename, hash, File.GetLastWriteTimeUtc(filename)));
+                }
             }
             catch (UnknownImageFormatException e)
             {
