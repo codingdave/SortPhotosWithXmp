@@ -1,6 +1,6 @@
 namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
 {
-    public interface HashBase
+    public interface IHash
     {
         public string Filename { get; }
         DateTime LastWriteTimeUtc { get; }

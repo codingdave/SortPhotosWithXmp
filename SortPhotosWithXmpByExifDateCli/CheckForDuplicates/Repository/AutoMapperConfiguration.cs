@@ -9,9 +9,9 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates.Store
             var config = new MapperConfiguration(mapperConfigurationExpression =>
             {
                 mapperConfigurationExpression.CreateMap<XmpHash, XmpHashDto>();
-                mapperConfigurationExpression.CreateMap<ImageHash, ImageHashDto>();
-
                 mapperConfigurationExpression.CreateMap<XmpHashDto, XmpHash>();
+
+                mapperConfigurationExpression.CreateMap<ImageHash, ImageHashDto>();
                 mapperConfigurationExpression.CreateMap<ImageHashDto, ImageHash>();
             });
             return new Mapper(config);
