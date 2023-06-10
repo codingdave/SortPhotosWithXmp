@@ -14,8 +14,8 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
         private readonly string _imageDirectory;
         private readonly bool _force;
         private readonly int _similarity;
-        private List<ImageHash> _imageHashes = new();
-        private List<XmpHash> _xmpHashes = new();
+        private Dictionary<string, ImageHash> _imageHashes = new();
+        private Dictionary<string, XmpHash> _xmpHashes = new();
         private readonly HashRepository _hashRepository;
         private readonly List<(double similarity, string imagePath1, string imagePath2)> _imageSimilarity = new();
         readonly IImageHash _hashAlgorithm = new AverageHash();
@@ -63,7 +63,7 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
             }
 
             // xmps: only supports 100% match
-            var xmpDuplicatesGroup = _xmpHashes.GroupBy(x => x.Hash).Where(g => g.Count() > 1);
+            var xmpDuplicatesGroup = _xmpHashes.Values.GroupBy(x => x.Hash).Where(g => g.Count() > 1);
             foreach (var duplicates in xmpDuplicatesGroup)
             {
                 operation.HandleDuplicates(duplicates.Select(s => s.Filename));
@@ -72,15 +72,16 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
 
         private void CreateSimilarityMap()
         {
+            var imageHashList = _imageHashes.Values.ToList();
             // only doing for images. Not possible for xmps
             for (int i = 0; i < _imageHashes.Count; ++i)
             {
-                var imageHash1 = _imageHashes[i];
+                var imageHash1 = imageHashList[i];
                 for (int j = i + 1; j < _imageHashes.Count; ++j)
                 {
-                    var imageHash2 = _imageHashes[j];
+                    var imageHash2 = imageHashList[j];
                     var percentageImageSimilarity = CompareHash.Similarity(imageHash1.Hash, imageHash2.Hash);
-                    _imageSimilarity.Add((percentageImageSimilarity, imageHash1.Filename, imageHash2.Filename ));
+                    _imageSimilarity.Add((percentageImageSimilarity, imageHash1.Filename, imageHash2.Filename));
                 }
             }
         }
@@ -89,10 +90,7 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
         {
             (_xmpHashes, _imageHashes) = _hashRepository.ReadHashes();
 
-            void TickTimer(object? state)
-            {
-                _hashRepository.SaveHashes(_xmpHashes, _imageHashes);
-            }
+            void TickTimer(object? state) => _hashRepository.SaveHashes(_xmpHashes.Values, _imageHashes.Values);
 
             using var saveStorageTimer = new Timer(new TimerCallback(TickTimer), null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
 
@@ -116,24 +114,24 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
             }
         }
 
-        private void CreateXmpHash(HashAlgorithm hashAlgorithm, string xmpPath)
+        private void CreateXmpHash(HashAlgorithm hashAlgorithm, string filename)
         {
-            using var stream = File.OpenRead(xmpPath);
+            using var stream = File.OpenRead(filename);
             var hash = hashAlgorithm.ComputeHash(stream);
-            _xmpHashes.Add(new XmpHash(xmpPath, hash, File.GetLastWriteTimeUtc(xmpPath)));
+            _xmpHashes.Add(filename, new XmpHash(filename, hash, File.GetLastWriteTimeUtc(filename)));
         }
 
-        private void CreateImageHash(string imagePath)
+        private void CreateImageHash(string filename)
         {
             try
             {
-                using var imageStream = File.OpenRead(imagePath);
+                using var imageStream = File.OpenRead(filename);
                 var hash = _hashAlgorithm.Hash(imageStream);
-                _imageHashes.Add(new ImageHash(imagePath, hash, File.GetLastWriteTimeUtc(imagePath)));
+                _imageHashes.Add(filename, new ImageHash(filename, hash, File.GetLastWriteTimeUtc(filename)));
             }
             catch (UnknownImageFormatException e)
             {
-                _logger.LogExceptionWarning(imagePath, e);
+                _logger.LogExceptionWarning(filename, e);
             }
             catch (Exception e)
             {

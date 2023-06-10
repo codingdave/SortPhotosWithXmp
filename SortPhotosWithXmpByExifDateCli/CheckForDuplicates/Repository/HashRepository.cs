@@ -28,12 +28,12 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates.Store
             };
         }
 
-        internal (List<XmpHash> xmpHashes, List<ImageHash> imageHashes) ReadHashes()
+        internal (Dictionary<string, XmpHash> xmpHashes, Dictionary<string, ImageHash> imageHashes) ReadHashes()
         {
             lock (_lock)
             {
-                List<XmpHash> xmpHashes = new();
-                List<ImageHash> imageHashes = new();
+                Dictionary<string, XmpHash> xmpHashes = new();
+                Dictionary<string, ImageHash> imageHashes = new();
                 _logger.LogWarning($"calling {nameof(ReadHashes)}");
 
                 if (File.Exists(_xmpHashesFilename))
@@ -44,7 +44,7 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates.Store
                         var xmpDtoHashes = JsonSerializer.Deserialize<IEnumerable<XmpHashDto>>(File.ReadAllText(_xmpHashesFilename))!;
                         xmpHashes = xmpDtoHashes.Select(x => _mapper.Map<XmpHash>(x))
                         .Where(x => x.LastWriteTimeUtc == File.GetLastWriteTimeUtc(x.Filename))
-                        .ToList();
+                        .ToDictionary(x => x.Filename, x => x);
                     }
                     catch (Exception e)
                     {
@@ -65,7 +65,7 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates.Store
                         var imageDtoHashes = JsonSerializer.Deserialize<IEnumerable<ImageHashDto>>(text)!;
                         imageHashes = imageDtoHashes.Select(x => _mapper.Map<ImageHash>(x))
                         .Where(x => x.LastWriteTimeUtc == File.GetLastWriteTimeUtc(x.Filename))
-                        .ToList();
+                        .ToDictionary(x => x.Filename, x => x);
                     }
                     catch (Exception e)
                     {
@@ -81,7 +81,7 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates.Store
             }
         }
 
-        internal void SaveHashes(List<XmpHash> xmpHashes, List<ImageHash> imageHashes)
+        internal void SaveHashes(IEnumerable<XmpHash> xmpHashes, IEnumerable<ImageHash> imageHashes)
         {
             lock (_lock)
             {
