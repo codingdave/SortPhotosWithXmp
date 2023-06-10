@@ -43,6 +43,7 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates.Store
                         _logger.LogInformation($"Loading xmp hashes from a previous run from '{_xmpHashesFilename}'.");
                         var xmpDtoHashes = JsonSerializer.Deserialize<IEnumerable<XmpHashDto>>(File.ReadAllText(_xmpHashesFilename))!;
                         xmpHashes = xmpDtoHashes.Select(x => _mapper.Map<XmpHash>(x))
+                        .Where(x => File.Exists(x.Filename))
                         .Where(x => x.LastWriteTimeUtc == File.GetLastWriteTimeUtc(x.Filename))
                         .ToDictionary(x => x.Filename, x => x);
                     }
@@ -64,6 +65,7 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates.Store
                         var text = File.ReadAllText(_imageHashesFilename);
                         var imageDtoHashes = JsonSerializer.Deserialize<IEnumerable<ImageHashDto>>(text)!;
                         imageHashes = imageDtoHashes.Select(x => _mapper.Map<ImageHash>(x))
+                        .Where(x => File.Exists(x.Filename))
                         .Where(x => x.LastWriteTimeUtc == File.GetLastWriteTimeUtc(x.Filename))
                         .ToDictionary(x => x.Filename, x => x);
                     }

@@ -90,9 +90,9 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
         {
             (_xmpHashes, _imageHashes) = _hashRepository.ReadHashes();
 
-            void TickTimer(object? state) => _hashRepository.SaveHashes(_xmpHashes.Values, _imageHashes.Values);
+            void TickTimer(object? state) => _hashRepository.SaveHashes(_xmpHashes.Values.ToList(), _imageHashes.Values.ToList());
 
-            using var saveStorageTimer = new Timer(new TimerCallback(TickTimer), null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
+            using var saveStorageTimer = new Timer(TickTimer, null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
 
             var options = new EnumerationOptions() { RecurseSubdirectories = true };
             var files = Directory.EnumerateFiles(_imageDirectory, "*.*", options);
@@ -100,16 +100,30 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
 
             void CreateHash(string path)
             {
-                _logger.LogInformation("Calculating hash for {path}", path);
-
                 using var md5 = MD5.Create();
                 if (path.EndsWith(".xmp"))
                 {
-                    CreateXmpHash(md5, path);
+                    if (_xmpHashes.ContainsKey(path))
+                    {
+                        _logger.LogInformation("Hash for {path} already calculated - Skipped", path);
+                    }
+                    else
+                    {
+                        _logger.LogInformation("Calculating hash for {path}", path);
+                        CreateXmpHash(md5, path);
+                    }
                 }
                 else
                 {
-                    CreateImageHash(path);
+                    if (_imageHashes.ContainsKey(path))
+                    {
+                        _logger.LogInformation("Hash for {path} already calculated - Skipped", path);
+                    }
+                    else
+                    {
+                        _logger.LogInformation("Calculating hash for {path}", path);
+                        CreateImageHash(path);
+                    }
                 }
             }
         }

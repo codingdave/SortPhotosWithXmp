@@ -22,11 +22,5 @@ The default operation is copy, but move can be enforced.
 * 0/0 duplicates found. Does it even work?
 * Duplicate command logs to console that it calculates hashes. Thats it?
 * Duplicate command crashes. It consumes all the available memory?
-* after reading in:
-  * Handle file not existing/modified
-  * Handle files modified
-  * skip the hash generation for read in files
-  * use dictionary to check quickly if file was processed already - skip if processed
-
 ## Issues
 * Hashing dies, thats why we save the hashes
