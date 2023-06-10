@@ -257,7 +257,7 @@ internal class CommandLine
         catch (Exception e)
         {
             _logger.LogExceptionError(e);
-        };
+        }
     }
 
     private async Task RunAsync(IRunAsync f)
@@ -274,6 +274,6 @@ internal class CommandLine
         catch (Exception e)
         {
             _logger.LogExceptionError(e);
-        };
+        }
     }
 }

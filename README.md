@@ -22,5 +22,6 @@ The default operation is copy, but move can be enforced.
 * 0/0 duplicates found. Does it even work?
 * Duplicate command logs to console that it calculates hashes. Thats it?
 * Duplicate command crashes. It consumes all the available memory?
+* _imageSimilarity can grow too heavy. Use threshold already when adding images
 ## Issues
 * Hashing dies, thats why we save the hashes

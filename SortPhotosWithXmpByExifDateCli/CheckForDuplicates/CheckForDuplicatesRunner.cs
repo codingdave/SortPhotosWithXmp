@@ -37,31 +37,24 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
             try
             {
                 CreateHashes();
-                CreateSimilarityMap();
-                HandlyMostSimilarImages(_similarity, operation);
+                CreateSimilarityMap(_similarity);
+                HandleMostSimilarImages(operation);
             }
             catch (Exception e)
             {
                 _logger.LogExceptionError(e);
             }
 
-            return new DuplicatesDeletedStatistics();
+            return new DuplicatesDeletedStatistics(_logger);
         }
 
-        private void HandlyMostSimilarImages(int similarity, IFixDuplicatesOperation operation)
+        private void HandleMostSimilarImages(IFixDuplicatesOperation operation)
         {
             // images
             _imageSimilarity.Sort(new ImageSimilarityComparer());
-            foreach (var imageSimilarity in _imageSimilarity)
+            foreach (var (similarity, imagePath1, imagePath2) in _imageSimilarity)
             {
-                if (imageSimilarity.similarity > similarity)
-                {
-                    operation.HandleDuplicates(imageSimilarity.imagePath1, imageSimilarity.imagePath2, imageSimilarity.similarity);
-                }
-                else
-                {
-                    break;
-                }
+                operation.HandleDuplicates(imagePath1, imagePath2, similarity);
             }
 
             // xmps: only supports 100% match
@@ -72,7 +65,7 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
             }
         }
 
-        private void CreateSimilarityMap()
+        private void CreateSimilarityMap(int similarity)
         {
             var imageHashList = _imageHashes.Values.ToList();
             // only doing for images. Not possible for xmps
@@ -83,7 +76,10 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
                 {
                     var imageHash2 = imageHashList[j];
                     var percentageImageSimilarity = CompareHash.Similarity(imageHash1.Hash, imageHash2.Hash);
-                    _imageSimilarity.Add((percentageImageSimilarity, imageHash1.Filename, imageHash2.Filename));
+                    if (percentageImageSimilarity >= similarity)
+                    {
+                        _imageSimilarity.Add((percentageImageSimilarity, imageHash1.Filename, imageHash2.Filename));
+                    }
                 }
             }
         }
@@ -122,7 +118,7 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
                 {
                     if (_xmpHashes.ContainsKey(path))
                     {
-                        _logger.LogInformation("Hash for {path} already calculated - Skipped", path);
+                        _logger.LogTrace("Hash for {path} already calculated - Skipped", path);
                     }
                     else
                     {
@@ -134,7 +130,7 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
                 {
                     if (_imageHashes.ContainsKey(path))
                     {
-                        _logger.LogInformation("Hash for {path} already calculated - Skipped", path);
+                        _logger.LogTrace("Hash for {path} already calculated - Skipped", path);
                     }
                     else
                     {

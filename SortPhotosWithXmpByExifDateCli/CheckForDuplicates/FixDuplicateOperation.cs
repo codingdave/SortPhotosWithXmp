@@ -21,6 +21,7 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
                 imagePath1,
                 imagePath2,
                 similarity);
+#warning Move items into duplicates directory if force option is set
         }
 
         public void HandleDuplicates(IEnumerable<string> enumerable)
@@ -29,6 +30,8 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
             _logger.LogInformation("Found {amount} xmp files that are a duplicates: {images}",
                                    list.Count,
                                    list);
+#warning Move items into duplicates directory if force option is set
+
         }
     }
 }
