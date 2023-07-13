@@ -1,12 +1,12 @@
 using Microsoft.Extensions.Logging;
 
-namespace SortPhotosWithXmpByExifDateCli
+namespace SortPhotosWithXmpByExifDateCli.Operation
 {
-    public class CopyFileOperation : IFileOperation
+    public class MoveFileOperation : IFileOperation
     {
         private readonly ILogger _logger;
 
-        internal CopyFileOperation(ILogger logger, bool force)
+        internal MoveFileOperation(ILogger logger, bool force)
         {
             _logger = logger;
             IsChanging = force;
@@ -16,17 +16,17 @@ namespace SortPhotosWithXmpByExifDateCli
 
         public void ChangeFile(string sourceFileName, string destFileName)
         {
-            _logger.LogTrace($"File.Copy({sourceFileName}, {destFileName});");
+            _logger.LogTrace($"File.Move({sourceFileName}, {destFileName});");
             if (IsChanging)
             {
-                File.Copy(sourceFileName, destFileName);
+                File.Move(sourceFileName, destFileName);
             }
         }
 
         public override string ToString()
         {
             var message = IsChanging ? "performing" : "simulating";
-            message += " copy";
+            message += " move";
             return message;
         }
     }

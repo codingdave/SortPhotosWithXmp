@@ -1,10 +1,10 @@
 using Microsoft.Extensions.Logging;
 
-namespace SortPhotosWithXmpByExifDateCli
+namespace SortPhotosWithXmpByExifDateCli.Operation
 {
     internal class OperationPerformerFactory
     {
-        internal static IFileOperation GetOperationPerformer(ILogger logger, bool force, bool move)
+        internal static IFileOperation GetCopyOrMovePerformer(ILogger logger, bool move, bool force)
         {
             if (move)
             {

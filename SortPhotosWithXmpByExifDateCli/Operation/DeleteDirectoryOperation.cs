@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using SortPhotosWithXmpByExifDateCli.Statistics;
 
-namespace SortPhotosWithXmpByExifDateCli
+namespace SortPhotosWithXmpByExifDateCli.Operation
 {
     public class DeleteDirectoryOperation : IOperation
     {

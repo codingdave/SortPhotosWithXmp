@@ -3,6 +3,7 @@ using ImageMagick;
 using System.Diagnostics;
 using SortPhotosWithXmpByExifDateCli.Statistics;
 using SortPhotosWithXmpByExifDateCli.ErrorCollection;
+using SortPhotosWithXmpByExifDateCli.Operation;
 
 namespace SortPhotosWithXmpByExifDateCli
 {

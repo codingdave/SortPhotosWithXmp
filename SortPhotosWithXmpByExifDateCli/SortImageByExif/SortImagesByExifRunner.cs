@@ -1,11 +1,12 @@
 using MetadataExtractor;
 using Microsoft.Extensions.Logging;
 using SortPhotosWithXmpByExifDateCli.ErrorCollection;
+using SortPhotosWithXmpByExifDateCli.Operation;
 using SortPhotosWithXmpByExifDateCli.Statistics;
 
 namespace SortPhotosWithXmpByExifDateCli.SortImageByExif;
 
-internal class SortImageByExifRunner : IRun
+internal class SortImagesByExifRunner : IRun
 {
     private readonly string _destinationDirectory;
     private readonly string _sourceDirectory;
@@ -14,7 +15,7 @@ internal class SortImageByExifRunner : IRun
     private readonly IFileOperation _operationPerformer;
     private readonly DeleteDirectoryOperation _deleteDirectoryOperation;
 
-    internal SortImageByExifRunner(ILogger logger,
+    internal SortImagesByExifRunner(ILogger logger,
                              string sourceDirectory,
                              string destinationDirectory,
                              IEnumerable<string> extensions,
@@ -36,7 +37,7 @@ internal class SortImageByExifRunner : IRun
     public IStatistics Run(ILogger logger)
     {
         DateTimeResolver dateTimeResolver = new(logger);
-        logger.LogInformation($"Starting {nameof(SortPhotosWithXmpByExifDateCli)}.{nameof(Run)} with search path: '{_sourceDirectory}' and destination path '{_destinationDirectory}'. {_operationPerformer}");
+        logger.LogInformation($"Starting {nameof(SortImagesByExifRunner)}.{nameof(Run)} with search path: '{_sourceDirectory}' and destination path '{_destinationDirectory}'. {_operationPerformer}");
 
         foreach (var file in GetFileInfos())
         {

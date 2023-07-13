@@ -1,3 +1,5 @@
+using SortPhotosWithXmpByExifDateCli.Operation;
+
 namespace SortPhotosWithXmpByExifDateCli.Statistics
 {
     public interface IFileOperationStatistics

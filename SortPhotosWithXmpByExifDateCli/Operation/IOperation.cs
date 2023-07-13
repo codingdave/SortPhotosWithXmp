@@ -1,4 +1,4 @@
-namespace SortPhotosWithXmpByExifDateCli
+namespace SortPhotosWithXmpByExifDateCli.Operation
 {
     public interface IOperation
     {

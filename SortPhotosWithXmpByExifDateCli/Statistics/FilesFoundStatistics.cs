@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using SortPhotosWithXmpByExifDateCli.ErrorCollection;
+using SortPhotosWithXmpByExifDateCli.Operation;
 
 namespace SortPhotosWithXmpByExifDateCli.Statistics;
 

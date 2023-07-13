@@ -4,6 +4,7 @@ using CoenM.ImageHash.HashAlgorithms;
 using Microsoft.Extensions.Logging;
 using SortPhotosWithXmpByExifDateCli.CheckForDuplicates.Store;
 using SortPhotosWithXmpByExifDateCli.ErrorCollection;
+using SortPhotosWithXmpByExifDateCli.Operation;
 using SortPhotosWithXmpByExifDateCli.Statistics;
 
 namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
@@ -12,33 +13,42 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
     {
         private readonly ILogger<CommandLine> _logger;
         private readonly string _imageDirectory;
-        private readonly bool _force;
         private readonly int _similarity;
         private Dictionary<string, ImageHash> _imageHashes = new();
         private Dictionary<string, XmpHash> _xmpHashes = new();
-        private readonly object _imageHashesLock = new object();
-        private readonly object _xmpHashesLock = new object();
+        private readonly object _imageHashesLock = new();
+        private readonly object _xmpHashesLock = new();
         private readonly HashRepository _hashRepository;
+        private readonly bool _force;
         private readonly List<(double similarity, string imagePath1, string imagePath2)> _imageSimilarity = new();
-        readonly IImageHash _hashAlgorithm = new AverageHash();
+        private readonly IImageHash _hashAlgorithm = new AverageHash();
 
         public CheckForDuplicatesRunner(ILogger<CommandLine> logger, string imageDirectory, HashRepository repository, bool force, int similarity = 100)
         {
             _logger = logger;
             _imageDirectory = imageDirectory;
-            _force = force;
             _similarity = similarity;
             _hashRepository = repository;
+            _force = force;
         }
 
         public IStatistics Run(ILogger logger)
         {
-            IFixDuplicatesOperation operation = new FixDuplicateOperation(_logger, _force);
             try
             {
+#warning TODO
+                // 1. before we search for duplicate images and xmps we check for lonely xmps
+                // 2. now we are sure to find pairs <img,xmp> or <img, null>, so we create all the pairs
+                // 3. work on the pairs and create image and xmp hashes and the similarity:
+                // 3.1 when we have a similarity on the image and an equality for the xmp we are sure about the duplicate
+                // 3.2 when we have a different image, the xmp should also be different. What if it is not?
+                // 3.3 when we have a different xmp but the same image, the xmp might be a different development of the same file
+                DeleteLonelyXmps();
+                // they could be <img, null>
+                CreateImageXmpPairs();
                 CreateHashes();
                 CreateSimilarityMap(_similarity);
-                HandleMostSimilarImages(operation);
+                HandleMostSimilarImages();
             }
             catch (Exception e)
             {
@@ -48,20 +58,67 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
             return new DuplicatesDeletedStatistics(_logger);
         }
 
-        private void HandleMostSimilarImages(IFixDuplicatesOperation operation)
+        private void DeleteLonelyXmps()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void CreateImageXmpPairs()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void HandleMostSimilarImages()
         {
             // images
             _imageSimilarity.Sort(new ImageSimilarityComparer());
             foreach (var (similarity, imagePath1, imagePath2) in _imageSimilarity)
             {
-                operation.HandleDuplicates(imagePath1, imagePath2, similarity);
+                DeleteDuplicateImages(imagePath1, imagePath2, similarity);
             }
 
             // xmps: only supports 100% match
             var xmpDuplicatesGroup = _xmpHashes.Values.GroupBy(x => x.Hash).Where(g => g.Count() > 1);
             foreach (var duplicates in xmpDuplicatesGroup)
             {
-                operation.HandleDuplicates(duplicates.Select(s => s.Filename));
+                DeleteDuplicateXmps(duplicates.Select(s => s.Filename));
+            }
+        }
+
+         public void DeleteDuplicateImages(string imagePath1, string imagePath2, double similarity)
+        {
+            #warning TODO
+            // deletion of images - which one shall we delete?
+            // imagine one of them has a descriptive filename, the other does not
+            
+            // we should at first copy them all next to each other to evaluate in the duplicate directory
+            _logger.LogInformation(
+                "image '{image1}' and image '{image2}' are duplicates with a similarity score of {similarity}",
+                imagePath1,
+                imagePath2,
+                similarity);
+
+            if (_force)
+            {
+            }
+        }
+
+        public void DeleteDuplicateXmps(IEnumerable<string> enumerable)
+        {
+            #warning TODO
+
+            // deletion of duplicate xmps is critical:
+            // - We need to delete the one that is not next to the corresponding image.
+            // - if there are more locations with existing images the images would need to match as well and then we could delete the image with its xmp.
+            // - -> xmps should always be handled as a tuple: (image, xmp) to allow for that
+
+            // we should at first copy them all next to each other to evaluate in the duplicate directory
+            var list = enumerable.ToList();
+            _logger.LogInformation("Found {amount} xmp files that are duplicates: {images}",
+                                   list.Count,
+                                   list);
+            if (_force)
+            {
             }
         }
 

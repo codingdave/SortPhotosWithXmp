@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SortPhotosWithXmpByExifDateCli.CheckForDuplicates.Store;
 using SortPhotosWithXmpByExifDateCli.ErrorCollection;
+using SortPhotosWithXmpByExifDateCli.Operation;
 using SortPhotosWithXmpByExifDateCli.Statistics;
 
 namespace SortPhotosWithXmpByExifDateCli;
@@ -95,10 +96,10 @@ internal class CommandLine
     {
         void SortImagesByExif(string sourcePath, string destinationPath, bool force, bool move)
         {
-            var operationPerformer = OperationPerformerFactory.GetOperationPerformer(_logger, force, move);
+            var operationPerformer = OperationPerformerFactory.GetCopyOrMovePerformer(_logger, move, force);
             var deleteDirectoryPerformer = new DeleteDirectoryOperation(_logger, force);
 
-            Run(new SortImageByExif.SortImageByExifRunner(_logger, sourcePath, destinationPath, _extensions, operationPerformer, deleteDirectoryPerformer));
+            Run(new SortImageByExif.SortImagesByExifRunner(_logger, sourcePath, destinationPath, _extensions, operationPerformer, deleteDirectoryPerformer));
         }
 
         var rearrangeByExifCommand = new Command("rearrangeByExif",
@@ -161,7 +162,8 @@ internal class CommandLine
 
     private void AddDeleteLonelyXmpCommand()
     {
-        void DeleteLonelyXmps(string directory, bool force)
+        #warning TODO
+        static void DeleteLonelyXmps(string directory, bool force)
         {
             // https://github.com/dotnet/command-line-api/issues/2086
             // Run(new FixExifDateByOffset(directory, (TimeSpan)offset, force));
@@ -183,7 +185,7 @@ internal class CommandLine
 
     private void AddCheckForDuplicateImagesCommand()
     {
-        void CheckForDuplicateImages(string directory, bool force, int similarity)
+        void CheckForDuplicateImages(string directory, bool force, int similarity, bool move)
         {
             var repository = new HashRepository(_logger, Configuration.GetBasePath());
             Run(new CheckForDuplicates.CheckForDuplicatesRunner(_logger, directory, repository, force, similarity));
@@ -195,10 +197,11 @@ internal class CommandLine
         {
             _sourceOption,
             _similarityOption,
-            _forceOption
+            _forceOption,
+            _moveOption
         };
 
-        checkForDuplicateImagesCommand.SetHandler(CheckForDuplicateImages!, _sourceOption, _forceOption, _similarityOption);
+        checkForDuplicateImagesCommand.SetHandler(CheckForDuplicateImages!, _sourceOption, _forceOption, _similarityOption, _moveOption);
 
         _rootCommand.AddCommand(checkForDuplicateImagesCommand);
     }
