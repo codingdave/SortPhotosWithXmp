@@ -74,9 +74,6 @@ public class FileScanner
         {
             All.Add(file.Value);
         }
-
-        var lonelies = LonelySidecarFiles.ToList();
-        var multiEdits = MultipleEdits.ToList();
     }
 
     public HashSet<FileVariations> All { get; } = new();
