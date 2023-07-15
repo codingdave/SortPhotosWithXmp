@@ -4,7 +4,7 @@ using SortPhotosWithXmpByExifDateCli.ErrorCollection;
 using SortPhotosWithXmpByExifDateCli.Operation;
 using SortPhotosWithXmpByExifDateCli.Statistics;
 
-namespace SortPhotosWithXmpByExifDateCli.SortImageByExif;
+namespace SortPhotosWithXmpByExifDateCli.Runners.SortImageByExif;
 
 internal class SortImagesByExifRunner : IRun
 {
@@ -30,6 +30,7 @@ internal class SortImagesByExifRunner : IRun
         _deleteDirectoryOperation = deleteDirectoryPerformer;
     }
 
+#warning move to FileScanner
     private IEnumerable<string> GetFileInfos() =>
         System.IO.Directory.EnumerateFiles(_sourceDirectory, "*.*", SearchOption.AllDirectories)
             .Where(f => _extensions.Any(e => f.EndsWith(e, StringComparison.OrdinalIgnoreCase)));
@@ -39,6 +40,7 @@ internal class SortImagesByExifRunner : IRun
         DateTimeResolver dateTimeResolver = new(logger);
         logger.LogInformation($"Starting {nameof(SortImagesByExifRunner)}.{nameof(Run)} with search path: '{_sourceDirectory}' and destination path '{_destinationDirectory}'. {_operationPerformer}");
 
+#warning use FileScanner here as well
         foreach (var file in GetFileInfos())
         {
             try

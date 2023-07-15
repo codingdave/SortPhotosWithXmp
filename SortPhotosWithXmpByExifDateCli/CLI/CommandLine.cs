@@ -3,8 +3,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SortPhotosWithXmpByExifDateCli.CheckForDuplicates.Store;
+using SortPhotosWithXmpByExifDateCli.Entities;
 using SortPhotosWithXmpByExifDateCli.ErrorCollection;
 using SortPhotosWithXmpByExifDateCli.Operation;
+using SortPhotosWithXmpByExifDateCli.Runners;
+using SortPhotosWithXmpByExifDateCli.Runners.SortImageByExif;
 using SortPhotosWithXmpByExifDateCli.Statistics;
 
 namespace SortPhotosWithXmpByExifDateCli;
@@ -99,7 +102,7 @@ internal class CommandLine
             var operationPerformer = OperationPerformerFactory.GetCopyOrMovePerformer(_logger, move, force);
             var deleteDirectoryPerformer = new DeleteDirectoryOperation(_logger, force);
 
-            Run(new SortImageByExif.SortImagesByExifRunner(_logger, sourcePath, destinationPath, _extensions, operationPerformer, deleteDirectoryPerformer));
+            Run(new SortImagesByExifRunner(_logger, sourcePath, destinationPath, _extensions, operationPerformer, deleteDirectoryPerformer));
         }
 
         var rearrangeByExifCommand = new Command("rearrangeByExif",
@@ -118,7 +121,7 @@ internal class CommandLine
 
     private void AddCheckIfFileNameContainsDateDifferentToExifDatesCommand()
     {
-        void CheckIfFileNameContainsDateDifferentToExifDates(string source, bool force)
+        void RunCheckIfFileNameContainsDateDifferentToExifDates(string source, bool force)
         {
             Run(new CheckIfFileNameContainsDateDifferentToExifDates(source, force));
         }
@@ -132,7 +135,7 @@ internal class CommandLine
         };
 
         checkIfFileNameContainsDateDifferentToExifDatesCommand.SetHandler(
-            CheckIfFileNameContainsDateDifferentToExifDates!, _sourceOption, _forceOption);
+            RunCheckIfFileNameContainsDateDifferentToExifDates!, _sourceOption, _forceOption);
 
         _rootCommand.AddCommand(checkIfFileNameContainsDateDifferentToExifDatesCommand);
     }
@@ -162,12 +165,11 @@ internal class CommandLine
 
     private void AddDeleteLonelyXmpCommand()
     {
-        #warning TODO
-        static void DeleteLonelyXmps(string directory, bool force)
+        void RunDeleteLonelyXmps(string directory, bool force)
         {
+            var fileScanner = new FileScanner(directory);
             // https://github.com/dotnet/command-line-api/issues/2086
-            // Run(new FixExifDateByOffset(directory, (TimeSpan)offset, force));
-            throw new NotImplementedException();
+            Run(new DeleteLonelyXmps(force, fileScanner));
         }
 
         var deleteLeftoverXmpsCommand = new Command(
@@ -178,7 +180,7 @@ internal class CommandLine
             _forceOption
         };
 
-        deleteLeftoverXmpsCommand.SetHandler(DeleteLonelyXmps!, _sourceOption!, _forceOption);
+        deleteLeftoverXmpsCommand.SetHandler(RunDeleteLonelyXmps!, _sourceOption!, _forceOption);
 
         _rootCommand.AddCommand(deleteLeftoverXmpsCommand);
     }
@@ -251,23 +253,6 @@ internal class CommandLine
         try
         {
             var statistics = f.Run(_logger);
-            if (statistics is IFoundStatistics filesFoundStatistics)
-            {
-                statistics.FileErrors.HandleErrorFiles(_logger, filesFoundStatistics);
-            }
-            statistics.Log();
-        }
-        catch (Exception e)
-        {
-            _logger.LogExceptionError(e);
-        }
-    }
-
-    private async Task RunAsync(IRunAsync f)
-    {
-        try
-        {
-            var statistics = await f.RunAsync(_logger);
             if (statistics is IFoundStatistics filesFoundStatistics)
             {
                 statistics.FileErrors.HandleErrorFiles(_logger, filesFoundStatistics);

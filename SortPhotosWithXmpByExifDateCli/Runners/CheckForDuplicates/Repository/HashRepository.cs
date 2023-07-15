@@ -1,6 +1,7 @@
 using System.Text.Json;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
+using SortPhotosWithXmpByExifDateCli.Entities;
 using SortPhotosWithXmpByExifDateCli.ErrorCollection;
 
 namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates.Store

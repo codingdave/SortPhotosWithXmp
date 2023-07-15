@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 using SortPhotosWithXmpByExifDateCli.Statistics;
-namespace SortPhotosWithXmpByExifDateCli;
+namespace SortPhotosWithXmpByExifDateCli.Runners;
 
 internal class CheckIfFileNameContainsDateDifferentToExifDates : IRun
 {

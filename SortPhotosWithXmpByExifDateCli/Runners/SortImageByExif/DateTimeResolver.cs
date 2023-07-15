@@ -5,15 +5,10 @@ using MetadataExtractor.Formats.Xmp;
 using DirectoryExtensions = MetadataExtractor.DirectoryExtensions;
 using System.Globalization;
 using Microsoft.Extensions.Logging;
-using MetadataExtractor;
-using System.Net;
-using MetadataExtractor.Formats.FileSystem;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using SortPhotosWithXmpByExifDateCli.Statistics;
 using SortPhotosWithXmpByExifDateCli.ErrorCollection;
 
-namespace SortPhotosWithXmpByExifDateCli;
+namespace SortPhotosWithXmpByExifDateCli.Runners.SortImageByExif;
 
 public class DateTimeResolver
 {

@@ -1,4 +1,5 @@
 using AutoMapper;
+using SortPhotosWithXmpByExifDateCli.Entities;
 
 namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates.Store
 {
