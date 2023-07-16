@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace SortPhotosWithXmpByExifDateCli.Scanner;
+namespace SortPhotosWithXmpByExifDateCli.Repository;
 
 // Multiple edits:
 // DSC_9287.NEF        <-- file, could be mov, jpg, ...
@@ -61,10 +61,12 @@ public class FileScanner
                     throw new NotSupportedException($"The file '${file}' has an invalid name: Sidecar files will not be distiguishable from edits of another file. The convention to name them is: filename_number.extension.xmp, which matches this filename.");
                 }
 
-                files.Add(file, new FileVariations(file, new List<string>()));
+#warning use inheritance to use non-hash instances over here. Replace them with hash ones when necessary. Do not use null.
+                files.Add(file, new FileVariations(new ImageFile(file), new List<IImageFile>()));
             }
         }
 
+#warning check darktable to see how this is implemented
         Regex editRegex = new(@"(?<base>.*?)(_\d?\d?)?(?<extension>\.\w+)\" + SidecarFileExtension);
         var allSidecars = Directory.EnumerateFiles(_sourceDirectory, "*" + SidecarFileExtension, enumerationOptions);
         foreach (var file in allSidecars)
@@ -80,26 +82,30 @@ public class FileScanner
 
             if (files.TryGetValue(key, out var value))
             {
-                value.SidecarFiles.Add(file);
+                value.SidecarFiles.Add(new ImageFile(file));
             }
             else
             {
-                value = new FileVariations(null, new List<string>() { file });
+                value = new FileVariations(null, new List<IImageFile>() { new ImageFile(file) });
                 files.Add(key, value);
             }
         }
 
         foreach (var file in files)
         {
-            All.Add(file.Value);
+            _all.Add(file.Value);
         }
     }
 
     public static string SidecarFileExtension { get; } = ".xmp";
 
-    public HashSet<FileVariations> All { get; } = new();
+    private readonly HashSet<FileVariations> _all = new();
+    public IEnumerable<FileVariations> All => _all;
 
     public IEnumerable<FileVariations> MultipleEdits => All.Where(x => x.SidecarFiles.Count > 1);
 
-    public IEnumerable<string> LonelySidecarFiles => All.Where(x => x.Filename == null).SelectMany(x => x.SidecarFiles);
+    // having sidecar files but no source data is not healthy
+    public IEnumerable<IImageFile> LonelySidecarFiles => All.Where(x => x.Data == null).SelectMany(x => x.SidecarFiles);
+    // we have an source, not necessary any sidecar files.
+    public IEnumerable<FileVariations> HealtyFileVariations => All.Where(x => x.Data != null);
 }

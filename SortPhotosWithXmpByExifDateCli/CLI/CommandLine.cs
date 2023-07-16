@@ -7,7 +7,6 @@ using SortPhotosWithXmpByExifDateCli.Operation;
 using SortPhotosWithXmpByExifDateCli.Runners;
 using SortPhotosWithXmpByExifDateCli.Runners.SortImageByExif;
 using SortPhotosWithXmpByExifDateCli.Statistics;
-using SortPhotosWithXmpByExifDateCli.Scanner;
 using SortPhotosWithXmpByExifDateCli.Repository;
 
 namespace SortPhotosWithXmpByExifDateCli;
@@ -196,7 +195,11 @@ internal class CommandLine
         void CheckForDuplicateImages(string directory, bool force, int similarity, bool move)
         {
             var repository = new HashRepository(_logger, Configuration.GetBasePath());
-            Run(new CheckForDuplicates.CheckForDuplicatesRunner(_logger, directory, repository, force, similarity));
+            var fileScanner = GetFileScanner(directory);
+            if (fileScanner != null)
+            {
+                Run(new CheckForDuplicates.CheckForDuplicatesRunner(_logger, repository, fileScanner, force, similarity));
+            }
         }
 
         var checkForDuplicateImagesCommand = new Command(

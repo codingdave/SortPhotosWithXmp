@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Logging;
-using SortPhotosWithXmpByExifDateCli.Scanner;
+using SortPhotosWithXmpByExifDateCli.Repository;
 using SortPhotosWithXmpByExifDateCli.Statistics;
 
 namespace SortPhotosWithXmpByExifDateCli;
@@ -24,7 +24,7 @@ internal class DeleteLonelyXmps : IRun
         {
             foreach (var lonely in lonelies)
             {
-                File.Delete(lonely);
+                File.Delete(lonely.Filename);
             }
         }
         #warning implement statistics

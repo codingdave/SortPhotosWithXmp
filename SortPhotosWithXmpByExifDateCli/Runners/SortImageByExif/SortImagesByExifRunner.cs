@@ -2,7 +2,7 @@ using MetadataExtractor;
 using Microsoft.Extensions.Logging;
 using SortPhotosWithXmpByExifDateCli.ErrorCollection;
 using SortPhotosWithXmpByExifDateCli.Operation;
-using SortPhotosWithXmpByExifDateCli.Scanner;
+using SortPhotosWithXmpByExifDateCli.Repository;
 using SortPhotosWithXmpByExifDateCli.Statistics;
 
 namespace SortPhotosWithXmpByExifDateCli.Runners.SortImageByExif;
@@ -38,9 +38,9 @@ internal class SortImagesByExifRunner : IRun
 
         foreach (var fileDatum in _fileScanner.All)
         {
-            if (fileDatum.Filename != null)
+            if (fileDatum.Data != null)
             {
-                var file = fileDatum.Filename;
+                var file = fileDatum.Data.Filename;
                 try
                 {
                     var metaDataDirectories = ImageMetadataReader.ReadMetadata(file);

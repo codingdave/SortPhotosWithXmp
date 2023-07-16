@@ -4,7 +4,7 @@ using System.Diagnostics;
 using SortPhotosWithXmpByExifDateCli.Statistics;
 using SortPhotosWithXmpByExifDateCli.ErrorCollection;
 using SortPhotosWithXmpByExifDateCli.Operation;
-using SortPhotosWithXmpByExifDateCli.Scanner;
+using SortPhotosWithXmpByExifDateCli.Repository;
 
 namespace SortPhotosWithXmpByExifDateCli
 {

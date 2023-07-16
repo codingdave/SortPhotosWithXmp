@@ -1,6 +1,4 @@
 using AutoMapper;
-using SortPhotosWithXmpByExifDateCli.CheckForDuplicates;
-using SortPhotosWithXmpByExifDateCli.Entities;
 
 namespace SortPhotosWithXmpByExifDateCli.Repository;
 
@@ -10,11 +8,17 @@ public class AutoMapperConfiguration
     {
         var config = new MapperConfiguration(mapperConfigurationExpression =>
         {
-            mapperConfigurationExpression.CreateMap<XmpHash, XmpHashDto>();
-            mapperConfigurationExpression.CreateMap<XmpHashDto, XmpHash>();
+            mapperConfigurationExpression.CreateMap<ImageFile, ImageFileDto>();
+            mapperConfigurationExpression.CreateMap<ImageFileDto, ImageFile>();
 
-            mapperConfigurationExpression.CreateMap<ImageHash, ImageHashDto>();
-            mapperConfigurationExpression.CreateMap<ImageHashDto, ImageHash>();
+            mapperConfigurationExpression.CreateMap<ImageFileHash, ImageFileHashDto>();
+            mapperConfigurationExpression.CreateMap<ImageFileHashDto, ImageFileHash>();
+
+            mapperConfigurationExpression.CreateMap<SidecarFileHash, SidecarFileHashDto>();
+            mapperConfigurationExpression.CreateMap<SidecarFileHashDto, SidecarFileHash>();
+
+            mapperConfigurationExpression.CreateMap<FileVariations, FileVariationsDto>();
+            mapperConfigurationExpression.CreateMap<FileVariationsDto, FileVariations>();
         });
         return new Mapper(config);
     }
