@@ -48,6 +48,7 @@ public class FileScanner
                 {
                     throw new NotSupportedException($"The file '${file}' has an invalid name: Sidecar files will not be distiguishable from edits of another file. The convention to name them is: filename_number.extension.xmp, which matches this filename.");
                 }
+                
                 files.Add(file, new FileVariations(file, new List<string>()));
             }
         }

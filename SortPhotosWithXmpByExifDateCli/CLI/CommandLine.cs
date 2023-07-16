@@ -168,8 +168,11 @@ internal class CommandLine
     {
         void RunDeleteLonelyXmps(string directory, bool force)
         {
-            // https://github.com/dotnet/command-line-api/issues/2086
-            Run(new DeleteLonelyXmps(force, directory, GetFileScanner));
+            var fileScanner = GetFileScanner(directory);
+            if (fileScanner != null)
+            {
+                Run(new DeleteLonelyXmps(force, fileScanner));
+            }
         }
 
         var deleteLeftoverXmpsCommand = new Command(
