@@ -9,10 +9,10 @@ internal class DeleteLonelyXmps : IRun
     private bool _force;
     private FileScanner _fileScanner;
 
-    public DeleteLonelyXmps(bool force, FileScanner fileScanner)
+    public DeleteLonelyXmps(bool force, string directory, Func<string, FileScanner> getFileScanner)
     {
         _force = force;
-        _fileScanner = fileScanner;
+        _fileScanner = getFileScanner(directory);
     }
 
     public IStatistics Run(ILogger logger)

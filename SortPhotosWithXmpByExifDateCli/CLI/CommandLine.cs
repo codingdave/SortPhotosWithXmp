@@ -37,6 +37,7 @@ internal class CommandLine
 
     private readonly ILogger<CommandLine> _logger;
     private readonly RootCommand _rootCommand;
+    private FileScanner _fileScanner;
 
     public CommandLine()
     {
@@ -167,9 +168,8 @@ internal class CommandLine
     {
         void RunDeleteLonelyXmps(string directory, bool force)
         {
-            var fileScanner = new FileScanner(directory);
             // https://github.com/dotnet/command-line-api/issues/2086
-            Run(new DeleteLonelyXmps(force, fileScanner));
+            Run(new DeleteLonelyXmps(force, directory, GetFileScanner));
         }
 
         var deleteLeftoverXmpsCommand = new Command(
@@ -183,6 +183,20 @@ internal class CommandLine
         deleteLeftoverXmpsCommand.SetHandler(RunDeleteLonelyXmps!, _sourceOption!, _forceOption);
 
         _rootCommand.AddCommand(deleteLeftoverXmpsCommand);
+    }
+
+    private FileScanner GetFileScanner(string directory)
+    {
+        try
+        {
+            _fileScanner ??= new FileScanner(directory);
+        }
+        catch (Exception e)
+        {
+            _logger.LogExceptionError(e);
+        }
+
+        return _fileScanner;
     }
 
     private void AddCheckForDuplicateImagesCommand()

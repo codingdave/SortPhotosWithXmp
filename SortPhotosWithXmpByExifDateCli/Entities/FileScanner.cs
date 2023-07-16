@@ -37,11 +37,17 @@ public class FileScanner
             RecurseSubdirectories = true
         };
 
+        // does the filename look like an edit from another file?
+        Regex notSupportedNamingRegex = new Regex(@"(?:.*?)(_\d?\d?)(?:\.\w+)");
         foreach (var ext in _extensions)
         {
             var allFilesWithExt = Directory.EnumerateFiles(_sourceDirectory, ext, enumerationOptions).AsParallel().ToArray();
             foreach (var file in allFilesWithExt)
             {
+                if (notSupportedNamingRegex.IsMatch(file))
+                {
+                    throw new NotSupportedException($"The file '${file}' has an invalid name: Sidecar files will not be distiguishable from edits of another file. The convention to name them is: filename_number.extension.xmp, which matches this filename.");
+                }
                 files.Add(file, new FileVariations(file, new List<string>()));
             }
         }
