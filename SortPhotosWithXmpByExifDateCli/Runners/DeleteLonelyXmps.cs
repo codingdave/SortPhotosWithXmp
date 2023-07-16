@@ -1,13 +1,13 @@
 using Microsoft.Extensions.Logging;
-using SortPhotosWithXmpByExifDateCli.Entities;
+using SortPhotosWithXmpByExifDateCli.Scanner;
 using SortPhotosWithXmpByExifDateCli.Statistics;
 
 namespace SortPhotosWithXmpByExifDateCli;
 
 internal class DeleteLonelyXmps : IRun
 {
-    private bool _force;
-    private FileScanner _fileScanner;
+    private readonly bool _force;
+    private readonly FileScanner _fileScanner;
 
     public DeleteLonelyXmps(bool force, FileScanner fileScanner)
     {

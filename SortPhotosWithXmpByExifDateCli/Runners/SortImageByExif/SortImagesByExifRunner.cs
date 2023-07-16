@@ -2,6 +2,7 @@ using MetadataExtractor;
 using Microsoft.Extensions.Logging;
 using SortPhotosWithXmpByExifDateCli.ErrorCollection;
 using SortPhotosWithXmpByExifDateCli.Operation;
+using SortPhotosWithXmpByExifDateCli.Scanner;
 using SortPhotosWithXmpByExifDateCli.Statistics;
 
 namespace SortPhotosWithXmpByExifDateCli.Runners.SortImageByExif;
@@ -10,76 +11,74 @@ internal class SortImagesByExifRunner : IRun
 {
     private readonly string _destinationDirectory;
     private readonly string _sourceDirectory;
-    private readonly IEnumerable<string> _extensions;
     private readonly FilesFoundStatistics _statistics;
     private readonly IFileOperation _operationPerformer;
+    private readonly FileScanner _fileScanner;
     private readonly DeleteDirectoryOperation _deleteDirectoryOperation;
 
     internal SortImagesByExifRunner(ILogger logger,
                              string sourceDirectory,
                              string destinationDirectory,
-                             IEnumerable<string> extensions,
+                             FileScanner fileScanner,
                              IFileOperation operationPerformer,
                              DeleteDirectoryOperation deleteDirectoryPerformer)
     {
         _sourceDirectory = sourceDirectory ?? throw new ArgumentNullException(nameof(sourceDirectory));
         _destinationDirectory = destinationDirectory ?? throw new ArgumentNullException(nameof(destinationDirectory));
-        _extensions = extensions;
         _statistics = new FilesFoundStatistics(logger, operationPerformer);
         _operationPerformer = operationPerformer;
+        _fileScanner = fileScanner;
         _deleteDirectoryOperation = deleteDirectoryPerformer;
     }
-
-#warning move to FileScanner
-    private IEnumerable<string> GetFileInfos() =>
-        System.IO.Directory.EnumerateFiles(_sourceDirectory, "*.*", SearchOption.AllDirectories)
-            .Where(f => _extensions.Any(e => f.EndsWith(e, StringComparison.OrdinalIgnoreCase)));
 
     public IStatistics Run(ILogger logger)
     {
         DateTimeResolver dateTimeResolver = new(logger);
         logger.LogInformation($"Starting {nameof(SortImagesByExifRunner)}.{nameof(Run)} with search path: '{_sourceDirectory}' and destination path '{_destinationDirectory}'. {_operationPerformer}");
 
-#warning use FileScanner here as well
-        foreach (var file in GetFileInfos())
+        foreach (var fileDatum in _fileScanner.All)
         {
-            try
+            if (fileDatum.Filename != null)
             {
-                var metaDataDirectories = ImageMetadataReader.ReadMetadata(file);
-                var errors = Helpers.GetErrorsFromMetadata(metaDataDirectories);
-                if (errors.Any())
+                var file = fileDatum.Filename;
+                try
                 {
-                    logger.LogTrace("found errors while extracting metadata from '{file}'", file);
-                    _statistics.AddError(new MetaDataError(file, errors));
-                }
-
-                var possibleDateTime = dateTimeResolver.GetDateTimeFromImage(logger, metaDataDirectories);
-                if (possibleDateTime is DateTime dateTime)
-                {
-                    logger.LogTrace("Extracted date {dateTime} from '{file}'", dateTime, file);
-                    var xmpFiles = Helpers.GetCorrespondingXmpFiles(file);
-                    if (!errors.Any())
+                    var metaDataDirectories = ImageMetadataReader.ReadMetadata(file);
+                    var errors = Helpers.GetErrorsFromMetadata(metaDataDirectories);
+                    if (errors.Any())
                     {
-                        Helpers.MoveImageAndXmpToExifPath(file, xmpFiles, dateTime, _destinationDirectory, _statistics, _operationPerformer);
+                        logger.LogTrace("found errors while extracting metadata from '{file}'", file);
+                        _statistics.AddError(new MetaDataError(file, errors));
+                    }
+
+                    var possibleDateTime = dateTimeResolver.GetDateTimeFromImage(logger, metaDataDirectories);
+                    if (possibleDateTime is DateTime dateTime)
+                    {
+                        logger.LogTrace("Extracted date {dateTime} from '{file}'", dateTime, file);
+                        var xmpFiles = Helpers.GetCorrespondingXmpFiles(file);
+                        if (!errors.Any())
+                        {
+                            Helpers.MoveImageAndXmpToExifPath(file, xmpFiles, dateTime, _destinationDirectory, _statistics, _operationPerformer);
+                        }
+                        else
+                        {
+                            logger.LogTrace("Keep '{file}' as errors have happened. We will copy it later when dealing about the error.", file);
+                        }
                     }
                     else
                     {
-                        logger.LogTrace("Keep '{file}' as errors have happened. We will copy it later when dealing about the error.", file);
+                        _statistics.AddError(new NoTimeFoundError(file, Helpers.GetMetadata(metaDataDirectories)));
                     }
                 }
-                else
+                catch (MetadataExtractor.ImageProcessingException e)
                 {
-                    _statistics.AddError(new NoTimeFoundError(file, Helpers.GetMetadata(metaDataDirectories)));
+                    _statistics.AddError(new ImageProcessingExceptionError(file, e));
                 }
-            }
-            catch (MetadataExtractor.ImageProcessingException e)
-            {
-                _statistics.AddError(new ImageProcessingExceptionError(file, e));
-            }
-            catch (Exception e)
-            {
-                logger.LogExceptionError($"Failed processing {file}:", e);
-                _statistics.AddError(new ExceptionError(file, e));
+                catch (Exception e)
+                {
+                    logger.LogExceptionError($"Failed processing {file}:", e);
+                    _statistics.AddError(new ExceptionError(file, e));
+                }
             }
         }
 

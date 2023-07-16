@@ -2,32 +2,18 @@ using System.CommandLine;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using SortPhotosWithXmpByExifDateCli.CheckForDuplicates.Store;
-using SortPhotosWithXmpByExifDateCli.Entities;
 using SortPhotosWithXmpByExifDateCli.ErrorCollection;
 using SortPhotosWithXmpByExifDateCli.Operation;
 using SortPhotosWithXmpByExifDateCli.Runners;
 using SortPhotosWithXmpByExifDateCli.Runners.SortImageByExif;
 using SortPhotosWithXmpByExifDateCli.Statistics;
+using SortPhotosWithXmpByExifDateCli.Scanner;
+using SortPhotosWithXmpByExifDateCli.Repository;
 
 namespace SortPhotosWithXmpByExifDateCli;
 
 internal class CommandLine
 {
-    private static readonly string[] _extensions = new string[]
-    {
-        ".jpg",
-        ".jpeg",
-        ".nef",
-        ".gif",
-        ".png",
-        ".psd",
-        ".cr3",
-        ".arw",
-        ".mp4",
-        ".mov"
-    };
-
     private readonly Option<string?> _sourceOption;
     private readonly Option<string?> _destinationOption;
     private readonly Option<object?> _offsetOption;
@@ -37,7 +23,7 @@ internal class CommandLine
 
     private readonly ILogger<CommandLine> _logger;
     private readonly RootCommand _rootCommand;
-    private FileScanner _fileScanner;
+    private FileScanner? _fileScanner;
 
     public CommandLine()
     {
@@ -102,8 +88,11 @@ internal class CommandLine
         {
             var operationPerformer = OperationPerformerFactory.GetCopyOrMovePerformer(_logger, move, force);
             var deleteDirectoryPerformer = new DeleteDirectoryOperation(_logger, force);
-
-            Run(new SortImagesByExifRunner(_logger, sourcePath, destinationPath, _extensions, operationPerformer, deleteDirectoryPerformer));
+            var fileScanner = GetFileScanner(sourcePath);
+            if (fileScanner != null)
+            {
+                Run(new SortImagesByExifRunner(_logger, sourcePath, destinationPath, fileScanner!, operationPerformer, deleteDirectoryPerformer));
+            }
         }
 
         var rearrangeByExifCommand = new Command("rearrangeByExif",
@@ -188,7 +177,7 @@ internal class CommandLine
         _rootCommand.AddCommand(deleteLeftoverXmpsCommand);
     }
 
-    private FileScanner GetFileScanner(string directory)
+    private FileScanner? GetFileScanner(string directory)
     {
         try
         {

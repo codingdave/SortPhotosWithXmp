@@ -1,7 +1,17 @@
-using System.IO.Enumeration;
 using System.Text.RegularExpressions;
 
-namespace SortPhotosWithXmpByExifDateCli.Entities;
+namespace SortPhotosWithXmpByExifDateCli.Scanner;
+
+// Multiple edits:
+// DSC_9287.NEF        <-- file, could be mov, jpg, ...
+// DSC_9287.NEF.xmp    <-- 1.st development file
+// DSC_9287_01.NEF.xmp <-- 2.nd development file 
+
+// Multiple filetypes
+// DSC_7708.JPG
+// DSC_7708.JPG.xmp
+// DSC_7708.NEF
+// DSC_7708.NEF.xmp
 
 public class FileScanner
 {
@@ -19,14 +29,16 @@ public class FileScanner
         "*.mov",
     };
 
-    private static readonly string _xmpExtension = ".xmp";
-
     private readonly string _sourceDirectory;
 
     public FileScanner(string sourceDirectory)
     {
         _sourceDirectory = sourceDirectory;
+        GenerateDatabase();
+    }
 
+    private void GenerateDatabase()
+    {
         // we need to use the full filename without sidecar extension and without edit version as the key as the base for all variations:
         Dictionary<string, FileVariations> files = new();
 
@@ -38,7 +50,7 @@ public class FileScanner
         };
 
         // does the filename look like an edit from another file?
-        Regex notSupportedNamingRegex = new Regex(@"(?:.*?)(_\d?\d?)(?:\.\w+)");
+        Regex notSupportedNamingRegex = new(@"(?:.*?)(_\d?\d?)(?:\.\w+)");
         foreach (var ext in _extensions)
         {
             var allFilesWithExt = Directory.EnumerateFiles(_sourceDirectory, ext, enumerationOptions).AsParallel().ToArray();
@@ -48,13 +60,13 @@ public class FileScanner
                 {
                     throw new NotSupportedException($"The file '${file}' has an invalid name: Sidecar files will not be distiguishable from edits of another file. The convention to name them is: filename_number.extension.xmp, which matches this filename.");
                 }
-                
+
                 files.Add(file, new FileVariations(file, new List<string>()));
             }
         }
 
-        Regex editRegex = new Regex(@"(?<base>.*?)(_\d?\d?)?(?<extension>\.\w+)\.xmp");
-        var allSidecars = Directory.EnumerateFiles(_sourceDirectory, "*" + _xmpExtension, enumerationOptions);
+        Regex editRegex = new(@"(?<base>.*?)(_\d?\d?)?(?<extension>\.\w+)\" + SidecarFileExtension);
+        var allSidecars = Directory.EnumerateFiles(_sourceDirectory, "*" + SidecarFileExtension, enumerationOptions);
         foreach (var file in allSidecars)
         {
             var key = file;
@@ -83,56 +95,11 @@ public class FileScanner
         }
     }
 
+    public static string SidecarFileExtension { get; } = ".xmp";
+
     public HashSet<FileVariations> All { get; } = new();
 
     public IEnumerable<FileVariations> MultipleEdits => All.Where(x => x.SidecarFiles.Count > 1);
 
     public IEnumerable<string> LonelySidecarFiles => All.Where(x => x.Filename == null).SelectMany(x => x.SidecarFiles);
 }
-
-// Multiple edits:
-// DSC_9287.NEF        <-- file, could be mov, jpg, ...
-// DSC_9287.NEF.xmp    <-- 1.st development file
-// DSC_9287_01.NEF.xmp <-- 2.nd development file 
-
-// Multiple filetypes
-// DSC_7708.JPG
-// DSC_7708.JPG.xmp
-// DSC_7708.NEF
-// DSC_7708.NEF.xmp
-
-#warning First Moments
-// Problem
-// ./images/11223344/Foo_First_Moments_11.JPG.xmp
-// ./images/11223344/Foo_First_Moments_13.JPG.xmp
-// ./images/11223344/Foo_First_Moments_4.JPG
-// ./images/11223344/Foo_First_Moments_15.JPG.xmp
-// ./images/11223344/Foo_First_Moments_10.JPG.xmp
-// ./images/11223344/Foo_First_Moments_6.JPG
-// ./images/11223344/Foo_First_Moments_8.JPG
-// ./images/11223344/Foo_First_Moments_16.JPG.xmp
-// ./images/11223344/Foo_First_Moments_14.JPG
-// ./images/11223344/Foo_First_Moments_16.JPG
-// ./images/11223344/Foo_First_Moments_12.JPG
-// ./images/11223344/Foo_First_Moments_9.JPG
-// ./images/11223344/Foo_First_Moments_7.JPG
-// ./images/11223344/Foo_First_Moments_1.JPG.xmp
-// ./images/11223344/Foo_First_Moments_13.JPG
-// ./images/11223344/Foo_First_Moments_6.JPG.xmp
-// ./images/11223344/Foo_First_Moments_2.JPG
-// ./images/11223344/Foo_First_Moments_10.JPG
-// ./images/11223344/Foo_First_Moments_1.JPG
-// ./images/11223344/Foo_First_Moments_5.JPG
-// ./images/11223344/Foo_First_Moments_7.JPG.xmp
-// ./images/11223344/Foo_First_Moments_12.JPG.xmp
-// ./images/11223344/Foo_First_Moments_3.JPG
-// ./images/11223344/Foo_First_Moments_14.JPG.xmp
-// ./images/11223344/Foo_First_Moments_5.JPG.xmp
-// ./images/11223344/Foo_First_Moments_15.JPG
-// ./images/11223344/Foo_First_Moments_4.JPG.xmp
-// ./images/11223344/Foo_First_Moments_11.JPG
-// ./images/11223344/Foo_First_Moments_8.JPG.xmp
-// ./images/11223344/Foo_First_Moments_3.JPG.xmp
-// ./images/11223344/Foo_First_Moments_2.JPG.xmp
-// ./images/11223344/Foo_First_Moments_9.JPG.xmp
-public record struct FileVariations(string? Filename, List<string> SidecarFiles);

@@ -2,6 +2,7 @@ using MetadataExtractor.Formats.Xmp;
 using Microsoft.Extensions.Logging;
 using SortPhotosWithXmpByExifDateCli.ErrorCollection;
 using SortPhotosWithXmpByExifDateCli.Operation;
+using SortPhotosWithXmpByExifDateCli.Scanner;
 using SortPhotosWithXmpByExifDateCli.Statistics;
 
 namespace SortPhotosWithXmpByExifDateCli;
@@ -29,7 +30,7 @@ public static class Helpers
 
         var directory = Path.GetDirectoryName(file) ?? throw new InvalidOperationException("can not determine directory of file '{file}'");
 
-        var searchPattern = Path.GetFileName(file) + "*.xmp";
+        var searchPattern = Path.GetFileName(file) + "*" + FileScanner.SidecarFileExtension;
         var options = new EnumerationOptions
         {
             MatchCasing = MatchCasing.CaseInsensitive,

@@ -1,6 +1,3 @@
-namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates.Store
-{
-    public interface IHashDto
-    {
-    }
-}
+namespace SortPhotosWithXmpByExifDateCli.Entities;
+
+public interface IHashDto { }

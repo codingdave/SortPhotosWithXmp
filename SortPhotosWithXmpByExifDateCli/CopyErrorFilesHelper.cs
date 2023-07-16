@@ -4,6 +4,7 @@ using System.Diagnostics;
 using SortPhotosWithXmpByExifDateCli.Statistics;
 using SortPhotosWithXmpByExifDateCli.ErrorCollection;
 using SortPhotosWithXmpByExifDateCli.Operation;
+using SortPhotosWithXmpByExifDateCli.Scanner;
 
 namespace SortPhotosWithXmpByExifDateCli
 {
@@ -96,7 +97,7 @@ namespace SortPhotosWithXmpByExifDateCli
 
             if (sameExtension)
             {
-                if (extensionFile.EndsWith("xmp", StringComparison.OrdinalIgnoreCase))
+                if (extensionFile.EndsWith(FileScanner.SidecarFileExtension, StringComparison.OrdinalIgnoreCase))
                 {
                     isDuplicate = AreXmpsDuplicates(error, statistics);
                 }

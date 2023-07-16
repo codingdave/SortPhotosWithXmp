@@ -1,4 +1,4 @@
-namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates.Store
+namespace SortPhotosWithXmpByExifDateCli.Entities
 {
-    public record struct XmpHashDto(string Filename, byte[] Hash, DateTime LastWriteTimeUtc): IHashDto;
+    public record struct XmpHashDto(string Filename, byte[] Hash, DateTime LastWriteTimeUtc) : IHashDto;
 }

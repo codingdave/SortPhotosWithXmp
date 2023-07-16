@@ -2,9 +2,9 @@ using System.Security.Cryptography;
 using CoenM.ImageHash;
 using CoenM.ImageHash.HashAlgorithms;
 using Microsoft.Extensions.Logging;
-using SortPhotosWithXmpByExifDateCli.CheckForDuplicates.Store;
 using SortPhotosWithXmpByExifDateCli.ErrorCollection;
-using SortPhotosWithXmpByExifDateCli.Operation;
+using SortPhotosWithXmpByExifDateCli.Repository;
+using SortPhotosWithXmpByExifDateCli.Scanner;
 using SortPhotosWithXmpByExifDateCli.Statistics;
 
 namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
@@ -171,7 +171,7 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
             void CreateHash(string path)
             {
                 using var md5 = MD5.Create();
-                if (path.EndsWith(".xmp"))
+                if (path.EndsWith(FileScanner.SidecarFileExtension))
                 {
                     if (_xmpHashes.ContainsKey(path))
                     {
