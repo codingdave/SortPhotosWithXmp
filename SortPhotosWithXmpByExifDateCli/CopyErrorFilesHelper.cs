@@ -8,7 +8,7 @@ using SortPhotosWithXmpByExifDateCli.Repository;
 
 namespace SortPhotosWithXmpByExifDateCli
 {
-    public static partial class CopyErrorFilesHelper
+    public static class CopyErrorFilesHelper
     {
         public static void HandleErrorFiles(this IReadOnlyErrorCollection errorCollection, ILogger logger, IFoundStatistics statistics)
         {
@@ -251,4 +251,6 @@ namespace SortPhotosWithXmpByExifDateCli
             copyFileOperation.ChangeFile(errorFile, fullname);
         }
     }
+
+    public readonly record struct FileDecomposition(string CompletePath, string Directory, string Name, string Extension);
 }
