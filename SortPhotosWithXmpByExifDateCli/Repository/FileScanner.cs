@@ -58,7 +58,7 @@ public class FileScanner
             {
                 if (notSupportedNamingRegex.IsMatch(file))
                 {
-                    throw new NotSupportedException($"The file '${file}' has an invalid name: Sidecar files will not be distiguishable from edits of another file. The convention to name them is: filename_number.extension.xmp, which matches this filename.");
+                    throw new NotSupportedException($"The file '{file}' has an invalid name: Sidecar files will not be distiguishable from edits of another file. The convention to name them is: filename_number.extension.xmp, which matches this filename.");
                 }
 
 #warning use inheritance to use non-hash instances over here. Replace them with hash ones when necessary. Do not use null.
