@@ -39,38 +39,21 @@ public static class Helpers
         return Directory.GetFiles(directory, searchPattern, options);
     }
 
-    private static List<string> GetAllXmpData(IReadOnlyList<MetadataExtractor.Directory> directories)
+    private static IList<string> GetPropertyDescriptions(XmpDirectory xmpDirectory)
     {
-        var ret = new List<string>();
-        foreach (var xmpDirectory in directories.OfType<XmpDirectory>())
+        List<string> propertyDescriptions = new();
+        if (xmpDirectory.XmpMeta != null)
         {
-            if (xmpDirectory.XmpMeta != null)
+            foreach (var property in xmpDirectory.XmpMeta.Properties)
             {
-                foreach (var property in xmpDirectory.XmpMeta.Properties)
+                if (property.Path != null && property.Value != null)
                 {
-                    if (property.Path != null && property.Value != null)
-                    {
-                        ret.Add($"{property.Path}: {property.Value}");
-                    }
+                    propertyDescriptions.Add($"{property.Path}: {property.Value}");
                 }
             }
         }
 
-        return ret;
-    }
-
-    private static List<string> GetAllData(IReadOnlyList<MetadataExtractor.Directory> directories)
-    {
-        var ret = new List<string>();
-        foreach (var directory in directories)
-        {
-            foreach (var tag in directory.Tags)
-            {
-                ret.Add($"{directory.Name} - {tag.Name} = {tag.Description}");
-            }
-        }
-
-        return ret;
+        return propertyDescriptions;
     }
 
     public static IEnumerable<string> GetErrorsFromMetadata(IReadOnlyList<MetadataExtractor.Directory> metaDataDirectories)
@@ -78,10 +61,21 @@ public static class Helpers
         return metaDataDirectories.SelectMany(t => t.Errors);
     }
 
-    public static List<string> GetMetadata(IReadOnlyList<MetadataExtractor.Directory> directories)
+    public static List<string> GetMetadata(IReadOnlyList<MetadataExtractor.Directory> metaDataDirectories)
     {
-        var ret = GetAllData(directories);
-        ret.AddRange(GetAllXmpData(directories));
+        var ret = new List<string>();
+        foreach (var metadataDirectory in metaDataDirectories)
+        {
+            foreach (var tag in metadataDirectory.Tags)
+            {
+                ret.Add($"{metadataDirectory.Name} - {tag.Name} = {tag.Description}");
+            }
+            if (metadataDirectory is XmpDirectory xmpDirectory)
+            {
+                ret.AddRange(GetPropertyDescriptions(xmpDirectory));
+            }
+        }
+
         return ret;
     }
 
