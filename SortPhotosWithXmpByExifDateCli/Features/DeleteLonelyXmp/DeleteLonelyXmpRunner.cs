@@ -17,6 +17,8 @@ internal class DeleteLonelyXmpRunner : IRun
 
     public IStatistics Run(ILogger logger)
     {
+        throw new NotImplementedException();
+
         // find all xmps that do not have an image
         var lonelies = _fileScanner.LonelySidecarFiles;
         logger.LogInformation($"Found lonely xmps: {string.Join(", ", lonelies)}");

@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+
 using SortPhotosWithXmpByExifDateCli.Repository;
 
 namespace SortPhotosWithXmpByExifDateCli.Commands;
@@ -25,14 +26,11 @@ internal abstract class FileScannerCommandBase : CommandBase
             fileScanner = new FileScanner(Logger, sourcePath);
             _setFileScanner(fileScanner);
         }
-        else 
+        else if (!fileScanner.ScanDirectory.Equals(sourcePath))
         {
-            if (!fileScanner.ScanDirectory.Equals(sourcePath))
-            {
-                throw new InvalidOperationException($"Previous operation was targeting directory {fileScanner.ScanDirectory}, now we are working on {sourcePath}.");
-            }
+            throw new InvalidOperationException($"Previous operation was targeting directory {fileScanner.ScanDirectory}, now we are working on {sourcePath}.");
         }
 
-        return fileScanner;
+        return fileScanner ?? throw new InvalidOperationException("Could not create FileScanner");
     }
 }

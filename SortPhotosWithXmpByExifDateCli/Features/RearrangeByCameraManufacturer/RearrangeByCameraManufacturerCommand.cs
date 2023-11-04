@@ -31,7 +31,7 @@ internal class RearrangeByCameraManufacturerCommand : CommandBase
         return command;
     }
 
-    public void RearrangeByCameraManufacturer(string source, string destination, bool force)
+    private void RearrangeByCameraManufacturer(string source, string destination, bool force)
     {
         Run(new RearrangeByCameraManufacturerRunner(source, destination, force));
     }

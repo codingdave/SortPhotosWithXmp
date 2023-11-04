@@ -36,13 +36,14 @@ internal class RearrangeByExifCommand : FileScannerCommandBase
         return command;
     }
 
-    public void RearrangeByExif(string sourcePath, string destinationPath, bool force, bool move)
+    private void RearrangeByExif(string sourcePath, string destinationPath, bool force, bool move)
     {
-        var operationPerformer = OperationPerformerFactory.GetCopyOrMovePerformer(Logger, move, force);
-        var deleteDirectoryPerformer = new DeleteDirectoryOperation(Logger, force);
-
-        var fileScanner = GetFileScanner(sourcePath);
-
-        Run(new RearrangeByExifRunner(Logger, sourcePath, destinationPath, fileScanner, operationPerformer, deleteDirectoryPerformer));
+        Run(new RearrangeByExifRunner(
+            Logger, 
+            sourcePath, 
+            destinationPath, 
+            GetFileScanner(sourcePath),
+            OperationPerformerFactory.GetCopyOrMovePerformer(Logger, move, force), 
+            new DeleteDirectoryOperation(Logger, force)));
     }
 }

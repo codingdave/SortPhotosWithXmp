@@ -28,7 +28,7 @@ internal class DeleteEmptyDirectoryCommand : CommandBase
         return command;
     }
 
-    public void DeleteEmptyDirectory(string directory, bool force)
+    private void DeleteEmptyDirectory(string directory, bool force)
     {
         Run(new DeleteEmptyDirectoryRunner(directory, force));
     }

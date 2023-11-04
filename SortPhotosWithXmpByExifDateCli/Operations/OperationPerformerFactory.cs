@@ -6,14 +6,9 @@ namespace SortPhotosWithXmpByExifDateCli.Operations
     {
         internal static IFileOperation GetCopyOrMovePerformer(ILogger logger, bool move, bool force)
         {
-            if (move)
-            {
-                return new MoveFileOperation(logger, force);
-            }
-            else
-            {
-                return new CopyFileOperation(logger, force);
-            }
+            return move 
+                ? new MoveFileOperation(logger, force) 
+                : new CopyFileOperation(logger, force);
         }
     }
 }

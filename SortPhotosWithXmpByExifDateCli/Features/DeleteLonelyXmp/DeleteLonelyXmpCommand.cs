@@ -32,11 +32,8 @@ internal class DeleteLonelyXmpCommand : FileScannerCommandBase
         return deleteLeftoverXmpsCommand;
     }
 
-    public void DeleteLonelyXmps(string sourcePath, bool force)
+    private void DeleteLonelyXmps(string sourcePath, bool force)
     {
-#warning Not yet implemented
-        _ = GetFileScanner(sourcePath);
-        throw new NotImplementedException();
-        // Run(new DeleteLonelyXmpRunner());
+        Run(new DeleteLonelyXmpRunner(force, GetFileScanner(sourcePath)));
     }
 }
