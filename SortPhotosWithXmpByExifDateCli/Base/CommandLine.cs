@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using SortPhotosWithXmpByExifDateCli.Commands;
 using SortPhotosWithXmpByExifDateCli.ErrorCollection;
 using SortPhotosWithXmpByExifDateCli.Features.CheckForDuplicateImages;
+using SortPhotosWithXmpByExifDateCli.Features.CheckIfFileNameContainsDateDifferentToExifDates;
 using SortPhotosWithXmpByExifDateCli.Features.DeleteEmptyDirectory;
 using SortPhotosWithXmpByExifDateCli.Features.DeleteLonelyXmp;
 using SortPhotosWithXmpByExifDateCli.Features.FixExifDateByOffset;
@@ -49,6 +50,7 @@ internal class CommandLine
         _rootCommand.AddCommand(new FixExifDateByOffsetCommand(_logger, _options).GetCommand());
         _rootCommand.AddCommand(new DeleteLonelyXmpCommand(_logger, _options, GetFileScanner, SetFileScanner).GetCommand());
         _rootCommand.AddCommand(new CheckForDuplicateImagesCommand(_logger, _options, GetFileScanner, SetFileScanner).GetCommand());
+        _rootCommand.AddCommand(new CheckIfFileNameContainsDateDifferentToExifDatesCommand(_logger, _options).GetCommand());
         _rootCommand.AddCommand(new RearrangeByCameraManufacturerCommand(_logger, _options).GetCommand());
         _rootCommand.AddCommand(new RearrangeBySoftwareCommand(_logger, _options).GetCommand());
     }
