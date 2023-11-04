@@ -186,7 +186,7 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
             return new SidecarFileHash(filename, hash, File.GetLastWriteTimeUtc(filename));
         }
 
-        private ImageFileHash CreateImageHash(string filename)
+        private ImageFileHash? CreateImageHash(string filename)
         {
             ImageFileHash? ret = null;
             try
@@ -206,7 +206,7 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
                 _logger.LogExceptionError(e);
             }
 
-            return (ImageFileHash)ret;
+            return ret;
         }
     }
 }

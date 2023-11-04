@@ -16,8 +16,11 @@ namespace SortPhotosWithXmpByExifDateCli.Statistics
 
         public void Log()
         {
-            #warning Not yet implemented
+#if DEBUG
             _logger.LogWarning("NotImplemented");
+#else
+            throw new NotImplementedException();
+#endif
         }
     }
 }

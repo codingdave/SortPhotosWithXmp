@@ -27,7 +27,7 @@ internal class DeleteLonelyXmps : IRun
                 File.Delete(lonely.Filename);
             }
         }
-        #warning implement statistics
-        return null;
+        
+        return new DeleteFilesStatistics();
     }
 }
