@@ -1,3 +1,3 @@
 namespace SortPhotosWithXmpByExifDateCli.Repository;
 
-public record struct FileVariationsDto(ImageFileDto? ImageFileDataDto, List<IImageFileDto> SidecarFileDtos);
+public record struct FileVariationsDto(ImageFileDto? ImageFileDto, List<IImageFileDto> SidecarFileDtos);
