@@ -1,14 +1,21 @@
 using Microsoft.Extensions.Logging;
+using SystemInterface.IO;
 
 namespace SortPhotosWithXmpByExifDateCli.Operations
 {
     public class CopyFileOperation : IFileOperation
     {
         private readonly ILogger _logger;
+        private readonly IFile _fileWrapper;
 
-        internal CopyFileOperation(ILogger logger, bool force)
+
+        internal CopyFileOperation(
+            ILogger logger,
+            IFile fileWrapper, 
+            bool force)
         {
             _logger = logger;
+            _fileWrapper = fileWrapper;
             IsChanging = force;
         }
 
@@ -16,10 +23,10 @@ namespace SortPhotosWithXmpByExifDateCli.Operations
 
         public void ChangeFile(string sourceFileName, string destFileName)
         {
-            _logger.LogTrace($"File.Copy({sourceFileName}, {destFileName});");
+            _logger.LogTrace($"IFile.Copy({sourceFileName}, {destFileName});");
             if (IsChanging)
             {
-                File.Copy(sourceFileName, destFileName);
+                _fileWrapper.Copy(sourceFileName, destFileName);
             }
         }
 

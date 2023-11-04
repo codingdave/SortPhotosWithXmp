@@ -3,15 +3,19 @@ using Microsoft.Extensions.Logging;
 using SortPhotosWithXmpByExifDateCli.Operations;
 using SortPhotosWithXmpByExifDateCli.Repository;
 using SortPhotosWithXmpByExifDateCli.Commands;
+using SystemInterface.IO;
 
 namespace SortPhotosWithXmpByExifDateCli.Features.RearrangeByExif;
 
 internal class RearrangeByExifCommand : FileScannerCommandBase
 {
     public RearrangeByExifCommand(
-        ILogger<CommandLine> logger, CommandlineOptions commandlineOptions,
+        ILogger<CommandLine> logger,
+        CommandlineOptions commandlineOptions,
+        IFile fileWrapper,
+        IDirectory directoryWrapper,
         Func<FileScanner?> getFileScanner, Action<FileScanner> setFileScanner)
-        : base(logger, commandlineOptions, getFileScanner, setFileScanner)
+        : base(logger, commandlineOptions, fileWrapper, directoryWrapper, getFileScanner, setFileScanner)
     {
     }
 
@@ -43,6 +47,8 @@ internal class RearrangeByExifCommand : FileScannerCommandBase
             sourcePath, 
             destinationPath, 
             GetFileScanner(sourcePath),
+            FileWrapper,
+            DirectoryWrapper,
             move,
             force));
     }

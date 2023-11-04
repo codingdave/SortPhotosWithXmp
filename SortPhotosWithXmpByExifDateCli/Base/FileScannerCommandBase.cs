@@ -2,6 +2,8 @@ using Microsoft.Extensions.Logging;
 
 using SortPhotosWithXmpByExifDateCli.Repository;
 
+using SystemInterface.IO;
+
 namespace SortPhotosWithXmpByExifDateCli.Commands;
 
 internal abstract class FileScannerCommandBase : CommandBase
@@ -10,9 +12,12 @@ internal abstract class FileScannerCommandBase : CommandBase
     private readonly Action<FileScanner> _setFileScanner;
 
     public FileScannerCommandBase(
-        ILogger<CommandLine> logger, CommandlineOptions commandlineOptions,
+        ILogger<CommandLine> logger,
+        CommandlineOptions commandlineOptions,
+        IFile fileWrapper,
+        IDirectory directoryWrapper,
         Func<FileScanner?> getFileScanner, Action<FileScanner> setFileScanner)
-        : base(logger, commandlineOptions)
+        : base(logger, commandlineOptions, fileWrapper, directoryWrapper)
     {
         _getFileScanner = getFileScanner;
         _setFileScanner = setFileScanner;

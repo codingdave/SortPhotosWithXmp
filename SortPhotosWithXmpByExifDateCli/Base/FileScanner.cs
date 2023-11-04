@@ -75,7 +75,7 @@ public class FileScanner : IFileScanner
 
 #warning check darktable to see how this is implemented. Different xmp variations might be possible.
         Regex editRegex = new(@"(?<base>.*?)(_\d?\d?)?(?<extension>\.\w+)\" + SidecarFileExtension);
-        var allSidecars = System.IO.Directory.EnumerateFiles(ScanDirectory, "*" + SidecarFileExtension, enumerationOptions);
+        var allSidecars = Directory.EnumerateFiles(ScanDirectory, "*" + SidecarFileExtension, enumerationOptions);
         foreach (var file in allSidecars)
         {
             var key = file;

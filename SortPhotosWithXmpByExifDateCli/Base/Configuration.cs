@@ -1,8 +1,12 @@
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+
 using Serilog;
-using Serilog.Enrichers;
+
+using SystemInterface.IO;
+
+using SystemWrapper.IO;
 
 namespace SortPhotosWithXmpByExifDateCli;
 
@@ -27,14 +31,18 @@ public static class Configuration
             .CreateLogger();
 
         var host = Host.CreateDefaultBuilder()
-            .ConfigureServices(serviceCollection => { })
+            .ConfigureServices(serviceCollection =>
+                _ = serviceCollection
+                    // .AddTransient<IFile, FileWrap>()
+                    .AddTransient<IFile, FileLogger>()
+                    // .AddTransient<IDirectory, DirectoryWrap>()
+                    .AddTransient<IDirectory, DirectoryLogger>()
+                    )
             .ConfigureAppConfiguration((hostBuilderContext, configurationBuilder) =>
-            {
                 _ = configurationBuilder
                     .SetBasePath(GetBasePath())
                     .AddJsonFile(appsettings, optional: false, reloadOnChange: true)
-                    .AddJsonFile(path: additionalAppsettings, optional: true);
-            })
+                    .AddJsonFile(path: additionalAppsettings, optional: true))
             .ConfigureLogging(loggingBuilder =>
             {
                 // _ = loggingBuilder

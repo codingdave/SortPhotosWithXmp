@@ -1,15 +1,21 @@
 using Microsoft.Extensions.Logging;
 using SortPhotosWithXmpByExifDateCli.Statistics;
 
+using SystemInterface.IO;
+
 namespace SortPhotosWithXmpByExifDateCli.Operations
 {
     public class DeleteDirectoryOperation : IOperation
     {
         private readonly ILogger _logger;
+        private readonly IDirectory _directoryWrapper;
 
-        public DeleteDirectoryOperation(ILogger logger, bool force)
+
+        public DeleteDirectoryOperation(ILogger logger, IDirectory directoryWrapper, bool force)
         {
             _logger = logger;
+            _directoryWrapper = directoryWrapper;
+
             IsChanging = force;
             Statistics = new DirectoriesDeletedStatistics(logger, this);
         }
@@ -19,11 +25,11 @@ namespace SortPhotosWithXmpByExifDateCli.Operations
 
         public void DeleteDirectory(string path)
         {
-            _logger.LogTrace("Directory.Delete({path});", path);
+            _logger.LogTrace("IDirectory.Delete({path});", path);
 
             if (IsChanging)
             {
-                Directory.Delete(path, false);
+                _directoryWrapper.Delete(path, false);
             }
 
             // when we simulate, we still want to count

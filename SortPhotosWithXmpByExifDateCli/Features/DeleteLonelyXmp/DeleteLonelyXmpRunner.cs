@@ -1,6 +1,9 @@
 using Microsoft.Extensions.Logging;
+
 using SortPhotosWithXmpByExifDateCli.Repository;
 using SortPhotosWithXmpByExifDateCli.Statistics;
+
+using SystemInterface.IO;
 
 namespace SortPhotosWithXmpByExifDateCli.Features.DeleteLonelyXmp;
 
@@ -8,16 +11,18 @@ internal class DeleteLonelyXmpRunner : IRun
 {
     private readonly bool _force;
     private readonly IFileScanner _fileScanner;
+    private readonly IFile _fileWrapper;
 
-    public DeleteLonelyXmpRunner(bool force, IFileScanner fileScanner)
+
+    public DeleteLonelyXmpRunner(bool force, IFileScanner fileScanner, IFile fileWrapper)
     {
         _force = force;
         _fileScanner = fileScanner;
+        _fileWrapper = fileWrapper;
     }
 
     public IStatistics Run(ILogger logger)
     {
-        throw new NotImplementedException();
 
         // find all xmps that do not have an image
         var lonelies = _fileScanner.LonelySidecarFiles;
@@ -26,7 +31,8 @@ internal class DeleteLonelyXmpRunner : IRun
         {
             foreach (var lonely in lonelies)
             {
-                File.Delete(lonely.Filename);
+                _fileWrapper.Delete(lonely.Filename);
+                throw new NotImplementedException();
             }
         }
 

@@ -5,17 +5,21 @@ using SortPhotosWithXmpByExifDateCli.Statistics;
 using SortPhotosWithXmpByExifDateCli.ErrorCollection;
 using SortPhotosWithXmpByExifDateCli.Operations;
 using SortPhotosWithXmpByExifDateCli.Repository;
+using SystemInterface.IO;
 
 namespace SortPhotosWithXmpByExifDateCli
 {
     public static class CopyErrorFilesHelper
     {
-        public static void HandleErrorFiles(this IReadOnlyErrorCollection errorCollection, ILogger logger, IFoundStatistics statistics)
+        public static void HandleErrorFiles(this IReadOnlyErrorCollection errorCollection, 
+            ILogger logger, 
+            IFoundStatistics statistics,    
+            IFile fileWrapper)
         {
-            var copyFileOperation = new CopyFileOperation(logger, statistics.FileOperation.IsChanging);
-            var deleteFileOperation = new DeleteFileOperation(logger, statistics.FileOperation.IsChanging);
+            var copyFileOperation = new CopyFileOperation(logger, fileWrapper, statistics.FileOperation.IsChanging);
+            var deleteFileOperation = new DeleteFileOperation(logger, fileWrapper, statistics.FileOperation.IsChanging);
 
-            CollectCollisions(logger, errorCollection.Errors.OfType<FileAlreadyExistsError>(), (FileDecomposition targetFile, FileAlreadyExistsError error) => HandleCollisionOrDuplicate(logger, statistics, copyFileOperation, deleteFileOperation, error, targetFile));
+            CollectCollisions(logger, errorCollection.Errors.OfType<FileAlreadyExistsError>(), (FileDecomposition targetFile, FileAlreadyExistsError error) => HandleCollisionOrDuplicate(logger, statistics, copyFileOperation, deleteFileOperation, error, targetFile, fileWrapper));
             CollectCollisions(logger, errorCollection.Errors.OfType<NoTimeFoundError>(), (FileDecomposition targetFile, NoTimeFoundError error) => CreateDirectoryAndCopyFile(logger, error, targetFile, copyFileOperation));
             CollectCollisions(logger, errorCollection.Errors.OfType<MetaDataError>(), (FileDecomposition targetFile, MetaDataError error) => CreateDirectoryAndCopyFile(logger, error, targetFile, copyFileOperation));
         }
@@ -64,9 +68,10 @@ namespace SortPhotosWithXmpByExifDateCli
                                                        CopyFileOperation copyFileOperation,
                                                        DeleteFileOperation deleteFileOperation,
                                                        FileAlreadyExistsError error,
-                                                       FileDecomposition targetFile)
+                                                       FileDecomposition targetFile,
+                                                       IFile fileWrapper)
         {
-            if (IsDuplicate(logger, error, statistics))
+            if (IsDuplicate(logger, error, statistics, fileWrapper))
             {
                 HandleDuplicate(logger, deleteFileOperation, error);
             }
@@ -84,7 +89,8 @@ namespace SortPhotosWithXmpByExifDateCli
 
         private static bool IsDuplicate(ILogger logger,
                                         FileAlreadyExistsError error,
-                                        IFoundStatistics statistics)
+                                        IFoundStatistics statistics,
+                                        IFile fileWrapper)
         {
             // when are 2 images identical?
             var isDuplicate = false;
@@ -97,30 +103,26 @@ namespace SortPhotosWithXmpByExifDateCli
 
             if (sameExtension)
             {
-                if (extensionFile.EndsWith(FileScanner.SidecarFileExtension, StringComparison.OrdinalIgnoreCase))
-                {
-                    isDuplicate = AreXmpsDuplicates(error, statistics);
-                }
-                else
-                {
-                    isDuplicate = AreImagesDuplicates(logger, error, statistics);
-                }
+                isDuplicate = extensionFile.EndsWith(FileScanner.SidecarFileExtension, StringComparison.OrdinalIgnoreCase)
+                    ? AreXmpsDuplicates(error, statistics, fileWrapper)
+                    : AreImagesDuplicates(logger, error, statistics);
             }
 
             return isDuplicate;
         }
 
         private static bool AreXmpsDuplicates(FileAlreadyExistsError error,
-                                              IFoundStatistics statistics)
+                                              IFoundStatistics statistics,
+                                              IFile fileWrapper)
         {
             // xmps are identical, if their hash is identical
 
             using var md5 = System.Security.Cryptography.MD5.Create();
-            using var fileStream = File.OpenRead(error.File);
-            using var otherfileStream = File.OpenRead(error.OtherFile);
-            var hash1 = md5.ComputeHash(fileStream);
-            var hash2 = md5.ComputeHash(otherfileStream);
-            bool isHashIdentical = hash1 == hash2;
+            using var fileStream = fileWrapper.OpenRead(error.File);
+            using var otherfileStream = fileWrapper.OpenRead(error.OtherFile);
+            var hash1 = md5.ComputeHash(fileStream.FileStreamInstance);
+            var hash2 = md5.ComputeHash(otherfileStream.FileStreamInstance);
+            var isHashIdentical = hash1 == hash2;
             if (isHashIdentical)
             {
                 statistics.SkippedXmps++;
@@ -133,7 +135,7 @@ namespace SortPhotosWithXmpByExifDateCli
                                                 FileAlreadyExistsError error,
                                                 IFoundStatistics statistics)
         {
-            bool isDuplicate = false;
+            var isDuplicate = false;
 
             try
             {
@@ -193,7 +195,7 @@ namespace SortPhotosWithXmpByExifDateCli
             if (!Directory.Exists(directory))
             {
                 logger.LogTrace("Creating directory '{newDirectory}'", directory);
-                Directory.CreateDirectory(directory);
+                _ = Directory.CreateDirectory(directory);
             }
         }
 
@@ -226,7 +228,7 @@ namespace SortPhotosWithXmpByExifDateCli
                 return ret;
             }
 
-            string filenameWithExtension = Path.GetFileName(errorFile);
+            var filenameWithExtension = Path.GetFileName(errorFile);
             var (filename, extension) = SplitFileNameAndExtension(filenameWithExtension);
             var directory = Path.Combine(targetDirectory, filename);
             var completeFilepath = Path.Combine(directory, filenameWithExtension);

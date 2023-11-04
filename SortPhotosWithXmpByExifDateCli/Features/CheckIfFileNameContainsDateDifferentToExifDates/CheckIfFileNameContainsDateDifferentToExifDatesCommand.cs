@@ -4,13 +4,18 @@ using Microsoft.Extensions.Logging;
 
 using SortPhotosWithXmpByExifDateCli.Commands;
 
+using SystemInterface.IO;
+
 namespace SortPhotosWithXmpByExifDateCli.Features.CheckIfFileNameContainsDateDifferentToExifDates;
 
 internal class CheckIfFileNameContainsDateDifferentToExifDatesCommand : CommandBase
 {
     public CheckIfFileNameContainsDateDifferentToExifDatesCommand(
-        ILogger<CommandLine> logger, CommandlineOptions commandlineOptions) 
-        : base(logger, commandlineOptions)
+        ILogger<CommandLine> logger, 
+        CommandlineOptions commandlineOptions,
+        IFile fileWrapper,
+        IDirectory directoryWraper) 
+        : base(logger, commandlineOptions, fileWrapper, directoryWraper)
     {
     }
 

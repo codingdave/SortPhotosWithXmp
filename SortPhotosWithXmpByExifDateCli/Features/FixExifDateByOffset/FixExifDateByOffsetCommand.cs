@@ -1,13 +1,23 @@
 using System.CommandLine;
+using System.Net;
+
 using Microsoft.Extensions.Logging;
 using SortPhotosWithXmpByExifDateCli.Commands;
+
+using SystemInterface.IO;
+
+using SystemWrapper.IO;
 
 namespace SortPhotosWithXmpByExifDateCli.Features.FixExifDateByOffset;
 
 internal class FixExifDateByOffsetCommand : CommandBase
 {
-    public FixExifDateByOffsetCommand(ILogger<CommandLine> logger, CommandlineOptions commandlineOptions)
-    : base(logger, commandlineOptions) { }
+    public FixExifDateByOffsetCommand(
+        ILogger<CommandLine> logger, 
+        CommandlineOptions commandlineOptions,
+        IFile fileWrapper,
+        IDirectory directoryWrapper)
+    : base(logger, commandlineOptions, fileWrapper, directoryWrapper) { }
 
     internal override Command GetCommand()
     {

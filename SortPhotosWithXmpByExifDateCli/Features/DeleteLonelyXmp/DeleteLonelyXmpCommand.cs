@@ -5,14 +5,19 @@ using Microsoft.Extensions.Logging;
 using SortPhotosWithXmpByExifDateCli.Commands;
 using SortPhotosWithXmpByExifDateCli.Repository;
 
+using SystemInterface.IO;
+
 namespace SortPhotosWithXmpByExifDateCli.Features.DeleteLonelyXmp;
 
 internal class DeleteLonelyXmpCommand : FileScannerCommandBase
 {
     public DeleteLonelyXmpCommand(
-        ILogger<CommandLine> logger, CommandlineOptions commandlineOptions,
+        ILogger<CommandLine> logger,
+        CommandlineOptions commandlineOptions,
+        IFile fileWrapper,
+        IDirectory directoryWrapper,
         Func<FileScanner?> getFileScanner, Action<FileScanner> setFileScanner)
-        : base(logger, commandlineOptions, getFileScanner, setFileScanner)
+        : base(logger, commandlineOptions, fileWrapper, directoryWrapper, getFileScanner, setFileScanner)
     {
     }
 
@@ -34,6 +39,6 @@ internal class DeleteLonelyXmpCommand : FileScannerCommandBase
 
     private void DeleteLonelyXmps(string sourcePath, bool force)
     {
-        Run(new DeleteLonelyXmpRunner(force, GetFileScanner(sourcePath)));
+        Run(new DeleteLonelyXmpRunner(force, GetFileScanner(sourcePath), FileWrapper));
     }
 }

@@ -1,15 +1,21 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 
+using SystemInterface.IO;
+
 namespace SortPhotosWithXmpByExifDateCli.Operations
 {
     public class DeleteFileOperation : IFileOperation
     {
         private readonly ILogger _logger;
+        private readonly IFile _fileWrapper;
 
-        internal DeleteFileOperation(ILogger logger, bool force)
+
+        internal DeleteFileOperation(ILogger logger, IFile fileWrapper, bool force)
         {
             _logger = logger;
+            _fileWrapper = fileWrapper;
+
             IsChanging = force;
         }
 
@@ -22,10 +28,10 @@ namespace SortPhotosWithXmpByExifDateCli.Operations
 
         public void Delete(string path)
         {
-            _logger.LogTrace($"Deleting file '{path}';");
+            _logger.LogTrace($"IFile.Delete '{path}';");
             if (IsChanging)
             {
-                File.Delete(path);
+                _fileWrapper.Delete(path);
             }
         }
 

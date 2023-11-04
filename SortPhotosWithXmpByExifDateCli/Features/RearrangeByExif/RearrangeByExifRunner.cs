@@ -1,9 +1,13 @@
 using MetadataExtractor;
+
 using Microsoft.Extensions.Logging;
+
 using SortPhotosWithXmpByExifDateCli.ErrorCollection;
 using SortPhotosWithXmpByExifDateCli.Operations;
 using SortPhotosWithXmpByExifDateCli.Repository;
 using SortPhotosWithXmpByExifDateCli.Statistics;
+
+using SystemInterface.IO;
 
 namespace SortPhotosWithXmpByExifDateCli.Features.RearrangeByExif;
 
@@ -20,15 +24,17 @@ internal class RearrangeByExifRunner : IRun
                              string sourceDirectory,
                              string destinationDirectory,
                              IFileScanner fileScanner,
+                             IFile fileWrapper,
+                             IDirectory directoryWrapper,
                              bool move,
                              bool force)
     {
         _sourceDirectory = sourceDirectory ?? throw new ArgumentNullException(nameof(sourceDirectory));
         _destinationDirectory = destinationDirectory ?? throw new ArgumentNullException(nameof(destinationDirectory));
-        _operationPerformer = OperationPerformerFactory.GetCopyOrMovePerformer(logger, move, force);
+        _operationPerformer = OperationPerformerFactory.GetCopyOrMovePerformer(logger, fileWrapper, move, force);
         _statistics = new FilesFoundStatistics(logger, _operationPerformer);
         _fileScanner = fileScanner;
-        _deleteDirectoryOperation = new DeleteDirectoryOperation(logger, force);
+        _deleteDirectoryOperation = new DeleteDirectoryOperation(logger, directoryWrapper, force);
     }
 
     public IStatistics Run(ILogger logger)
