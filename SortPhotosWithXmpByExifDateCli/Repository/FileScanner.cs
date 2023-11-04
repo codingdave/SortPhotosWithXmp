@@ -13,7 +13,7 @@ namespace SortPhotosWithXmpByExifDateCli.Repository;
 // DSC_7708.NEF
 // DSC_7708.NEF.xmp
 
-public class FileScanner
+public class FileScanner : IFileScanner
 {
     private static readonly string[] _extensions = new string[]
     {
@@ -104,8 +104,6 @@ public class FileScanner
 
     public IEnumerable<FileVariations> MultipleEdits => All.Where(x => x.SidecarFiles.Count > 1);
 
-    // having sidecar files but no source data is not healthy
     public IEnumerable<IImageFile> LonelySidecarFiles => All.Where(x => x.Data == null).SelectMany(x => x.SidecarFiles);
-    // we have an source, not necessary any sidecar files.
     public IEnumerable<FileVariations> HealtyFileVariations => All.Where(x => x.Data != null);
 }

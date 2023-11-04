@@ -7,9 +7,9 @@ namespace SortPhotosWithXmpByExifDateCli;
 internal class DeleteLonelyXmps : IRun
 {
     private readonly bool _force;
-    private readonly FileScanner _fileScanner;
+    private readonly IFileScanner _fileScanner;
 
-    public DeleteLonelyXmps(bool force, FileScanner fileScanner)
+    public DeleteLonelyXmps(bool force, IFileScanner fileScanner)
     {
         _force = force;
         _fileScanner = fileScanner;
@@ -27,7 +27,7 @@ internal class DeleteLonelyXmps : IRun
                 File.Delete(lonely.Filename);
             }
         }
-        
+
         return new DeleteFilesStatistics();
     }
 }
