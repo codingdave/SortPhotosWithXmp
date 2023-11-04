@@ -2,7 +2,7 @@ using System.Data;
 using MetadataExtractor;
 using Microsoft.Extensions.Logging;
 using SortPhotosWithXmpByExifDateCli.ErrorCollection;
-using SortPhotosWithXmpByExifDateCli.Operation;
+using SortPhotosWithXmpByExifDateCli.Operations;
 
 namespace SortPhotosWithXmpByExifDateCli.Statistics;
 
