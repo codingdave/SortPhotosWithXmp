@@ -40,8 +40,7 @@ internal class CheckForDuplicateImagesCommand : FileScannerCommandBase
     private void CheckForDuplicateImages(string directory, bool force, int similarity, bool move)
     {
         Run(new CheckForDuplicateImagesRunner(
-            Logger, new HashRepository(Logger, 
-            Configuration.GetBasePath()), 
+            Logger, 
             GetFileScanner(directory), 
             force, 
             similarity));

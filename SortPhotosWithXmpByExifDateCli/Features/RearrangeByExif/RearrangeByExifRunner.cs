@@ -20,15 +20,15 @@ internal class RearrangeByExifRunner : IRun
                              string sourceDirectory,
                              string destinationDirectory,
                              IFileScanner fileScanner,
-                             IFileOperation operationPerformer,
-                             DeleteDirectoryOperation deleteDirectoryPerformer)
+                             bool move,
+                             bool force)
     {
         _sourceDirectory = sourceDirectory ?? throw new ArgumentNullException(nameof(sourceDirectory));
         _destinationDirectory = destinationDirectory ?? throw new ArgumentNullException(nameof(destinationDirectory));
-        _statistics = new FilesFoundStatistics(logger, operationPerformer);
-        _operationPerformer = operationPerformer;
+        _operationPerformer = OperationPerformerFactory.GetCopyOrMovePerformer(logger, move, force);
+        _statistics = new FilesFoundStatistics(logger, _operationPerformer);
         _fileScanner = fileScanner;
-        _deleteDirectoryOperation = deleteDirectoryPerformer;
+        _deleteDirectoryOperation = new DeleteDirectoryOperation(logger, force);
     }
 
     public IStatistics Run(ILogger logger)

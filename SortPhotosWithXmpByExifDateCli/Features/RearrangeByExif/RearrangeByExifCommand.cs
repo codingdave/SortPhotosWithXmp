@@ -43,7 +43,7 @@ internal class RearrangeByExifCommand : FileScannerCommandBase
             sourcePath, 
             destinationPath, 
             GetFileScanner(sourcePath),
-            OperationPerformerFactory.GetCopyOrMovePerformer(Logger, move, force), 
-            new DeleteDirectoryOperation(Logger, force)));
+            move,
+            force));
     }
 }
