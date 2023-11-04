@@ -1,6 +1,7 @@
 # SortPhotosWithXmpByExifDate
-Sort your Photos and Videos by exif time. If you have .xmp files, this tool will place them accordingly, preserving the Image<->Xmp locality.
-Challenges it will tackle:
+Sort your Photos and Videos by exif time. If you have .xmp files, this tool will place them accordingly, preserving the Image<->Xmp relation.
+
+Challenges it can deal with:
 * No timestamp found: We try different fields of metadata (exif, iptc, ...). Still a datetime might be missing. Images for which we do not find the datetime will be placed in NoTimeFound/image/image.jpg
 * duplicates: This might happen if you have the same image (so also same metadata) at 2 different directories, as they will be copied next to each other. Since this might be a duplicate that you want to resolve first, they are placed in FileAlreadyExistsError/image/image.jpg and FileAlreadyExistsError/image/image_1.jpg, FileAlreadyExistsError/image/image_2.jpg ... 
 * Metadata issues: If reading the metadata fails or there is an unknown medatata entry the image is placed at MetaDataError/image/image.jpg

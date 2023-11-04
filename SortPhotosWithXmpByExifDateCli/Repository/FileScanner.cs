@@ -61,12 +61,11 @@ public class FileScanner : IFileScanner
                     throw new NotSupportedException($"The file '{file}' has an invalid name: Sidecar files will not be distiguishable from edits of another file. The convention to name them is: filename_number.extension.xmp, which matches this filename.");
                 }
 
-#warning use inheritance to use non-hash instances over here. Replace them with hash ones when necessary. Do not use null.
                 files.Add(file, new FileVariations(new ImageFile(file), new List<IImageFile>()));
             }
         }
 
-#warning check darktable to see how this is implemented
+#warning check darktable to see how this is implemented. Different xmp variations might be possible.
         Regex editRegex = new(@"(?<base>.*?)(_\d?\d?)?(?<extension>\.\w+)\" + SidecarFileExtension);
         var allSidecars = Directory.EnumerateFiles(_sourceDirectory, "*" + SidecarFileExtension, enumerationOptions);
         foreach (var file in allSidecars)

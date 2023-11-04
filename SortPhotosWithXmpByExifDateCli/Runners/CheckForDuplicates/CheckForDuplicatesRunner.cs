@@ -83,7 +83,6 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
 #warning TODO
             // deletion of images - which one shall we delete?
             // imagine one of them has a descriptive filename, the other does not
-
             // we should at first copy them all next to each other to evaluate in the duplicate directory
             _logger.LogInformation(
                 "image '{first}' and image '{second}' are duplicates with a similarity score of {similarity}",
@@ -104,7 +103,6 @@ namespace SortPhotosWithXmpByExifDateCli.CheckForDuplicates
             // - We need to delete the one that is not next to the corresponding image.
             // - if there are more locations with existing images the images would need to match as well and then we could delete the image with its xmp.
             // - -> xmps should always be handled as a tuple: (image, xmp) to allow for that
-
             // we should at first copy them all next to each other to evaluate in the duplicate directory
             var list = enumerable.ToList();
             _logger.LogInformation("Found {amount} xmp files that are duplicates: {images}",
