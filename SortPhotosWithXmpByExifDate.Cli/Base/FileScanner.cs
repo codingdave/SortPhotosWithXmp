@@ -8,8 +8,9 @@ namespace SortPhotosWithXmpByExifDate.Cli.Repository;
 
 // Multiple edits:
 // DSC_9287.NEF        <-- file, could be mov, jpg, ...
-// DSC_9287.NEF.xmp    <-- 1.st development file
-// DSC_9287_01.NEF.xmp <-- 2.nd development file 
+// DSC_9287.NEF.xmp    <-- 1.st development file, version 0. No versioning for first version.
+// DSC_9287_01.NEF.xmp <-- 2.nd development file, version 1
+// DSC_9287_02.NEF.xmp <-- 3.rd development file, version 2
 
 // Multiple filetypes
 // DSC_7708.JPG
@@ -79,10 +80,11 @@ public class FileScanner : IFileScanner
             }
         }
 
-        // darktable appends .xmp to the filename. 
-        // Thats it? How can it detect duplicates?
-        // crawler.c:147 
-        // #warning check darktable to see how this is implemented. Different xmp variations might be possible.
+        // darktable 
+        // * appends .xmp to the filename. 
+        // * image.c:498, (from behind) find the last point
+        // * image.c:499, add version before with format "_%02d"
+        // * image.c:501, (from behind) find the last point, append remaining characters (extension) to the end 
         var allSidecars = Directory.EnumerateFiles(scanDirectory, "*" + XmpExtension, enumerationOptions);
         foreach (var file in allSidecars)
         {
