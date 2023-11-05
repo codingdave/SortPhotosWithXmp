@@ -21,7 +21,8 @@ internal class CheckIfFileNameContainsDateDifferentToExifDatesCommand : CommandB
 
     internal override Command GetCommand()
     {
-        var command = new Command("deleteEmptyDirectory", "Search recursively for emtpy directories and delete them.")
+        var command = new Command("checkIfFileNameContainsDateDifferentToExifDates", 
+        "Compare the date in the filename with the date in the file")
         {
             SourceOption,
             ForceOption

@@ -43,11 +43,12 @@ public static class Configuration
                     .SetBasePath(GetBasePath())
                     .AddJsonFile(appsettings, optional: false, reloadOnChange: true)
                     .AddJsonFile(path: additionalAppsettings, optional: true))
-            .ConfigureLogging(loggingBuilder =>
+                    .ConfigureLogging(loggingBuilder =>
             {
-                // _ = loggingBuilder
-                //     .ClearProviders()
-                //     .AddConfiguration();
+            // _ = loggingBuilder
+            //     .ClearProviders()
+            //     .AddConfiguration();
+            //     .AddSerilog()
             })
             .UseSerilog()
             .Build();

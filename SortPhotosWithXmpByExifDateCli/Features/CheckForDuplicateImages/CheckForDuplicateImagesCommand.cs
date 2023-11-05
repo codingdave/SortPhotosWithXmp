@@ -23,7 +23,7 @@ internal class CheckForDuplicateImagesCommand : FileScannerCommandBase
 
     internal override Command GetCommand()
     {
-        var checkForDuplicateImagesCommand = new Command(
+        var command = new Command(
             "checkForDuplicateImages",
             "Scan for images that are duplicates and remove them.")
         {
@@ -33,13 +33,13 @@ internal class CheckForDuplicateImagesCommand : FileScannerCommandBase
             MoveOption
         };
 
-        checkForDuplicateImagesCommand.SetHandler(CheckForDuplicateImages!,
+        command.SetHandler(CheckForDuplicateImages!,
         SourceOption,
         ForceOption,
         SimilarityOption,
         MoveOption);
 
-        return checkForDuplicateImagesCommand;
+        return command;
     }
 
     private void CheckForDuplicateImages(string directory, bool force, int similarity, bool move)

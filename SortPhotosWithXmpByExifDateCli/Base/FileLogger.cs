@@ -12,9 +12,9 @@ namespace SortPhotosWithXmpByExifDateCli;
 
 internal class FileLogger : IFile
 {
-    private readonly ILogger _ilogger;
+    private readonly ILogger<CommandLine> _ilogger;
 
-    public FileLogger(ILogger ilogger) => _ilogger = ilogger;
+    public FileLogger(ILogger<CommandLine> ilogger) => _ilogger = ilogger;
 
 
     public void AppendAllLines(string path, IEnumerable<string> contents)

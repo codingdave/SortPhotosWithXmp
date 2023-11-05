@@ -12,9 +12,9 @@ namespace SortPhotosWithXmpByExifDateCli;
 
 internal class DirectoryLogger : IDirectory
 {
-    private readonly ILogger _logger;
+    private readonly ILogger<CommandLine> _logger;
 
-    public DirectoryLogger(ILogger logger) => _logger = logger;
+    public DirectoryLogger(ILogger<CommandLine> logger) => _logger = logger;
 
     public IDirectoryInfo CreateDirectory(string path)
     {

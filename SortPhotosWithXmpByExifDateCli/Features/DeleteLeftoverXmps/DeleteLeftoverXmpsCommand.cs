@@ -9,9 +9,9 @@ using SystemInterface.IO;
 
 namespace SortPhotosWithXmpByExifDateCli.Features.DeleteLonelyXmp;
 
-internal class DeleteLonelyXmpCommand : FileScannerCommandBase
+internal class DeleteLeftoverXmpsCommand : FileScannerCommandBase
 {
-    public DeleteLonelyXmpCommand(
+    public DeleteLeftoverXmpsCommand(
         ILogger<CommandLine> logger,
         CommandlineOptions commandlineOptions,
         IFile fileWrapper,
@@ -23,7 +23,7 @@ internal class DeleteLonelyXmpCommand : FileScannerCommandBase
 
     internal override Command GetCommand()
     {
-        var deleteLeftoverXmpsCommand = new Command(
+        var command = new Command(
             "deleteLeftoverXmps",
             "Scan for lonely/leftover xmps and remove them.")
         {
@@ -31,14 +31,14 @@ internal class DeleteLonelyXmpCommand : FileScannerCommandBase
             ForceOption
         };
 
-        deleteLeftoverXmpsCommand.SetHandler(DeleteLonelyXmps!,
+        command.SetHandler(DeleteLeftoverXmps!,
             SourceOption!,
             ForceOption!);
-        return deleteLeftoverXmpsCommand;
+        return command;
     }
 
-    private void DeleteLonelyXmps(string sourcePath, bool force)
+    private void DeleteLeftoverXmps(string sourcePath, bool force)
     {
-        Run(new DeleteLonelyXmpRunner(force, GetFileScanner(sourcePath), FileWrapper));
+        Run(new DeleteLeftoverXmpsRunner(force, GetFileScanner(sourcePath), FileWrapper));
     }
 }
