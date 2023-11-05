@@ -12,22 +12,23 @@ public class FileScanner : IFileScanner
 {
     private readonly string[] _extensions = new string[]
     {
-        "*.jpg",
-        "*.jpeg",
-        "*.nef",
-        "*.gif",
-        "*.png",
-        "*.psd",
-        "*.cr3",
-        "*.arw",
-        "*.mp4",
-        "*.mov",
+        "jpg",
+        "jpeg",
+        "nef",
+        "gif",
+        "png",
+        "psd",
+        "cr3",
+        "arw",
+        "mp4",
+        "mov"
     };
 
     private readonly HashSet<FileVariations> _all = new();
     private readonly ILogger _logger;
 
     public FileScanner(ILogger logger) => _logger = logger;
+
 
     public void Crawl(IDirectory directory)
     {
@@ -44,55 +45,45 @@ public class FileScanner : IFileScanner
     private void GenerateDatabase(IDirectory directory)
     {
         ScanDirectory = directory.GetCurrentDirectory();
-        // we need to use the full filename 
+
+        // Multiple filetypes make the extension mandatory and
+        // Multiple edits share the same originating file/key DSC_9287.NEF:
+        //
+        // DSC_7708.JPG        <-- originating file/key
+        // DSC_7708.JPG.xmp    <-- 1.st development file, version 0. No versioning for first version.
+        // DSC_7708.NEF        <-- originating file/key
+        // DSC_7708.NEF.xmp    <-- 1.st development file, version 0. No versioning for first version.
+        // DSC_7708_01.NEF.xmp <-- 2.nd development file, version 1
+        // DSC_7708_02.NEF.xmp <-- 3.rd development file, version 2
+        // -> we need to use the full filename 
         // without sidecar extension and without edit version 
         // as the key as the base for all variations.
-        // like image_124.jpg as the base image for the 16.th edits xmp: image_124_16.jpg.xmp
-
-
-        // Multiple edits share the same originating file/key DSC_9287.NEF:
-        // DSC_9287.NEF        <-- file, could be mov, jpg, ...
-        // DSC_9287.NEF.xmp    <-- 1.st development file, version 0. No versioning for first version.
-        // DSC_9287_01.NEF.xmp <-- 2.nd development file, version 1
-        // DSC_9287_02.NEF.xmp <-- 3.rd development file, version 2
-
-        // Multiple filetypes make the extension mandatory: 
-        // DSC_7708.JPG
-        // DSC_7708.JPG.xmp
-        // DSC_7708.NEF
-        // DSC_7708.NEF.xmp
 
         Dictionary<string, FileVariations> files = new();
 
-        // Add 
-        foreach (var ext in _extensions)
+        // find all images
+        var images = GetAllImagesInCurrentDirectory(directory);
+        foreach (var image in images)
         {
-            directory
-                .EnumerateFiles(ScanDirectory, ext, SearchOption.AllDirectories)
-                .AsParallel()
-                .ForAll(file => files.Add(
-                        file,
-                        new FileVariations(new ImageFile(file), new List<IImageFile>())));
+            files.Add(image, new(new ImageFile(image), new()));
         }
 
-        directory
-            .EnumerateFiles(ScanDirectory, "*" + XmpExtension, SearchOption.AllDirectories)
-            .AsParallel()
-            .ForAll(file =>
-            {
-                var filenameWithoutExtensionAndVersion = ExtractFilenameWithoutExtentionAndVersion(file);
+        var xmps = GetAllXmpsInCurrentDirectory(directory);
+        foreach(var file in xmps)
+        {
+            var filenameWithoutExtensionAndVersion = ExtractFilenameWithoutExtentionAndVersion(file);
 
-                if (files.TryGetValue(filenameWithoutExtensionAndVersion, out var value))
-                {
-                    value.SidecarFiles.Add(new ImageFile(file));
-                }
-                else
-                {
-                    _logger.LogWarning($"Expected base image {filenameWithoutExtensionAndVersion} not found for {file}");
-                    value = new FileVariations(null, new List<IImageFile>() { new ImageFile(file) });
-                    files.Add(filenameWithoutExtensionAndVersion, value);
-                }
-            });
+            if (files.TryGetValue(filenameWithoutExtensionAndVersion, out var value))
+            {
+                value.SidecarFiles.Add(new ImageFile(file));
+            }
+            else
+            {
+                _logger.LogWarning($"Expected base image {filenameWithoutExtensionAndVersion} not found for {file}");
+                value = new FileVariations(null, new List<IImageFile>() { new ImageFile(file) });
+                files.Add(filenameWithoutExtensionAndVersion, value);
+            }
+        }
 
         foreach (var file in files)
         {
@@ -101,6 +92,27 @@ public class FileScanner : IFileScanner
                 throw new InvalidOperationException("key already present. This should not be possible.");
             }
         }
+    }
+
+    public IEnumerable<string> GetAllXmpsInCurrentDirectory(IDirectory directory)
+    {
+        var regexString = @".*\" + XmpExtension + "$";
+        var extensionRegex = new Regex(regexString, RegexOptions.IgnoreCase);
+        var path = directory.GetCurrentDirectory();
+        return directory
+            .EnumerateFiles(path)
+            .Where(x => extensionRegex.IsMatch(x));
+    }
+
+    public IEnumerable<string> GetAllImagesInCurrentDirectory(IDirectory directory)
+    {
+        var regexString = @".*\.(?:" + string.Join(@"|", _extensions) + ")$";
+        var extensionRegex = new Regex(regexString, RegexOptions.IgnoreCase);
+        var path = directory.GetCurrentDirectory();
+
+        return directory
+            .EnumerateFiles(path)
+            .Where(x => extensionRegex.IsMatch(x));
     }
 
     public string ExtractFilenameWithoutExtentionAndVersion(string file)
@@ -134,7 +146,7 @@ public class FileScanner : IFileScanner
                     endOfFilenameWithoutVersion = p1;
                 }
             }
-            result = string.Concat(file[..endOfFilenameWithoutVersion], file[secondLastDot.. lastDot]);
+            result = string.Concat(file[..endOfFilenameWithoutVersion], file[secondLastDot..lastDot]);
         }
         else
         {
