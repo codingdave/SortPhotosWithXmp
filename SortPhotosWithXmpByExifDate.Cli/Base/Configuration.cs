@@ -1,10 +1,9 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-
 using Serilog;
-
 using SystemInterface.IO;
+using SystemWrapper.IO;
 
 namespace SortPhotosWithXmpByExifDate.Cli;
 
@@ -31,10 +30,10 @@ public static class Configuration
         var host = Host.CreateDefaultBuilder()
             .ConfigureServices(serviceCollection =>
                 _ = serviceCollection
-                    // .AddTransient<IFile, FileWrap>()
-                    .AddTransient<IFile, FileLogger>()
-                    // .AddTransient<IDirectory, DirectoryWrap>()
-                    .AddTransient<IDirectory, DirectoryLogger>()
+                    .AddTransient<IFile, FileWrap>()
+                    // .AddTransient<IFile, FileLogger>()
+                    .AddTransient<IDirectory, DirectoryWrap>()
+                    // .AddTransient<IDirectory, DirectoryLogger>()
                     )
             .ConfigureAppConfiguration((hostBuilderContext, configurationBuilder) =>
                 _ = configurationBuilder
