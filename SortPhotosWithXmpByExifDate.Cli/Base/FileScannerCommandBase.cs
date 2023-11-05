@@ -32,7 +32,7 @@ internal abstract class FileScannerCommandBase : CommandBase
             fileScanner.Crawl(sourcePath);
             _setFileScanner(fileScanner);
         }
-        else if (!fileScanner.ScanDirectory.Equals(sourcePath))
+        else if (!sourcePath.Equals(fileScanner.ScanDirectory))
         {
             throw new InvalidOperationException($"Previous operation was targeting directory {fileScanner.ScanDirectory}, now we are working on {sourcePath}.");
         }
