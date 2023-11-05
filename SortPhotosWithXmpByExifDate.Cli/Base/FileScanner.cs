@@ -68,16 +68,16 @@ public class FileScanner : IFileScanner
         // does the filename look like an edit from another file?
         foreach (var ext in _extensions)
         {
-            var allFilesWithExt = Directory.EnumerateFiles(scanDirectory, ext, enumerationOptions).AsParallel().ToArray();
-            foreach (var file in allFilesWithExt)
-            {
-                if (ImageFileWithRevision.IsMatch(file))
-                {
-                    _logger.LogWarning($"The file '{file}' has an invalid name: Sidecar files will not be distiguishable from edits of another file. The convention to name them is: filename_number.extension.xmp, which matches this filename.");
-                }
-
-                files.Add(file, new FileVariations(new ImageFile(file), new List<IImageFile>()));
-            }
+            Directory
+                .EnumerateFiles(scanDirectory, ext, enumerationOptions)
+                .AsParallel()
+                .ForAll(file => {
+                        var filenameWithoutExtensionAndVersion = ExtractFilenameWithoutExtentionAndVersion(file);
+                        files.Add(
+                            filenameWithoutExtensionAndVersion,
+                            new FileVariations(new ImageFile(file), new List<IImageFile>()));
+                    }
+                );
         }
 
         // darktable 
@@ -115,11 +115,57 @@ public class FileScanner : IFileScanner
         }
     }
 
+    public string ExtractFilenameWithoutExtentionAndVersion(string file)
+    {
+        // DSC_9287.NEF        <-- file, could be mov, jpg, ...
+        // DSC_9287.NEF.xmp    <-- 1.st development file, version 0. No versioning for first version.
+        // DSC_9287_01.NEF.xmp <-- 2.nd development file, version 1
+        // DSC_9287_02.NEF.xmp <-- 3.rd development file, version 2
+
+        var lastDot = file.LastIndexOf('.');
+        string result;
+        if (string.Equals(file[lastDot..], XmpExtension, StringComparison.OrdinalIgnoreCase))
+        {
+            // strip off image/second extension from filename.jpg.xmp 
+            var secondLastDot = file.LastIndexOf('.', lastDot - 1);
+
+            // when we have a sidecar file, we might have a versioned one. 
+            // invalid ending: _00, as this suffix will only exist for verions > 0
+            // valid ending: _[0-9][0-9]
+            var p1 = secondLastDot - 3;
+            var p2 = secondLastDot - 2;
+            var p3 = secondLastDot - 1;
+            if (file[p1] == '_')
+            {
+                if (file[p2] == '0' && file[p3] == '0')
+                {
+                    // do nothing
+                }
+                else if (IsDigit(file[p2]) && IsDigit(file[p3]))
+                {
+                    secondLastDot = p1;
+                }
+            }
+            result = file[..secondLastDot];
+        }
+        else
+        {
+            // in case of images we just need to strip off the extension
+            result = file[..lastDot];
+        }
+
+        return result;
+    }
+
+    private bool IsDigit(char c)
+    {
+        return c is '0' or '1' or '2' or '3' or '4' or '5' or '6' or '7' or '8' or '9';
+    }
+
     public const string XmpExtension = ".xmp";
-    
+
     private const string BaseNumber = @"(?<base>.*?)(?:_\d?\d?)";
     private const string Extension = @"(?<extension>\.\w+)";
-    public Regex ImageFileWithRevision = new(BaseNumber + Extension);
     public Regex XmpFileWithOptionalRevision = new($"{BaseNumber}?{Extension}{XmpExtension}");
 
     public IEnumerable<FileVariations> All => _all;
