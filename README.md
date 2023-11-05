@@ -12,6 +12,8 @@ The default operation is copy, but move can be enforced.
 
 ## TODO-Application wise
 * Add Tests
+    * Mock the FileSystem and provide conflicting issues
+    * Fix finding xmps
 * Implement the other commands-stubs
 * Add command to print files whose filenames contain a timestamp and for which the xmp time information differs. Also allow to specify the format for the time, like yyyy/MM/dd
 * Allow to specify the date format that describes how the files are structured yyyy/MM/dd

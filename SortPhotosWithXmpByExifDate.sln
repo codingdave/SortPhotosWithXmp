@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # 
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SortPhotosWithXmpByExifDateCli", "SortPhotosWithXmpByExifDateCli\SortPhotosWithXmpByExifDateCli.csproj", "{94A4A15B-39A9-4F94-A6C2-DBF8A43C1439}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SortPhotosWithXmpByExifDate.Cli", "SortPhotosWithXmpByExifDate.Cli\SortPhotosWithXmpByExifDate.Cli.csproj", "{94A4A15B-39A9-4F94-A6C2-DBF8A43C1439}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SortPhotosWithXmpByExifDateTests", "SortPhotosWithXmpByExifDateTests\SortPhotosWithXmpByExifDateTests.csproj", "{EB6F6E14-0511-4C5D-B2A1-6065D05FD2A5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SortPhotosWithXmpByExifDate.Tests", "SortPhotosWithXmpByExifDate.Tests\SortPhotosWithXmpByExifDate.Tests.csproj", "{EB6F6E14-0511-4C5D-B2A1-6065D05FD2A5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
