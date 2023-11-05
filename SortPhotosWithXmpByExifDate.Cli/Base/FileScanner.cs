@@ -1,3 +1,4 @@
+using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
 
 using Microsoft.Extensions.Logging;
@@ -69,7 +70,7 @@ public class FileScanner : IFileScanner
         }
 
         var xmps = GetAllXmpsInCurrentDirectory(directory);
-        foreach(var file in xmps)
+        foreach (var file in xmps)
         {
             var filenameWithoutExtensionAndVersion = ExtractFilenameWithoutExtentionAndVersion(file);
 
@@ -79,7 +80,7 @@ public class FileScanner : IFileScanner
             }
             else
             {
-                _logger.LogWarning($"Expected base image {filenameWithoutExtensionAndVersion} not found for {file}");
+                _logger.LogInformation($"Expected base image {filenameWithoutExtensionAndVersion} not found for {file}");
                 value = new FileVariations(null, new List<IImageFile>() { new ImageFile(file) });
                 files.Add(filenameWithoutExtensionAndVersion, value);
             }
@@ -99,9 +100,8 @@ public class FileScanner : IFileScanner
         var regexString = @".*\" + XmpExtension + "$";
         var extensionRegex = new Regex(regexString, RegexOptions.IgnoreCase);
         var path = directory.GetCurrentDirectory();
-        return directory
-            .EnumerateFiles(path)
-            .Where(x => extensionRegex.IsMatch(x));
+
+        return FindMatchingFiles(directory, extensionRegex, path);
     }
 
     public IEnumerable<string> GetAllImagesInCurrentDirectory(IDirectory directory)
@@ -110,10 +110,19 @@ public class FileScanner : IFileScanner
         var extensionRegex = new Regex(regexString, RegexOptions.IgnoreCase);
         var path = directory.GetCurrentDirectory();
 
-        return directory
-            .EnumerateFiles(path)
-            .Where(x => extensionRegex.IsMatch(x));
+        return FindMatchingFiles(directory, extensionRegex, path);
     }
+
+    private static IEnumerable<string> FindMatchingFiles(IDirectory directory, Regex extensionRegex, string path)
+    {
+        var res = directory
+            .EnumerateFiles(path, "*", SearchOption.AllDirectories)
+            .Where(x => extensionRegex.IsMatch(x))
+            .ToList();
+
+        return res;
+    }
+
 
     public string ExtractFilenameWithoutExtentionAndVersion(string file)
     {
@@ -128,25 +137,34 @@ public class FileScanner : IFileScanner
         {
             // strip off image/second extension from filename.jpg.xmp 
             var secondLastDot = file.LastIndexOf('.', lastDot - 1);
-            var endOfFilenameWithoutVersion = secondLastDot;
-            // when we have a sidecar file, we might have a versioned one. 
-            // invalid ending: _00, as this suffix will only exist for verions > 0
-            // valid ending: _[0-9][0-9]
-            var p1 = secondLastDot - 3;
-            var p2 = secondLastDot - 2;
-            var p3 = secondLastDot - 1;
-            if (file[p1] == '_')
+            if (secondLastDot == -1)
             {
-                if (file[p2] == '0' && file[p3] == '0')
-                {
-                    // do nothing
-                }
-                else if (IsDigit(file[p2]) && IsDigit(file[p3]))
-                {
-                    endOfFilenameWithoutVersion = p1;
-                }
+                // there is no second dot. The filename is like DSC_0051.xmp.
+                // So we keep the filename as is
+                result = file;
             }
-            result = string.Concat(file[..endOfFilenameWithoutVersion], file[secondLastDot..lastDot]);
+            else
+            {
+                var endOfFilenameWithoutVersion = secondLastDot;
+                // when we have a sidecar file, we might have a versioned one. 
+                // invalid ending: _00, as this suffix will only exist for verions > 0
+                // valid ending: _[0-9][0-9]
+                var p1 = secondLastDot - 3;
+                var p2 = secondLastDot - 2;
+                var p3 = secondLastDot - 1;
+                if (file[p1] == '_')
+                {
+                    if (file[p2] == '0' && file[p3] == '0')
+                    {
+                        // do nothing
+                    }
+                    else if (IsDigit(file[p2]) && IsDigit(file[p3]))
+                    {
+                        endOfFilenameWithoutVersion = p1;
+                    }
+                }
+                result = string.Concat(file[..endOfFilenameWithoutVersion], file[secondLastDot..lastDot]);
+            }
         }
         else
         {
