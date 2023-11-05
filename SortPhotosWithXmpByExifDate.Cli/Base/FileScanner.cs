@@ -57,7 +57,6 @@ public class FileScanner : IFileScanner
         // DSC_9287_02.NEF.xmp <-- 3.rd development file, version 2
 
         // Multiple filetypes make the extension mandatory: 
-        // key DSC_7708 is ambiguous between DSC_7708.JPG and DSC_7708.NEF:
         // DSC_7708.JPG
         // DSC_7708.JPG.xmp
         // DSC_7708.NEF
@@ -76,7 +75,7 @@ public class FileScanner : IFileScanner
                         new FileVariations(new ImageFile(file), new List<IImageFile>())));
         }
 
-        Directory
+        directory
             .EnumerateFiles(ScanDirectory, "*" + XmpExtension, SearchOption.AllDirectories)
             .AsParallel()
             .ForAll(file =>
@@ -117,7 +116,7 @@ public class FileScanner : IFileScanner
         {
             // strip off image/second extension from filename.jpg.xmp 
             var secondLastDot = file.LastIndexOf('.', lastDot - 1);
-
+            var endOfFilenameWithoutVersion = secondLastDot;
             // when we have a sidecar file, we might have a versioned one. 
             // invalid ending: _00, as this suffix will only exist for verions > 0
             // valid ending: _[0-9][0-9]
@@ -132,15 +131,15 @@ public class FileScanner : IFileScanner
                 }
                 else if (IsDigit(file[p2]) && IsDigit(file[p3]))
                 {
-                    secondLastDot = p1;
+                    endOfFilenameWithoutVersion = p1;
                 }
             }
-            result = file[..secondLastDot];
+            result = string.Concat(file[..endOfFilenameWithoutVersion], file[secondLastDot.. lastDot]);
         }
         else
         {
-            // in case of images we just need to strip off the extension
-            result = file[..lastDot];
+            // in case of images we keep it as it is
+            result = file;
         }
 
         return result;
