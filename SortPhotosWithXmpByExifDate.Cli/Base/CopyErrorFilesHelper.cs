@@ -14,12 +14,12 @@ namespace SortPhotosWithXmpByExifDate.Cli
         public static void HandleErrorFiles(this IReadOnlyErrorCollection errorCollection, 
             ILogger logger, 
             IFoundStatistics statistics,    
-            IFile fileWrapper)
+            IFile file)
         {
-            var copyFileOperation = new CopyFileOperation(logger, fileWrapper, statistics.FileOperation.IsChanging);
-            var deleteFileOperation = new DeleteFileOperation(logger, fileWrapper, statistics.FileOperation.IsChanging);
+            var copyFileOperation = new CopyFileOperation(logger, file, statistics.FileOperation.IsChanging);
+            var deleteFileOperation = new DeleteFileOperation(logger, file, statistics.FileOperation.IsChanging);
 
-            CollectCollisions(logger, errorCollection.Errors.OfType<FileAlreadyExistsError>(), (FileDecomposition targetFile, FileAlreadyExistsError error) => HandleCollisionOrDuplicate(logger, statistics, copyFileOperation, deleteFileOperation, error, targetFile, fileWrapper));
+            CollectCollisions(logger, errorCollection.Errors.OfType<FileAlreadyExistsError>(), (FileDecomposition targetFile, FileAlreadyExistsError error) => HandleCollisionOrDuplicate(logger, statistics, copyFileOperation, deleteFileOperation, error, targetFile, file));
             CollectCollisions(logger, errorCollection.Errors.OfType<NoTimeFoundError>(), (FileDecomposition targetFile, NoTimeFoundError error) => CreateDirectoryAndCopyFile(logger, error, targetFile, copyFileOperation));
             CollectCollisions(logger, errorCollection.Errors.OfType<MetaDataError>(), (FileDecomposition targetFile, MetaDataError error) => CreateDirectoryAndCopyFile(logger, error, targetFile, copyFileOperation));
         }
@@ -69,9 +69,9 @@ namespace SortPhotosWithXmpByExifDate.Cli
                                                        DeleteFileOperation deleteFileOperation,
                                                        FileAlreadyExistsError error,
                                                        FileDecomposition targetFile,
-                                                       IFile fileWrapper)
+                                                       IFile file)
         {
-            if (IsDuplicate(logger, error, statistics, fileWrapper))
+            if (IsDuplicate(logger, error, statistics, file))
             {
                 HandleDuplicate(logger, deleteFileOperation, error);
             }
@@ -90,7 +90,7 @@ namespace SortPhotosWithXmpByExifDate.Cli
         private static bool IsDuplicate(ILogger logger,
                                         FileAlreadyExistsError error,
                                         IFoundStatistics statistics,
-                                        IFile fileWrapper)
+                                        IFile file)
         {
             // when are 2 images identical?
             var isDuplicate = false;
@@ -104,7 +104,7 @@ namespace SortPhotosWithXmpByExifDate.Cli
             if (sameExtension)
             {
                 isDuplicate = extensionFile.EndsWith(FileScanner.XmpExtension, StringComparison.OrdinalIgnoreCase)
-                    ? AreXmpsDuplicates(error, statistics, fileWrapper)
+                    ? AreXmpsDuplicates(error, statistics, file)
                     : AreImagesDuplicates(logger, error, statistics);
             }
 
@@ -113,13 +113,13 @@ namespace SortPhotosWithXmpByExifDate.Cli
 
         private static bool AreXmpsDuplicates(FileAlreadyExistsError error,
                                               IFoundStatistics statistics,
-                                              IFile fileWrapper)
+                                              IFile file)
         {
             // xmps are identical, if their hash is identical
 
             using var md5 = System.Security.Cryptography.MD5.Create();
-            using var fileStream = fileWrapper.OpenRead(error.File);
-            using var otherfileStream = fileWrapper.OpenRead(error.OtherFile);
+            using var fileStream = file.OpenRead(error.File);
+            using var otherfileStream = file.OpenRead(error.OtherFile);
             var hash1 = md5.ComputeHash(fileStream.FileStreamInstance);
             var hash2 = md5.ComputeHash(otherfileStream.FileStreamInstance);
             var isHashIdentical = hash1 == hash2;

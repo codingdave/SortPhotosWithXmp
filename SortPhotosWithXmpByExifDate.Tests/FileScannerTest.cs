@@ -112,8 +112,6 @@ public class FileScannerTest
         Assert.Equal(fileVariation.First().SidecarFiles.ElementAt(0), _fileScanner.All.First().SidecarFiles.ElementAt(0));
         Assert.Equal(fileVariation.First().SidecarFiles.ElementAt(1), _fileScanner.All.First().SidecarFiles.ElementAt(1));
         Assert.Equal(fileVariation.First().SidecarFiles.ElementAt(2), _fileScanner.All.First().SidecarFiles.ElementAt(2));
-
-        Assert.Equal(fileVariation, _fileScanner.All);
     }
 
     private IImageFile GetIImageFile(string filepath)

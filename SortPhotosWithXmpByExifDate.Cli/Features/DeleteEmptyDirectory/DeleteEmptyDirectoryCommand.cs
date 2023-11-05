@@ -13,9 +13,9 @@ internal class DeleteEmptyDirectoryCommand : CommandBase
     public DeleteEmptyDirectoryCommand(
         ILogger<CommandLine> logger,
         CommandlineOptions commandlineOptions,
-        IFile fileWrapper,
-        IDirectory directoryWrapper)
-        : base(logger, commandlineOptions, fileWrapper, directoryWrapper)
+        IFile file,
+        IDirectory directory)
+        : base(logger, commandlineOptions, file, directory)
     {
     }
 

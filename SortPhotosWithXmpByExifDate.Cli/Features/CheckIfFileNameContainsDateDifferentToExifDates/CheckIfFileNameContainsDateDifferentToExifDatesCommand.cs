@@ -13,9 +13,9 @@ internal class CheckIfFileNameContainsDateDifferentToExifDatesCommand : CommandB
     public CheckIfFileNameContainsDateDifferentToExifDatesCommand(
         ILogger<CommandLine> logger, 
         CommandlineOptions commandlineOptions,
-        IFile fileWrapper,
+        IFile file,
         IDirectory directoryWraper) 
-        : base(logger, commandlineOptions, fileWrapper, directoryWraper)
+        : base(logger, commandlineOptions, file, directoryWraper)
     {
     }
 

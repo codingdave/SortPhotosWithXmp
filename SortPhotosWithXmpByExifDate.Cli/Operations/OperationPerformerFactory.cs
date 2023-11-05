@@ -6,11 +6,11 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
 {
     internal class OperationPerformerFactory
     {
-        internal static IFileOperation GetCopyOrMovePerformer(ILogger logger, IFile fileWrapper, bool move, bool force)
+        internal static IFileOperation GetCopyOrMovePerformer(ILogger logger, IFile file, bool move, bool force)
         {
             return move 
-                ? new MoveFileOperation(logger, fileWrapper, force) 
-                : new CopyFileOperation(logger, fileWrapper, force);
+                ? new MoveFileOperation(logger, file, force) 
+                : new CopyFileOperation(logger, file, force);
         }
     }
 }

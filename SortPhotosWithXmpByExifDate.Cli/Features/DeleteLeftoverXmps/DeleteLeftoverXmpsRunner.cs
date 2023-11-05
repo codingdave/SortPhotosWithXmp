@@ -14,11 +14,11 @@ public class DeleteLeftoverXmpsRunner : IRun
     private readonly IFile _fileWrapper;
 
 
-    public DeleteLeftoverXmpsRunner(bool force, IFileScanner fileScanner, IFile fileWrapper)
+    public DeleteLeftoverXmpsRunner(bool force, IFileScanner fileScanner, IFile file)
     {
         _force = force;
         _fileScanner = fileScanner;
-        _fileWrapper = fileWrapper;
+        _fileWrapper = file;
     }
 
     public IStatistics Run(ILogger logger)

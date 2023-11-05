@@ -41,8 +41,8 @@ internal class CommandLine
     {
         var host = Configuration.CreateHost();
         _logger = host.Services.GetRequiredService<ILogger<CommandLine>>();
-        var fileWrapper = host.Services.GetRequiredService<IFile>();
-        var directoryWrapper = host.Services.GetRequiredService<IDirectory>();
+        var file = host.Services.GetRequiredService<IFile>();
+        var directory = host.Services.GetRequiredService<IDirectory>();
         _logger.TestInformationLevels();
 
         _rootCommand = new RootCommand("Rearrange files containing Exif data")
@@ -50,14 +50,14 @@ internal class CommandLine
             TreatUnmatchedTokensAsErrors = true
         };
 
-        _rootCommand.AddCommand(new DeleteEmptyDirectoryCommand(_logger, _options, fileWrapper, directoryWrapper).GetCommand());
-        _rootCommand.AddCommand(new RearrangeByExifCommand(_logger, _options, fileWrapper, directoryWrapper, GetFileScanner, SetFileScanner).GetCommand());
-        _rootCommand.AddCommand(new FixExifDateByOffsetCommand(_logger, _options, fileWrapper, directoryWrapper).GetCommand());
-        _rootCommand.AddCommand(new DeleteLeftoverXmpsCommand(_logger, _options, fileWrapper, directoryWrapper, GetFileScanner, SetFileScanner).GetCommand());
-        _rootCommand.AddCommand(new CheckForDuplicateImagesCommand(_logger, _options, fileWrapper, directoryWrapper, GetFileScanner, SetFileScanner).GetCommand());
-        _rootCommand.AddCommand(new CheckIfFileNameContainsDateDifferentToExifDatesCommand(_logger, _options, fileWrapper, directoryWrapper).GetCommand());
-        _rootCommand.AddCommand(new RearrangeByCameraManufacturerCommand(_logger, _options, fileWrapper, directoryWrapper).GetCommand());
-        _rootCommand.AddCommand(new RearrangeBySoftwareCommand(_logger, _options, fileWrapper, directoryWrapper).GetCommand());
+        _rootCommand.AddCommand(new DeleteEmptyDirectoryCommand(_logger, _options, file, directory).GetCommand());
+        _rootCommand.AddCommand(new RearrangeByExifCommand(_logger, _options, file, directory, GetFileScanner, SetFileScanner).GetCommand());
+        _rootCommand.AddCommand(new FixExifDateByOffsetCommand(_logger, _options, file, directory).GetCommand());
+        _rootCommand.AddCommand(new DeleteLeftoverXmpsCommand(_logger, _options, file, directory, GetFileScanner, SetFileScanner).GetCommand());
+        _rootCommand.AddCommand(new CheckForDuplicateImagesCommand(_logger, _options, file, directory, GetFileScanner, SetFileScanner).GetCommand());
+        _rootCommand.AddCommand(new CheckIfFileNameContainsDateDifferentToExifDatesCommand(_logger, _options, file, directory).GetCommand());
+        _rootCommand.AddCommand(new RearrangeByCameraManufacturerCommand(_logger, _options, file, directory).GetCommand());
+        _rootCommand.AddCommand(new RearrangeBySoftwareCommand(_logger, _options, file, directory).GetCommand());
     }
 
     public async Task<int> InvokeAsync(string[] args)

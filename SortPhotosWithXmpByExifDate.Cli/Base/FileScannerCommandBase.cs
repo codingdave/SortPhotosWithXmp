@@ -14,10 +14,10 @@ internal abstract class FileScannerCommandBase : CommandBase
     public FileScannerCommandBase(
         ILogger<CommandLine> logger,
         CommandlineOptions commandlineOptions,
-        IFile fileWrapper,
-        IDirectory directoryWrapper,
+        IFile file,
+        IDirectory directory,
         Func<FileScanner?> getFileScanner, Action<FileScanner> setFileScanner)
-        : base(logger, commandlineOptions, fileWrapper, directoryWrapper)
+        : base(logger, commandlineOptions, file, directory)
     {
         _getFileScanner = getFileScanner;
         _setFileScanner = setFileScanner;

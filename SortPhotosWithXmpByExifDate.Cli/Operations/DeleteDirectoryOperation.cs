@@ -8,13 +8,13 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
     public class DeleteDirectoryOperation : IOperation
     {
         private readonly ILogger _logger;
-        private readonly IDirectory _directoryWrapper;
+        private readonly IDirectory _directory;
 
 
-        public DeleteDirectoryOperation(ILogger logger, IDirectory directoryWrapper, bool force)
+        public DeleteDirectoryOperation(ILogger logger, IDirectory directory, bool force)
         {
             _logger = logger;
-            _directoryWrapper = directoryWrapper;
+            _directory = directory;
 
             IsChanging = force;
             Statistics = new DirectoriesDeletedStatistics(logger, this);
@@ -29,7 +29,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
 
             if (IsChanging)
             {
-                _directoryWrapper.Delete(path, false);
+                _directory.Delete(path, false);
             }
 
             // when we simulate, we still want to count

@@ -24,17 +24,17 @@ internal class RearrangeByExifRunner : IRun
                              string sourceDirectory,
                              string destinationDirectory,
                              IFileScanner fileScanner,
-                             IFile fileWrapper,
-                             IDirectory directoryWrapper,
+                             IFile file,
+                             IDirectory directory,
                              bool move,
                              bool force)
     {
         _sourceDirectory = sourceDirectory ?? throw new ArgumentNullException(nameof(sourceDirectory));
         _destinationDirectory = destinationDirectory ?? throw new ArgumentNullException(nameof(destinationDirectory));
-        _operationPerformer = OperationPerformerFactory.GetCopyOrMovePerformer(logger, fileWrapper, move, force);
+        _operationPerformer = OperationPerformerFactory.GetCopyOrMovePerformer(logger, file, move, force);
         _statistics = new FilesFoundStatistics(logger, _operationPerformer);
         _fileScanner = fileScanner;
-        _deleteDirectoryOperation = new DeleteDirectoryOperation(logger, directoryWrapper, force);
+        _deleteDirectoryOperation = new DeleteDirectoryOperation(logger, directory, force);
     }
 
     public IStatistics Run(ILogger logger)

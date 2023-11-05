@@ -28,13 +28,13 @@ internal abstract class CommandBase
 
         ILogger<CommandLine> logger,
         CommandlineOptions commandlineOptions,
-        IFile fileWrapper,
-        IDirectory directoryWrapper)
+        IFile file,
+        IDirectory directory)
     {
         Logger = logger;
         _commandlineOptions = commandlineOptions;
-        FileWrapper = fileWrapper;
-        DirectoryWrapper = directoryWrapper;
+        FileWrapper = file;
+        DirectoryWrapper = directory;
     }
 
     protected void Run(IRun f)

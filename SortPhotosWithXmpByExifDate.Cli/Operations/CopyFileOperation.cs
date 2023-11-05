@@ -11,11 +11,11 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
 
         internal CopyFileOperation(
             ILogger logger,
-            IFile fileWrapper, 
+            IFile file, 
             bool force)
         {
             _logger = logger;
-            _fileWrapper = fileWrapper;
+            _fileWrapper = file;
             IsChanging = force;
         }
 

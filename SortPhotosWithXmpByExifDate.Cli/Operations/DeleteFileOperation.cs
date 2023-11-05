@@ -10,10 +10,10 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
         private readonly IFile _fileWrapper;
 
 
-        internal DeleteFileOperation(ILogger logger, IFile fileWrapper, bool force)
+        internal DeleteFileOperation(ILogger logger, IFile file, bool force)
         {
             _logger = logger;
-            _fileWrapper = fileWrapper;
+            _fileWrapper = file;
 
             IsChanging = force;
         }

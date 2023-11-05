@@ -7,16 +7,16 @@ namespace SortPhotosWithXmpByExifDate.Cli.Features.DeleteEmptyDirectory;
 
 public class DeleteEmptyDirectoryRunner : IRun
 {
-    private readonly IDirectory _directoryWrapper;
+    private readonly IDirectory _directory;
 
-    private readonly string _directory;
+    private readonly string _path;
     private readonly bool _force;
-    public DeleteEmptyDirectoryRunner(IDirectory directoryWrapper, string directory, bool force) =>
-        (_directoryWrapper, _directory, _force) = (directoryWrapper, directory, force);
+    public DeleteEmptyDirectoryRunner(IDirectory directory, string path, bool force) =>
+        (_directory, _path, _force) = (directory, path, force);
     public IStatistics Run(ILogger logger)
     {
-        var deleteDirectoryPerformer = new DeleteDirectoryOperation(logger, _directoryWrapper, _force);
-        Helpers.RecursivelyDeleteEmptyDirectories(logger, _directory, deleteDirectoryPerformer);
+        var deleteDirectoryPerformer = new DeleteDirectoryOperation(logger, _directory, _force);
+        Helpers.RecursivelyDeleteEmptyDirectories(logger, _path, deleteDirectoryPerformer);
         return deleteDirectoryPerformer.Statistics;
     }
 }
