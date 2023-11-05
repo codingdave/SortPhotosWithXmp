@@ -4,19 +4,9 @@ using Microsoft.Extensions.Logging;
 
 using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 
+using SystemInterface.IO;
+
 namespace SortPhotosWithXmpByExifDate.Cli.Repository;
-
-// Multiple edits:
-// DSC_9287.NEF        <-- file, could be mov, jpg, ...
-// DSC_9287.NEF.xmp    <-- 1.st development file, version 0. No versioning for first version.
-// DSC_9287_01.NEF.xmp <-- 2.nd development file, version 1
-// DSC_9287_02.NEF.xmp <-- 3.rd development file, version 2
-
-// Multiple filetypes
-// DSC_7708.JPG
-// DSC_7708.JPG.xmp
-// DSC_7708.NEF
-// DSC_7708.NEF.xmp
 
 public class FileScanner : IFileScanner
 {
@@ -39,11 +29,11 @@ public class FileScanner : IFileScanner
 
     public FileScanner(ILogger logger) => _logger = logger;
 
-    public void Crawl(string sourceDirectory)
+    public void Crawl(IDirectory directory)
     {
         try
         {
-            GenerateDatabase(sourceDirectory);
+            GenerateDatabase(directory);
         }
         catch (Exception e)
         {
@@ -51,67 +41,66 @@ public class FileScanner : IFileScanner
         }
     }
 
-
-    private void GenerateDatabase(string scanDirectory)
+    private void GenerateDatabase(IDirectory directory)
     {
-        ScanDirectory = scanDirectory;
-        // we need to use the full filename without sidecar extension and without edit version as the key as the base for all variations:
+        ScanDirectory = directory.GetCurrentDirectory();
+        // we need to use the full filename 
+        // without sidecar extension and without edit version 
+        // as the key as the base for all variations.
+        // like image_124.jpg as the base image for the 16.th edits xmp: image_124_16.jpg.xmp
+
+
+        // Multiple edits share the same originating file/key DSC_9287.NEF:
+        // DSC_9287.NEF        <-- file, could be mov, jpg, ...
+        // DSC_9287.NEF.xmp    <-- 1.st development file, version 0. No versioning for first version.
+        // DSC_9287_01.NEF.xmp <-- 2.nd development file, version 1
+        // DSC_9287_02.NEF.xmp <-- 3.rd development file, version 2
+
+        // Multiple filetypes make the extension mandatory: 
+        // key DSC_7708 is ambiguous between DSC_7708.JPG and DSC_7708.NEF:
+        // DSC_7708.JPG
+        // DSC_7708.JPG.xmp
+        // DSC_7708.NEF
+        // DSC_7708.NEF.xmp
+
         Dictionary<string, FileVariations> files = new();
 
-        var enumerationOptions = new EnumerationOptions
-        {
-            MatchCasing = MatchCasing.CaseInsensitive,
-            MatchType = MatchType.Simple,
-            RecurseSubdirectories = true
-        };
-
-        // does the filename look like an edit from another file?
+        // Add 
         foreach (var ext in _extensions)
         {
-            Directory
-                .EnumerateFiles(scanDirectory, ext, enumerationOptions)
+            directory
+                .EnumerateFiles(ScanDirectory, ext, SearchOption.AllDirectories)
                 .AsParallel()
-                .ForAll(file => {
-                        var filenameWithoutExtensionAndVersion = ExtractFilenameWithoutExtentionAndVersion(file);
-                        files.Add(
-                            filenameWithoutExtensionAndVersion,
-                            new FileVariations(new ImageFile(file), new List<IImageFile>()));
-                    }
-                );
+                .ForAll(file => files.Add(
+                        file,
+                        new FileVariations(new ImageFile(file), new List<IImageFile>())));
         }
 
-        // darktable 
-        // * appends .xmp to the filename. 
-        // * image.c:498, (from behind) find the last point
-        // * image.c:499, add version before with format "_%02d"
-        // * image.c:501, (from behind) find the last point, append remaining characters (extension) to the end 
-        var allSidecars = Directory.EnumerateFiles(scanDirectory, "*" + XmpExtension, enumerationOptions);
-        foreach (var file in allSidecars)
-        {
-            var key = file;
-            var match = XmpFileWithOptionalRevision.Match(key);
-            if (match.Success)
+        Directory
+            .EnumerateFiles(ScanDirectory, "*" + XmpExtension, SearchOption.AllDirectories)
+            .AsParallel()
+            .ForAll(file =>
             {
-                // remove the .xmp extension
-                // remove a possible _1 edit
-                key = match.Groups["base"].Value + match.Groups["extension"].Value;
-            }
+                var filenameWithoutExtensionAndVersion = ExtractFilenameWithoutExtentionAndVersion(file);
 
-            if (files.TryGetValue(key, out var value))
-            {
-                value.SidecarFiles.Add(new ImageFile(file));
-            }
-            else
-            {
-                value = new FileVariations(null, new List<IImageFile>() { new ImageFile(file) });
-                files.Add(key, value);
-            }
-        }
+                if (files.TryGetValue(filenameWithoutExtensionAndVersion, out var value))
+                {
+                    value.SidecarFiles.Add(new ImageFile(file));
+                }
+                else
+                {
+                    _logger.LogWarning($"Expected base image {filenameWithoutExtensionAndVersion} not found for {file}");
+                    value = new FileVariations(null, new List<IImageFile>() { new ImageFile(file) });
+                    files.Add(filenameWithoutExtensionAndVersion, value);
+                }
+            });
 
         foreach (var file in files)
         {
-#warning check if a collision is allowed or an error
-            _ = _all.Add(file.Value);
+            if (!_all.Add(file.Value))
+            {
+                throw new InvalidOperationException("key already present. This should not be possible.");
+            }
         }
     }
 
