@@ -103,7 +103,7 @@ namespace SortPhotosWithXmpByExifDateCli
 
             if (sameExtension)
             {
-                isDuplicate = extensionFile.EndsWith(FileScanner.SidecarFileExtension, StringComparison.OrdinalIgnoreCase)
+                isDuplicate = extensionFile.EndsWith(FileScanner.XmpExtension, StringComparison.OrdinalIgnoreCase)
                     ? AreXmpsDuplicates(error, statistics, fileWrapper)
                     : AreImagesDuplicates(logger, error, statistics);
             }

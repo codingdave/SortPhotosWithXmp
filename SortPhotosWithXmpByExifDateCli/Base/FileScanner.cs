@@ -1,5 +1,7 @@
 using System.Text.RegularExpressions;
+
 using Microsoft.Extensions.Logging;
+
 using SortPhotosWithXmpByExifDateCli.ErrorCollection;
 
 namespace SortPhotosWithXmpByExifDateCli.Repository;
@@ -31,13 +33,16 @@ public class FileScanner : IFileScanner
         "*.mov",
     };
 
-    internal FileScanner(ILogger<CommandLine> logger, string sourceDirectory)
+    private readonly HashSet<FileVariations> _all = new();
+    private readonly ILogger _logger;
+
+    public FileScanner(ILogger logger) => _logger = logger;
+
+    public void Crawl(string sourceDirectory)
     {
-        _logger = logger;
-        ScanDirectory = sourceDirectory;
         try
         {
-            GenerateDatabase();
+            GenerateDatabase(sourceDirectory);
         }
         catch (Exception e)
         {
@@ -45,8 +50,10 @@ public class FileScanner : IFileScanner
         }
     }
 
-    private void GenerateDatabase()
+
+    private void GenerateDatabase(string scanDirectory)
     {
+        ScanDirectory = scanDirectory;
         // we need to use the full filename without sidecar extension and without edit version as the key as the base for all variations:
         Dictionary<string, FileVariations> files = new();
 
@@ -58,28 +65,29 @@ public class FileScanner : IFileScanner
         };
 
         // does the filename look like an edit from another file?
-        Regex notSupportedNamingRegex = new(@"(?:.*?)(_\d?\d?)(?:\.\w+)");
         foreach (var ext in _extensions)
         {
-            var allFilesWithExt = Directory.EnumerateFiles(ScanDirectory, ext, enumerationOptions).AsParallel().ToArray();
+            var allFilesWithExt = Directory.EnumerateFiles(scanDirectory, ext, enumerationOptions).AsParallel().ToArray();
             foreach (var file in allFilesWithExt)
             {
-                if (notSupportedNamingRegex.IsMatch(file))
+                if (ImageFileWithRevision.IsMatch(file))
                 {
-                    throw new NotSupportedException($"The file '{file}' has an invalid name: Sidecar files will not be distiguishable from edits of another file. The convention to name them is: filename_number.extension.xmp, which matches this filename.");
+                    _logger.LogWarning($"The file '{file}' has an invalid name: Sidecar files will not be distiguishable from edits of another file. The convention to name them is: filename_number.extension.xmp, which matches this filename.");
                 }
 
                 files.Add(file, new FileVariations(new ImageFile(file), new List<IImageFile>()));
             }
         }
 
-#warning check darktable to see how this is implemented. Different xmp variations might be possible.
-        Regex editRegex = new(@"(?<base>.*?)(_\d?\d?)?(?<extension>\.\w+)\" + SidecarFileExtension);
-        var allSidecars = Directory.EnumerateFiles(ScanDirectory, "*" + SidecarFileExtension, enumerationOptions);
+        // darktable appends .xmp to the filename. 
+        // Thats it? How can it detect duplicates?
+        // crawler.c:147 
+        // #warning check darktable to see how this is implemented. Different xmp variations might be possible.
+        var allSidecars = Directory.EnumerateFiles(scanDirectory, "*" + XmpExtension, enumerationOptions);
         foreach (var file in allSidecars)
         {
             var key = file;
-            var match = editRegex.Match(key);
+            var match = XmpFileWithOptionalRevision.Match(key);
             if (match.Success)
             {
                 // remove the .xmp extension
@@ -100,22 +108,22 @@ public class FileScanner : IFileScanner
 
         foreach (var file in files)
         {
-            #warning check if a collision is allowed or an error
+#warning check if a collision is allowed or an error
             _ = _all.Add(file.Value);
         }
     }
 
-    public static string SidecarFileExtension { get; } = ".xmp";
-
-    private readonly HashSet<FileVariations> _all = new();
-    private readonly ILogger<CommandLine> _logger;
+    public const string XmpExtension = ".xmp";
+    
+    private const string BaseNumber = @"(?<base>.*?)(?:_\d?\d?)";
+    private const string Extension = @"(?<extension>\.\w+)";
+    public Regex ImageFileWithRevision = new(BaseNumber + Extension);
+    public Regex XmpFileWithOptionalRevision = new($"{BaseNumber}?{Extension}{XmpExtension}");
 
     public IEnumerable<FileVariations> All => _all;
-
     public IEnumerable<FileVariations> MultipleEdits => All.Where(x => x.SidecarFiles.Count > 1);
-
     public IEnumerable<IImageFile> LonelySidecarFiles => All.Where(x => x.Data == null).SelectMany(x => x.SidecarFiles);
     public IEnumerable<FileVariations> HealtyFileVariations => All.Where(x => x.Data != null);
 
-    public string ScanDirectory { get; }
+    public string? ScanDirectory { get; private set; }
 }

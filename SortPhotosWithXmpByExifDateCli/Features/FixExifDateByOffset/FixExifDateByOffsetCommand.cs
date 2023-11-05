@@ -1,12 +1,11 @@
 using System.CommandLine;
-using System.Net;
 
 using Microsoft.Extensions.Logging;
+
+
 using SortPhotosWithXmpByExifDateCli.Commands;
 
 using SystemInterface.IO;
-
-using SystemWrapper.IO;
 
 namespace SortPhotosWithXmpByExifDateCli.Features.FixExifDateByOffset;
 

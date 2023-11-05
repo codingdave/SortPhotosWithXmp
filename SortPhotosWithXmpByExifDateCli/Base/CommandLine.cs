@@ -17,8 +17,6 @@ using SortPhotosWithXmpByExifDateCli.Repository;
 
 using SystemInterface.IO;
 
-using SystemWrapper.IO;
-
 namespace SortPhotosWithXmpByExifDateCli;
 
 internal class CommandLine

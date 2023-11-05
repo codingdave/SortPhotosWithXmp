@@ -30,7 +30,7 @@ public static class Helpers
 
         var directory = Path.GetDirectoryName(file) ?? throw new InvalidOperationException("can not determine directory of file '{file}'");
 
-        var searchPattern = Path.GetFileName(file) + "*" + FileScanner.SidecarFileExtension;
+        var searchPattern = Path.GetFileName(file) + "*" + FileScanner.XmpExtension;
         var options = new EnumerationOptions
         {
             MatchCasing = MatchCasing.CaseInsensitive,

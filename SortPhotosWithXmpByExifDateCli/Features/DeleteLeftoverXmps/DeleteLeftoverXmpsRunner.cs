@@ -7,7 +7,7 @@ using SystemInterface.IO;
 
 namespace SortPhotosWithXmpByExifDateCli.Features.DeleteLonelyXmp;
 
-internal class DeleteLeftoverXmpsRunner : IRun
+public class DeleteLeftoverXmpsRunner : IRun
 {
     private readonly bool _force;
     private readonly IFileScanner _fileScanner;

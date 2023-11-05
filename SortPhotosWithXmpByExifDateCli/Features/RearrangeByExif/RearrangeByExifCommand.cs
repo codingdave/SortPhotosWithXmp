@@ -1,6 +1,5 @@
 using System.CommandLine;
 using Microsoft.Extensions.Logging;
-using SortPhotosWithXmpByExifDateCli.Operations;
 using SortPhotosWithXmpByExifDateCli.Repository;
 using SortPhotosWithXmpByExifDateCli.Commands;
 using SystemInterface.IO;

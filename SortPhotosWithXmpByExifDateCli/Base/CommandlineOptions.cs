@@ -50,7 +50,7 @@ internal class CommandlineOptions
     internal Option<object?> GetOffsetOption()
     {
         // To workaround the following issue we return an object instead of a struct 
-        // "resource": "/home/david/projects/SortPhotosWithXmpByExifDate/SortPhotosWithXmpByExifDateCli/CommandLine.cs",
+        // "resource": "~/projects/SortPhotosWithXmpByExifDate/SortPhotosWithXmpByExifDateCli/CommandLine.cs",
         // "message": "Argument 4: cannot convert from 'System.CommandLine.Option<System.TimeSpan?>' to 'System.CommandLine.Binding.IValueDescriptor<System.TimeSpan>' [SortPhotosWithXmpByExifDateCli]",
         // "startLineNumber": 148,
         return new Option<object?>(

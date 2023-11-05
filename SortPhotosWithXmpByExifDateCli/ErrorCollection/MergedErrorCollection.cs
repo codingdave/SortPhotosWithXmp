@@ -1,5 +1,3 @@
-using System.Linq;
-
 namespace SortPhotosWithXmpByExifDateCli.ErrorCollection
 {
     internal class MergedFileError : IReadOnlyErrorCollection

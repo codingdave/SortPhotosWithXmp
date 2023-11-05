@@ -6,8 +6,6 @@ using Serilog;
 
 using SystemInterface.IO;
 
-using SystemWrapper.IO;
-
 namespace SortPhotosWithXmpByExifDateCli;
 
 public static class Configuration
