@@ -111,7 +111,7 @@ public class FileScannerTest
 
         // assert
         Assert.Equal(_fileScanner.All.Count(), fileVariation.Count());
-        
+
         Assert.Equal(_fileScanner.All.ElementAt(0).Data, fileVariation.ElementAt(0).Data);
         Assert.Equal(_fileScanner.All.ElementAt(0).SidecarFiles.Count, fileVariation.ElementAt(0).SidecarFiles.Count);
         Assert.Equal(_fileScanner.All.ElementAt(0).SidecarFiles.ElementAt(0), fileVariation.ElementAt(0).SidecarFiles.ElementAt(0));
@@ -121,7 +121,7 @@ public class FileScannerTest
         Assert.Equal(_fileScanner.All.ElementAt(1).Data, _fileScanner.All.ElementAt(1).Data);
         Assert.Equal(_fileScanner.All.ElementAt(1).SidecarFiles.Count, fileVariation.ElementAt(1).SidecarFiles.Count);
         Assert.Equal(_fileScanner.All.ElementAt(1).SidecarFiles.ElementAt(0), fileVariation.ElementAt(1).SidecarFiles.ElementAt(0));
-        
+
         Assert.Equal(_fileScanner.All.ElementAt(2).Data, fileVariation.ElementAt(2).Data);
         Assert.Equal(_fileScanner.All.ElementAt(2).SidecarFiles.Count, fileVariation.ElementAt(2).SidecarFiles.Count);
         Assert.Equal(_fileScanner.All.ElementAt(2).SidecarFiles.ElementAt(0), fileVariation.ElementAt(2).SidecarFiles.ElementAt(0));
@@ -147,22 +147,38 @@ public class FileScannerTest
     [InlineData("some/path/DSC_9287.NEF", "some/path/DSC_9287_02.NEF.xmp")]
     // some image file that is similar to the sidecar file structure but not one of those (.xmp missing)
     [InlineData("some/path/DSC_9287_02.NEF", "some/path/DSC_9287_02.NEF")]
-    // date_action_imageNumber.extension looks like an edit. We can only solve that if we check if an image is called like that.
-    [InlineData("some/other/path/050826_foo_03.JPG", "some/other/path/050826_foo_03.JPG.xmp")]
-    [InlineData("some/other/path/050826_foo_03.JPG", "some/other/path/050826_foo_03.JPG")]
     // images/20181027/DSC_0051s.xmp does not have an image extension. We keep the filename as is.
     [InlineData("some/other/path/images/DSC_0051.xmp", "some/other/path/images/DSC_0051.xmp")]
 
     public void GetBaseFilename(string baseFilename, string filepath)
     {
         // arrange
-        var loggerMock = new Mock<ILogger>();
-        var fileScanner = new FileScanner(loggerMock.Object);
-
         // var act
-        var result = fileScanner.ExtractFilenameWithoutExtentionAndVersion(filepath);
+        var result = _fileScanner.ExtractFilenameWithoutExtentionAndVersion(filepath);
 
         // assert
         Assert.Equal(baseFilename, result);
+    }
+
+
+    [Fact]
+    public void GetBaseFilenameWillNotWork()
+    {
+        // date_action_imageNumber.extension looks like an edit. We can only solve that if we check if an image is called like that.
+
+        // arrange
+        var baseFilename = "some/other/path/050826_foo.JPG";
+        // presumably version "03" never exists on an image and such is clearly not a version that needs to get stripped off
+        var imageFilename = "some/other/path/050826_foo_03.JPG";
+        // that, however, cannot be seen by looking at the xmp alone. So the function will "normalize" it, assuming "_03" indicates version 3 and stripping it off
+        var xmpFilename = "some/other/path/050826_foo_03.JPG.xmp";
+
+        // var act
+        var cleanedXmp = _fileScanner.ExtractFilenameWithoutExtentionAndVersion(xmpFilename);
+        var cleanedImage = _fileScanner.ExtractFilenameWithoutExtentionAndVersion(imageFilename);
+
+        // assert
+        Assert.NotEqual(baseFilename, cleanedImage);
+        Assert.Equal(baseFilename, cleanedXmp);
     }
 }
