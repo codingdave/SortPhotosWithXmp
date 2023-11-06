@@ -3,6 +3,7 @@ using System.CommandLine;
 using Microsoft.Extensions.Logging;
 
 using SortPhotosWithXmpByExifDate.Cli.Commands;
+using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 
 using SystemInterface.IO;
 
@@ -11,17 +12,17 @@ namespace SortPhotosWithXmpByExifDate.Cli.Features.CheckIfFileNameContainsDateDi
 internal class CheckIfFileNameContainsDateDifferentToExifDatesCommand : CommandBase
 {
     public CheckIfFileNameContainsDateDifferentToExifDatesCommand(
-        ILogger<CommandLine> logger, 
+        ILogger<CommandLine> logger,
         CommandlineOptions commandlineOptions,
         IFile file,
-        IDirectory directoryWraper) 
+        IDirectory directoryWraper)
         : base(logger, commandlineOptions, file, directoryWraper)
     {
     }
 
     internal override Command GetCommand()
     {
-        var command = new Command("checkIfFileNameContainsDateDifferentToExifDates", 
+        var command = new Command("checkIfFileNameContainsDateDifferentToExifDates",
         "Compare the date in the filename with the date in the file")
         {
             SourceOption,
@@ -38,6 +39,13 @@ internal class CheckIfFileNameContainsDateDifferentToExifDatesCommand : CommandB
 
     private void DeleteEmptyDirectory(string directory, bool force)
     {
-        Run(new CheckIfFileNameContainsDateDifferentToExifDatesRunner(directory, force));
+        try
+        {
+            Run(new CheckIfFileNameContainsDateDifferentToExifDatesRunner(directory, force));
+        }
+        catch (Exception e)
+        {
+            Logger.LogExceptionError(e);
+        }
     }
 }

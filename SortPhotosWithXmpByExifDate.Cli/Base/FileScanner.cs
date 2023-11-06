@@ -1,3 +1,5 @@
+using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 
 using Microsoft.Extensions.Logging;
@@ -34,19 +36,6 @@ public class FileScanner : IFileScanner
     }
 
     public void Crawl(IDirectory directory)
-    {
-        try
-        {
-            GenerateDatabase(directory);
-        }
-        catch (Exception e)
-        {
-            _logger.LogExceptionError(e);
-        }
-    }
-
-
-    private void GenerateDatabase(IDirectory directory)
     {
         ScanDirectory = directory.GetCurrentDirectory();
 
@@ -99,7 +88,7 @@ public class FileScanner : IFileScanner
         });
     }
 
-    public (IEnumerable<string> images, IEnumerable<string> xmps) GetAllImageDataInCurrentDirectory(IDirectory directory)
+    public (IList<string> images, IList<string> xmps) GetAllImageDataInCurrentDirectory(IDirectory directory)
     {
         var xmpRegexString = @".*\" + XmpExtension + "$";
         var xmpRegex = new Regex(xmpRegexString, RegexOptions.IgnoreCase);
@@ -111,26 +100,19 @@ public class FileScanner : IFileScanner
         return FindMatchingFiles(directory, imageRegex, xmpRegex, path);
     }
 
-    private static (IEnumerable<string> images, IEnumerable<string> xmps) FindMatchingFiles(IDirectory directory, Regex imageRegex, Regex xmpRegex, string path)
+    private (IList<string> images, IList<string> xmps)
+        FindMatchingFiles(IDirectory directory, Regex imageRegex, Regex xmpRegex, string path)
     {
-#warning Check AsParallel and measure
-        var files = directory.EnumerateFiles(path, "*", SearchOption.AllDirectories)
-#if DEBUG
-            .ToList()
-#endif
-            ;
+        _logger.LogInformation($"Scanning '{path}' for images and sidecar files.");
+        var sw = new Stopwatch();
+        sw.Start();
 
-        var images = files.Where(x => imageRegex.IsMatch(x))
-#if DEBUG
-            .ToList()
-#endif
-            ;
+        var files = directory.EnumerateFiles(path, "*", SearchOption.AllDirectories).AsParallel();
+        var images = files.Where(x => imageRegex.IsMatch(x)).ToList();
+        var xmps = files.Where(x => xmpRegex.IsMatch(x)).ToList();
 
-        var xmps = files.Where(x => xmpRegex.IsMatch(x))
-#if DEBUG
-            .ToList()
-#endif
-            ;
+        sw.Stop();
+        _logger.LogInformation($"Found {images.Count} images and {xmps.Count} sidecar files in {sw.ElapsedMilliseconds / 1000}s.");
 
         return (images, xmps);
     }

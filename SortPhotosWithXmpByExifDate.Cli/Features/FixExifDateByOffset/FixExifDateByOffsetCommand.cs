@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 
 
 using SortPhotosWithXmpByExifDate.Cli.Commands;
+using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 
 using SystemInterface.IO;
 
@@ -12,7 +13,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Features.FixExifDateByOffset;
 internal class FixExifDateByOffsetCommand : CommandBase
 {
     public FixExifDateByOffsetCommand(
-        ILogger<CommandLine> logger, 
+        ILogger<CommandLine> logger,
         CommandlineOptions commandlineOptions,
         IFile file,
         IDirectory directory)
@@ -40,7 +41,14 @@ internal class FixExifDateByOffsetCommand : CommandBase
 
     private void FixExifDateByOffset(string directory, object offset, bool force)
     {
-        // https://github.com/dotnet/command-line-api/issues/2086
-        Run(new FixExifDateByOffsetRunner(directory, (TimeSpan)offset, force));
+        try
+        {
+            // https://github.com/dotnet/command-line-api/issues/2086
+            Run(new FixExifDateByOffsetRunner(directory, (TimeSpan)offset, force));
+        }
+        catch (Exception e)
+        {
+            Logger.LogExceptionError(e);
+        }
     }
 }

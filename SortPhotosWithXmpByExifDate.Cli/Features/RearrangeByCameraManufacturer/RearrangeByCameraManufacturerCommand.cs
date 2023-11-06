@@ -1,6 +1,9 @@
 using System.CommandLine;
+
 using Microsoft.Extensions.Logging;
+
 using SortPhotosWithXmpByExifDate.Cli.Commands;
+using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 
 using SystemInterface.IO;
 
@@ -9,7 +12,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Features.RearrangeByCameraManufacturer
 internal class RearrangeByCameraManufacturerCommand : CommandBase
 {
     public RearrangeByCameraManufacturerCommand(
-        ILogger<CommandLine> logger, 
+        ILogger<CommandLine> logger,
         CommandlineOptions commandlineOptions,
         IFile file,
         IDirectory directory)
@@ -38,6 +41,13 @@ internal class RearrangeByCameraManufacturerCommand : CommandBase
 
     private void RearrangeByCameraManufacturer(string source, string destination, bool force)
     {
-        Run(new RearrangeByCameraManufacturerRunner(source, destination, force));
+        try
+        {
+            Run(new RearrangeByCameraManufacturerRunner(source, destination, force));
+        }
+        catch (Exception e)
+        {
+            Logger.LogExceptionError(e);
+        }
     }
 }

@@ -3,6 +3,7 @@ using System.CommandLine;
 using Microsoft.Extensions.Logging;
 
 using SortPhotosWithXmpByExifDate.Cli.Commands;
+using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 using SortPhotosWithXmpByExifDate.Cli.Repository;
 
 using SystemInterface.IO;
@@ -39,6 +40,13 @@ internal class DeleteLeftoverXmpsCommand : FileScannerCommandBase
 
     private void DeleteLeftoverXmps(string sourcePath, bool force)
     {
-        Run(new DeleteLeftoverXmpsRunner(force, GetFileScanner(sourcePath), FileWrapper));
+        try
+        {
+            Run(new DeleteLeftoverXmpsRunner(force, GetFileScanner(sourcePath), FileWrapper));
+        }
+        catch (Exception e)
+        {
+            Logger.LogExceptionError(e);
+        }
     }
 }

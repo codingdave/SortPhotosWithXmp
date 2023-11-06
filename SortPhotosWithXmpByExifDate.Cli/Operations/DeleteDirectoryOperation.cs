@@ -40,7 +40,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
         public override string ToString()
         {
             var message = IsChanging ? "performing" : "simulating";
-            message += " directory deletion";
+            message += " to delete the directory";
             return message;
         }
     }

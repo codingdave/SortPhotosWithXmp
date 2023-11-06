@@ -3,6 +3,7 @@ using System.CommandLine;
 using Microsoft.Extensions.Logging;
 
 using SortPhotosWithXmpByExifDate.Cli.Commands;
+using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 using SortPhotosWithXmpByExifDate.Cli.Repository;
 
 using SystemInterface.IO;
@@ -44,10 +45,17 @@ internal class CheckForDuplicateImagesCommand : FileScannerCommandBase
 
     private void CheckForDuplicateImages(string directory, bool force, int similarity, bool move)
     {
-        Run(new CheckForDuplicateImagesRunner(
-            Logger,
-            GetFileScanner(directory),
-            force,
-            similarity));
+        try
+        {
+            Run(new CheckForDuplicateImagesRunner(
+             Logger,
+             GetFileScanner(directory),
+             force,
+             similarity));
+        }
+        catch (Exception e)
+        {
+            Logger.LogExceptionError(e);
+        }
     }
 }

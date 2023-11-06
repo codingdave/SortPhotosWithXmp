@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using SortPhotosWithXmpByExifDate.Cli.Repository;
 using SortPhotosWithXmpByExifDate.Cli.Commands;
 using SystemInterface.IO;
+using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 
 namespace SortPhotosWithXmpByExifDate.Cli.Features.RearrangeByExif;
 
@@ -41,14 +42,21 @@ internal class RearrangeByExifCommand : FileScannerCommandBase
 
     private void RearrangeByExif(string sourcePath, string destinationPath, bool force, bool move)
     {
-        Run(new RearrangeByExifRunner(
-            Logger, 
-            sourcePath, 
-            destinationPath, 
-            GetFileScanner(sourcePath),
-            FileWrapper,
-            DirectoryWrapper,
-            move,
-            force));
+        try
+        {
+            Run(new RearrangeByExifRunner(
+               Logger,
+               sourcePath,
+               destinationPath,
+               GetFileScanner(sourcePath),
+               FileWrapper,
+               DirectoryWrapper,
+               move,
+               force));
+        }
+        catch (Exception e)
+        {
+            Logger.LogExceptionError(e);
+        }
     }
 }

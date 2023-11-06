@@ -3,6 +3,7 @@ using System.CommandLine;
 using Microsoft.Extensions.Logging;
 
 using SortPhotosWithXmpByExifDate.Cli.Commands;
+using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 
 using SystemInterface.IO;
 
@@ -40,6 +41,13 @@ internal class RearrangeBySoftwareCommand : CommandBase
 
     private void RearrangeBySoftware(string source, string destination, bool force)
     {
-        Run(new RearrangeBySoftwareRunner(source, destination, force));
+        try
+        {
+            Run(new RearrangeBySoftwareRunner(source, destination, force));
+        }
+        catch (Exception e)
+        {
+            Logger.LogExceptionError(e);
+        }
     }
 }

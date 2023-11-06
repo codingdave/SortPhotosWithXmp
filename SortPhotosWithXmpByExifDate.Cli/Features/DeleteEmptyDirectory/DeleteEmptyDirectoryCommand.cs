@@ -3,6 +3,7 @@ using System.CommandLine;
 using Microsoft.Extensions.Logging;
 
 using SortPhotosWithXmpByExifDate.Cli.Commands;
+using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 
 using SystemInterface.IO;
 
@@ -37,6 +38,13 @@ internal class DeleteEmptyDirectoryCommand : CommandBase
 
     private void DeleteEmptyDirectory(string directory, bool force)
     {
-        Run(new DeleteEmptyDirectoryRunner(DirectoryWrapper, directory, force));
+        try
+        {
+            Run(new DeleteEmptyDirectoryRunner(DirectoryWrapper, directory, force));
+        }
+        catch (Exception e)
+        {
+            Logger.LogExceptionError(e);
+        }
     }
 }
