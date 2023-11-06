@@ -14,7 +14,7 @@ using SystemInterface.IO;
 
 using Xunit;
 
-namespace FilenameTests;
+namespace SortPhotosWithXmpByExifDate.Tests;
 
 public class FilenameTests
 {
