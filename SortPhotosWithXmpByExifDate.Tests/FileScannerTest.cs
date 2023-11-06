@@ -1,19 +1,11 @@
-using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-
 using Microsoft.Extensions.Logging;
-
 using Moq;
-
 using SortPhotosWithXmpByExifDate.Cli.Repository;
-
 using SystemInterface.IO;
-
 using Xunit;
-using Xunit.Sdk;
 
 namespace SortPhotosWithXmpByExifDate.Tests;
 
@@ -59,22 +51,16 @@ public class FileScannerTest
         fileList.AddRange(_bogusFiles);
 
         _ = _directoryMock
-            .Setup(x => x.EnumerateFiles(It.IsAny<string>()))
+            .Setup(x => x.EnumerateFiles(It.IsAny<string>(), "*", System.IO.SearchOption.AllDirectories))
             .Returns(fileList);
     }
 
     [Fact]
-    public void GetAllImagesInCurrentDirectory()
+    public void GetAllImageDataInCurrentDirectory()
     {
-        var images = _fileScanner.GetAllImagesInCurrentDirectory(_directoryMock.Object).ToList();
-        Assert.Equal(_images, images);
-    }
-
-    [Fact]
-    public void GetAllXmpsInCurrentDirectory()
-    {
-        var xmps = _fileScanner.GetAllXmpsInCurrentDirectory(_directoryMock.Object).ToList();
-        Assert.Equal(_sidecarFiles, xmps);
+        var (images, xmps) = _fileScanner.GetAllImageDataInCurrentDirectory(_directoryMock.Object);
+        Assert.Equal(_images, images.ToList());
+        Assert.Equal(_sidecarFiles, xmps.ToList());
     }
 
     // DSC_9287.NEF        <-- file, could be mov, jpg, ...

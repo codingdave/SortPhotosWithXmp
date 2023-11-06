@@ -1,6 +1,11 @@
 using System.Text.RegularExpressions;
+
 using Microsoft.Extensions.Logging;
+
 using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
+
+using SortPhotosWithXmpByExifDate.Cli.Extensions;
+
 using SystemInterface.IO;
 namespace SortPhotosWithXmpByExifDate.Cli.Repository;
 
@@ -12,7 +17,7 @@ public class FileScanner : IFileScanner
     public FileScanner(ILogger logger)
     {
         _logger = logger;
-        Map = new Dictionary<string, FileVariations>();  
+        Map = new Dictionary<string, FileVariations>();
     }
 
     public void Crawl(IDirectory directory)
@@ -26,6 +31,7 @@ public class FileScanner : IFileScanner
             _logger.LogExceptionError(e);
         }
     }
+
 
     private void GenerateDatabase(IDirectory directory)
     {
@@ -45,13 +51,14 @@ public class FileScanner : IFileScanner
         // as the key as the base for all variations.
 
         // find all images
-        var images = GetAllImagesInCurrentDirectory(directory);
+        var (images, xmps) = GetAllImageDataInCurrentDirectory(directory);
+
+        images.ForEach(image => Map.Add(image, new(new ImageFile(image), new())));
         foreach (var image in images)
         {
             Map.Add(image, new(new ImageFile(image), new()));
         }
 
-        var xmps = GetAllXmpsInCurrentDirectory(directory);
         foreach (var file in xmps)
         {
             var filenameWithoutExtensionAndVersion = ExtractFilenameWithoutExtentionAndVersion(file);
@@ -77,16 +84,7 @@ public class FileScanner : IFileScanner
         }
     }
 
-    public IEnumerable<string> GetAllXmpsInCurrentDirectory(IDirectory directory)
-    {
-        var regexString = @".*\" + XmpExtension + "$";
-        var extensionRegex = new Regex(regexString, RegexOptions.IgnoreCase);
-        var path = directory.GetCurrentDirectory();
-
-        return FindMatchingFiles(directory, extensionRegex, path);
-    }
-
-    public IEnumerable<string> GetAllImagesInCurrentDirectory(IDirectory directory)
+    public (IEnumerable<string> images, IEnumerable<string> xmps) GetAllImageDataInCurrentDirectory(IDirectory directory)
     {
         var extensions = new string[]
         {
@@ -102,22 +100,38 @@ public class FileScanner : IFileScanner
             "mov"
         };
 
-        var regexString = @".*\.(?:" + string.Join(@"|", extensions) + ")$";
-        var extensionRegex = new Regex(regexString, RegexOptions.IgnoreCase);
+        var xmpRegexString = @".*\" + XmpExtension + "$";
+        var xmpRegex = new Regex(xmpRegexString, RegexOptions.IgnoreCase);
+
+        var imageRegexString = @".*\.(?:" + string.Join(@"|", extensions) + ")$";
+        var imageRegex = new Regex(imageRegexString, RegexOptions.IgnoreCase);
         var path = directory.GetCurrentDirectory();
 
-        return FindMatchingFiles(directory, extensionRegex, path);
+        return FindMatchingFiles(directory, imageRegex, xmpRegex, path);
     }
 
-    private static IEnumerable<string> FindMatchingFiles(IDirectory directory, Regex extensionRegex, string path)
+    private static (IEnumerable<string> images, IEnumerable<string> xmps) FindMatchingFiles(IDirectory directory, Regex imageRegex, Regex xmpRegex, string path)
     {
-        #warning Check AsParallel and measure
-        var res = directory
-            .EnumerateFiles(path, "*", SearchOption.AllDirectories)
-            .Where(x => extensionRegex.IsMatch(x))
-            .ToList();
+#warning Check AsParallel and measure
+        var files = directory.EnumerateFiles(path, "*", SearchOption.AllDirectories)
+#if DEBUG
+            .ToList()
+#endif
+            ;
 
-        return res;
+        var images = files.Where(x => imageRegex.IsMatch(x))
+#if DEBUG
+            .ToList()
+#endif
+            ;
+
+        var xmps = files.Where(x => xmpRegex.IsMatch(x))
+#if DEBUG
+            .ToList()
+#endif
+            ;
+
+        return (images, xmps);
     }
 
 
