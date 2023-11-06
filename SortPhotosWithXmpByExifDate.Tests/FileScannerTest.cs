@@ -120,7 +120,7 @@ public class FileScannerTest
     [InlineData("some/path/DSC_9287.NEF", "some/path/DSC_9287_02.NEF.xmp")]
     // some image file that is similar to the sidecar file structure but not one of those (.xmp missing)
     [InlineData("some/path/DSC_9287_02.NEF", "some/path/DSC_9287_02.NEF")]
-    // date_action_imageNumber.extension looks like an edit.
+    // date_action_imageNumber.extension looks like an edit. We can only solve that if we check if an image is called like that.
     [InlineData("some/other/path/050826_foo_03.JPG", "some/other/path/050826_foo_03.JPG.xmp")]
     [InlineData("some/other/path/050826_foo_03.JPG", "some/other/path/050826_foo_03.JPG")]
     // images/20181027/DSC_0051s.xmp does not have an image extension. We keep the filename as is.
