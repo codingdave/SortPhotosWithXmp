@@ -50,7 +50,8 @@ public class FileScannerTest
             "/home/foo/some/path/DSC_9287_01.NEF.xmp",
             "/home/foo/some/path/DSC_9287_02.NEF.xmp",
             "some/other/path/050826_foo_03.JPG.xmp",
-            "some/other/path/images/DSC_0051.xmp"
+            "some/other/path/images/DSC_0051.xmp",
+            "some/other/path/images/DSC_0051.01.xmp"
         };
 
         _bogusFiles = new List<string>() {
@@ -82,23 +83,17 @@ public class FileScannerTest
     [Fact]
     public void MultipleEditsResolveToSameKey()
     {
-        var regexString = @".*" + FileScanner.XmpExtension + "$";
-        var extensionRegex = new Regex(regexString, RegexOptions.IgnoreCase);
+        var image0 = GetImageFile("/home/foo/some/path/DSC_9287.NEF");
+        var image0Version0 = GetImageFile("/home/foo/some/path/DSC_9287.NEF.xmp");
+        var image0Version1 = GetImageFile("/home/foo/some/path/DSC_9287_01.NEF.xmp");
+        var image0Version2 = GetImageFile("/home/foo/some/path/DSC_9287_02.NEF.xmp");
 
-        var dir = _directoryMock.Object.GetCurrentDirectory();
-        var f = _directoryMock.Object.EnumerateFiles(dir)
-        .AsParallel();
-        var op = f.Where(x => extensionRegex.IsMatch(x));
+        var image1 = GetImageFile("some/other/path/050826_foo_03.JPG");
+        var image1Version0 = GetImageFile("some/other/path/050826_foo_03.JPG.xmp");
 
-        var image0 = GetIImageFile("/home/foo/some/path/DSC_9287.NEF");
-        var image0Version0 = GetIImageFile("/home/foo/some/path/DSC_9287.NEF.xmp");
-        var image0Version1 = GetIImageFile("/home/foo/some/path/DSC_9287_01.NEF.xmp");
-        var image0Version2 = GetIImageFile("/home/foo/some/path/DSC_9287_02.NEF.xmp");
+        var image2Version0 = GetImageFile("some/other/path/images/DSC_0051.xmp");
 
-        var image1 = GetIImageFile("some/other/path/050826_foo_03.JPG");
-        var image1Version0 = GetIImageFile("some/other/path/050826_foo_03.JPG.xmp");
-
-        var image2Version0 = GetIImageFile("some/other/path/images/DSC_0051.xmp");
+        var image3Version0 = GetImageFile("some/other/path/images/DSC_0051.01.xmp");
 
         IEnumerable<FileVariations> fileVariation = new HashSet<FileVariations>()
         {
@@ -108,6 +103,8 @@ public class FileScannerTest
             new(image1, new() { image1Version0}),
             // no image but xmp found
             new(null, new() { image2Version0}),
+            // no image but xmp found
+            new(null, new() { image3Version0}),
         };
 
         // act
@@ -131,10 +128,10 @@ public class FileScannerTest
         Assert.Equal(fileVariation.ElementAt(2).SidecarFiles.ElementAt(0), _fileScanner.Map.Values.ElementAt(2).SidecarFiles.ElementAt(0));
     }
 
-    private IImageFile GetIImageFile(string filepath)
+    private IImageFile GetImageFile(string filepath)
     {
         return new ImageFile(filepath);
-        // var mock = new Mock<IImageFile>();
+        // var mock = new Mock<IImageFile>(MockBehavior.Strict);
         // _ = mock.Setup(x => x.Filename).Returns(filepath);
         // return mock.Object;
     }
@@ -151,8 +148,10 @@ public class FileScannerTest
     [InlineData("some/path/DSC_9287.NEF", "some/path/DSC_9287_02.NEF.xmp")]
     // some image file that is similar to the sidecar file structure but not one of those (.xmp missing)
     [InlineData("some/path/DSC_9287_02.NEF", "some/path/DSC_9287_02.NEF")]
-    // images/20181027/DSC_0051s.xmp does not have an image extension. We keep the filename as is.
+    // some/other/path/DSC_0051.01.xmp does not have 2 dots. We keep the filename as is.
     [InlineData("some/other/path/images/DSC_0051.xmp", "some/other/path/images/DSC_0051.xmp")]
+    // some/other/path/DSC_0051.xmp does not have an image extension. We keep the filename as is.
+    [InlineData("some/other/path/images/DSC_0051.01.xmp", "some/other/path/images/DSC_0051.01.xmp")]
 
     public void GetBaseFilename(string baseFilename, string filepath)
     {

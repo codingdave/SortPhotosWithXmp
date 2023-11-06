@@ -73,8 +73,11 @@ public class FileScanner : IFileScanner
                 }
                 else
                 {
-                    // We did not find the image, so we assume it does not exist
-                    _logger.LogDebug($"Expected base image {filenameWithoutExtensionAndVersion} not found for {file}");
+                    if (!string.Equals(filenameWithoutExtensionAndVersion, file))
+                    {
+                        // We did not find the image, so we assume it does not exist
+                        _logger.LogDebug($"Expected base image '{filenameWithoutExtensionAndVersion}' not found for '{file}'");
+                    }
                     value = new FileVariations(null, new List<IImageFile>() { new ImageFile(file) });
                     Map.Add(filenameWithoutExtensionAndVersion, value);
                 }
@@ -141,43 +144,45 @@ public class FileScanner : IFileScanner
         // DSC_9287_02.NEF.xmp <-- 3.rd development file, version 2
 
         var lastDot = file.LastIndexOf('.');
+        var secondLastDot = file.LastIndexOf('.', lastDot - 1);
+
         string result;
-        if (string.Equals(file[lastDot..], XmpExtension, StringComparison.OrdinalIgnoreCase))
+        if (
+            // does the file have 2 dots like in $nameWithPossibleVersion.$ImageExtension.xmp?
+            (secondLastDot != -1)
+            // does it end with .xmp?
+            && string.Equals(file[lastDot..], XmpExtension, StringComparison.OrdinalIgnoreCase)
+            )
         {
             // strip off image/second extension from filename.jpg.xmp 
-            var secondLastDot = file.LastIndexOf('.', lastDot - 1);
-            if (secondLastDot == -1)
+            var endOfFilenameWithoutVersion = secondLastDot;
+            // when we have a sidecar file, we might have a versioned one. 
+            // Then we will find _00 - _99 in the filename:
+            // * _00: invalid ending: as version 0 will not have that suffix attached
+            // * _[0-9][0-9]: valid ending, suffix exists for all versions from 01-99
+            var p1 = secondLastDot - 3;
+            var p2 = secondLastDot - 2;
+            var p3 = secondLastDot - 1;
+            if (file[p1] == '_')
             {
-                // there is no second dot. The filename is like DSC_0051.xmp.
-                // So we keep the filename as is
-                result = file;
-            }
-            else
-            {
-                var endOfFilenameWithoutVersion = secondLastDot;
-                // when we have a sidecar file, we might have a versioned one. 
-                // invalid ending: _00, as this suffix will only exist for verions > 0
-                // valid ending: _[0-9][0-9]
-                var p1 = secondLastDot - 3;
-                var p2 = secondLastDot - 2;
-                var p3 = secondLastDot - 1;
-                if (file[p1] == '_')
+                if (file[p2] == '0' && file[p3] == '0')
                 {
-                    if (file[p2] == '0' && file[p3] == '0')
-                    {
-                        // do nothing
-                    }
-                    else if (IsDigit(file[p2]) && IsDigit(file[p3]))
-                    {
-                        endOfFilenameWithoutVersion = p1;
-                    }
+                    // _00 is invalid - do nothing
                 }
-                result = string.Concat(file[..endOfFilenameWithoutVersion], file[secondLastDot..lastDot]);
+                else if (IsDigit(file[p2]) && IsDigit(file[p3]))
+                {
+                    // _01-99: strip off _xx
+                    endOfFilenameWithoutVersion = p1;
+                }
             }
+            // assemble $nameWithoutVersion.$ImageExtension
+            result = string.Concat(file[..endOfFilenameWithoutVersion], file[secondLastDot..lastDot]);
         }
         else
         {
-            // in case of images we keep it as it is
+            // we keep the filename if 
+            // * there is no second dot (like for DSC_0051.xmp)
+            // * it does not end in .xmp (like for DSC0051.01.xmp)
             result = file;
         }
 
