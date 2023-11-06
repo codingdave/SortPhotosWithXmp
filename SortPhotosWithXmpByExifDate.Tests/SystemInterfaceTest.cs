@@ -15,7 +15,7 @@ public class SystemInterfaceTest
     [Fact]
     public void TestMocking()
     {
-        var directoryMock = new Mock<IDirectory>();
+        var directoryMock = new Mock<IDirectory>(MockBehavior.Strict);
         var path = @"/home/david/projects/SortPhotosWithXmpByExifDate.Cli";
         var fileList = new List<string>() { @"c:\test.txt", @"c:\test2.txt" };
         _ = directoryMock

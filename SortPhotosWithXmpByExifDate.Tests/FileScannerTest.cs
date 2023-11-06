@@ -11,24 +11,28 @@ using SortPhotosWithXmpByExifDate.Cli.Repository;
 using SystemInterface.IO;
 
 using Xunit;
+using Xunit.Abstractions;
 
 namespace SortPhotosWithXmpByExifDate.Tests;
 
 public class FileScannerTest
 {
-    private readonly Mock<ILogger> _loggerMock;
+    private readonly ILogger _logger;
     private readonly FileScanner _fileScanner;
     private readonly Mock<IDirectory> _directoryMock;
     private readonly List<string> _images;
     private readonly List<string> _sidecarFiles;
     private readonly List<string> _bogusFiles;
+    private readonly ITestOutputHelper _output;
 
-    public FileScannerTest()
+    public FileScannerTest(ITestOutputHelper output)
     {
+        _output = output ?? throw new System.ArgumentNullException(nameof(output));
+
         // arrange
-        _loggerMock = new Mock<ILogger>();
-        _fileScanner = new FileScanner(_loggerMock.Object);
-        _directoryMock = new Mock<IDirectory>();
+        _logger = _output.BuildLogger();
+        _fileScanner = new FileScanner(_logger);
+        _directoryMock = new Mock<IDirectory>(MockBehavior.Strict);
 
         _ = _directoryMock
             .Setup(x => x.GetCurrentDirectory())
