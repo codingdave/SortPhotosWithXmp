@@ -110,21 +110,21 @@ public class FileScannerTest
         _fileScanner.Crawl(_directoryMock.Object);
 
         // assert
-        Assert.Equal(_fileScanner.All.Count(), fileVariation.Count());
+        Assert.Equal(fileVariation.Count(), _fileScanner.All.Count());
 
-        Assert.Equal(_fileScanner.All.ElementAt(0).Data, fileVariation.ElementAt(0).Data);
-        Assert.Equal(_fileScanner.All.ElementAt(0).SidecarFiles.Count, fileVariation.ElementAt(0).SidecarFiles.Count);
-        Assert.Equal(_fileScanner.All.ElementAt(0).SidecarFiles.ElementAt(0), fileVariation.ElementAt(0).SidecarFiles.ElementAt(0));
-        Assert.Equal(_fileScanner.All.ElementAt(0).SidecarFiles.ElementAt(1), fileVariation.ElementAt(0).SidecarFiles.ElementAt(1));
-        Assert.Equal(_fileScanner.All.ElementAt(0).SidecarFiles.ElementAt(2), fileVariation.ElementAt(0).SidecarFiles.ElementAt(2));
+        Assert.Equal(fileVariation.ElementAt(0).Data, _fileScanner.All.ElementAt(0).Data);
+        Assert.Equal(fileVariation.ElementAt(0).SidecarFiles.Count, _fileScanner.All.ElementAt(0).SidecarFiles.Count);
+        Assert.Equal(fileVariation.ElementAt(0).SidecarFiles.ElementAt(0), _fileScanner.All.ElementAt(0).SidecarFiles.ElementAt(0));
+        Assert.Equal(fileVariation.ElementAt(0).SidecarFiles.ElementAt(1), _fileScanner.All.ElementAt(0).SidecarFiles.ElementAt(1));
+        Assert.Equal(fileVariation.ElementAt(0).SidecarFiles.ElementAt(2), _fileScanner.All.ElementAt(0).SidecarFiles.ElementAt(2));
 
-        Assert.Equal(_fileScanner.All.ElementAt(1).Data, _fileScanner.All.ElementAt(1).Data);
-        Assert.Equal(_fileScanner.All.ElementAt(1).SidecarFiles.Count, fileVariation.ElementAt(1).SidecarFiles.Count);
-        Assert.Equal(_fileScanner.All.ElementAt(1).SidecarFiles.ElementAt(0), fileVariation.ElementAt(1).SidecarFiles.ElementAt(0));
+        Assert.Equal(fileVariation.ElementAt(1).Data, _fileScanner.All.ElementAt(1).Data);
+        Assert.Equal(fileVariation.ElementAt(1).SidecarFiles.Count, _fileScanner.All.ElementAt(1).SidecarFiles.Count);
+        Assert.Equal(fileVariation.ElementAt(1).SidecarFiles.ElementAt(0), _fileScanner.All.ElementAt(1).SidecarFiles.ElementAt(0));
 
-        Assert.Equal(_fileScanner.All.ElementAt(2).Data, fileVariation.ElementAt(2).Data);
-        Assert.Equal(_fileScanner.All.ElementAt(2).SidecarFiles.Count, fileVariation.ElementAt(2).SidecarFiles.Count);
-        Assert.Equal(_fileScanner.All.ElementAt(2).SidecarFiles.ElementAt(0), fileVariation.ElementAt(2).SidecarFiles.ElementAt(0));
+        Assert.Equal(fileVariation.ElementAt(2).Data, _fileScanner.All.ElementAt(2).Data);
+        Assert.Equal(fileVariation.ElementAt(2).SidecarFiles.Count, _fileScanner.All.ElementAt(2).SidecarFiles.Count);
+        Assert.Equal(fileVariation.ElementAt(2).SidecarFiles.ElementAt(0), _fileScanner.All.ElementAt(2).SidecarFiles.ElementAt(0));
     }
 
     private IImageFile GetIImageFile(string filepath)
