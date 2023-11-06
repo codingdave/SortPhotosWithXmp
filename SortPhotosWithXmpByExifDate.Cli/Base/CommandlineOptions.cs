@@ -99,7 +99,7 @@ internal class CommandlineOptions
 
                     if (!Directory.Exists(filePath))
                     {
-                        Directory.CreateDirectory(filePath);
+                        _ = Directory.CreateDirectory(filePath);
                     }
 
                     ret = filePath;

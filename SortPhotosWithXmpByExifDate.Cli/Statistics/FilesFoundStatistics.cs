@@ -28,7 +28,6 @@ public class FilesFoundStatistics : IStatistics, IModifiableErrorCollection, IFo
 
     public void Log()
     {
-        // if (_operationPerformer)
         var operation = FileOperation.ToString(); // performing/simulating move/copy
         _logger.LogInformation("-> {operation}. Found {FoundImages} individual images and {FoundXmps} xmps ({SkippedImages}/{SkippedXmps} duplicates).", operation, FoundImages, FoundXmps, SkippedImages, SkippedXmps);
 

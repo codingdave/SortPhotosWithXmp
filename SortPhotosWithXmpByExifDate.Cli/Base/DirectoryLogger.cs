@@ -7,6 +7,8 @@ using SystemInterface;
 using SystemInterface.IO;
 using SystemInterface.Security.AccessControl;
 
+using SystemWrapper.IO;
+
 namespace SortPhotosWithXmpByExifDate.Cli;
 
 internal class DirectoryLogger : IDirectory
@@ -17,7 +19,10 @@ internal class DirectoryLogger : IDirectory
 
     public IDirectoryInfo CreateDirectory(string path)
     {
-        throw new NotImplementedException();
+        // TODO: Not yet implemented
+        _ = Directory.CreateDirectory(path);
+        // return new DirectoryInfoWrap(path);
+        return null;
     }
 
     public IDirectoryInfo CreateDirectory(string path, IDirectorySecurity directorySecurity)
@@ -47,12 +52,12 @@ internal class DirectoryLogger : IDirectory
 
     public IEnumerable<string> EnumerateFiles(string path, string searchPattern, SearchOption searchOption)
     {
-        throw new NotImplementedException();
+        return Directory.EnumerateFiles(path, searchPattern, searchOption);
     }
 
     public bool Exists(string path)
     {
-        throw new NotImplementedException();
+        return Directory.Exists(path);
     }
 
     public IDirectorySecurity GetAccessControl(string path)
@@ -77,7 +82,7 @@ internal class DirectoryLogger : IDirectory
 
     public string GetCurrentDirectory()
     {
-        throw new NotImplementedException();
+        return Directory.GetCurrentDirectory();
     }
 
     public string[] GetDirectories(string path)
@@ -177,7 +182,7 @@ internal class DirectoryLogger : IDirectory
 
     public void SetCurrentDirectory(string path)
     {
-        throw new NotImplementedException();
+        Directory.SetCurrentDirectory(path);
     }
 
     public void SetLastAccessTime(string path, IDateTime lastAccessTime)
