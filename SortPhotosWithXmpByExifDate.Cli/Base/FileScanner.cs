@@ -11,6 +11,20 @@ namespace SortPhotosWithXmpByExifDate.Cli.Repository;
 
 public class FileScanner : IFileScanner
 {
+    private readonly string[] _extensions = new string[]
+    {
+        "jpg",
+        "jpeg",
+        "nef",
+        "gif",
+        "png",
+        "psd",
+        "cr3",
+        "arw",
+        "mp4",
+        "mov"
+    };
+
     private readonly ILogger _logger;
 
     public FileScanner(ILogger logger)
@@ -87,24 +101,10 @@ public class FileScanner : IFileScanner
 
     public (IEnumerable<string> images, IEnumerable<string> xmps) GetAllImageDataInCurrentDirectory(IDirectory directory)
     {
-        var extensions = new string[]
-        {
-            "jpg",
-            "jpeg",
-            "nef",
-            "gif",
-            "png",
-            "psd",
-            "cr3",
-            "arw",
-            "mp4",
-            "mov"
-        };
-
         var xmpRegexString = @".*\" + XmpExtension + "$";
         var xmpRegex = new Regex(xmpRegexString, RegexOptions.IgnoreCase);
 
-        var imageRegexString = @".*\.(?:" + string.Join(@"|", extensions) + ")$";
+        var imageRegexString = @".*\.(?:" + string.Join(@"|", _extensions) + ")$";
         var imageRegex = new Regex(imageRegexString, RegexOptions.IgnoreCase);
         var path = directory.GetCurrentDirectory();
 
@@ -145,24 +145,25 @@ public class FileScanner : IFileScanner
 
         var lastDot = file.LastIndexOf('.');
         var secondLastDot = file.LastIndexOf('.', lastDot - 1);
-
+        var p1 = secondLastDot - 3;
+        var p2 = secondLastDot - 2;
+        var p3 = secondLastDot - 1;
         string result;
         if (
             // does the file have 2 dots like in $nameWithPossibleVersion.$ImageExtension.xmp?
-            (secondLastDot != -1)
+            secondLastDot != -1
             // does it end with .xmp?
-            && string.Equals(file[lastDot..], XmpExtension, StringComparison.OrdinalIgnoreCase)
-            )
+            && string.Equals(file.Substring(lastDot, XmpExtension.Length), XmpExtension, StringComparison.OrdinalIgnoreCase)
+            // is between the 2 dots a known $ImageExtension?
+            && _extensions.Any(x => string.Equals(x, file.Substring(secondLastDot + 1, lastDot - secondLastDot - 1), StringComparison.OrdinalIgnoreCase)))
         {
-            // strip off image/second extension from filename.jpg.xmp 
+            // move before $ImageExtension in filename.$ImageExtension.xmp 
             var endOfFilenameWithoutVersion = secondLastDot;
             // when we have a sidecar file, we might have a versioned one. 
             // Then we will find _00 - _99 in the filename:
             // * _00: invalid ending: as version 0 will not have that suffix attached
             // * _[0-9][0-9]: valid ending, suffix exists for all versions from 01-99
-            var p1 = secondLastDot - 3;
-            var p2 = secondLastDot - 2;
-            var p3 = secondLastDot - 1;
+
             if (file[p1] == '_')
             {
                 if (file[p2] == '0' && file[p3] == '0')
@@ -183,6 +184,7 @@ public class FileScanner : IFileScanner
             // we keep the filename if 
             // * there is no second dot (like for DSC_0051.xmp)
             // * it does not end in .xmp (like for DSC0051.01.xmp)
+            // * between the 2 dots is no known extension
             result = file;
         }
 
