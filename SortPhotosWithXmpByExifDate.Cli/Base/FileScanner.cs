@@ -1,35 +1,19 @@
-using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
-
 using Microsoft.Extensions.Logging;
-
 using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
-
 using SystemInterface.IO;
-
 namespace SortPhotosWithXmpByExifDate.Cli.Repository;
 
 public class FileScanner : IFileScanner
 {
-    private readonly string[] _extensions = new string[]
-    {
-        "jpg",
-        "jpeg",
-        "nef",
-        "gif",
-        "png",
-        "psd",
-        "cr3",
-        "arw",
-        "mp4",
-        "mov"
-    };
-
     private readonly HashSet<FileVariations> _all = new();
     private readonly ILogger _logger;
 
-    public FileScanner(ILogger logger) => _logger = logger;
-
+    public FileScanner(ILogger logger)
+    {
+        _logger = logger;
+        Map = new Dictionary<string, FileVariations>();  
+    }
 
     public void Crawl(IDirectory directory)
     {
@@ -60,13 +44,11 @@ public class FileScanner : IFileScanner
         // without sidecar extension and without edit version 
         // as the key as the base for all variations.
 
-        Dictionary<string, FileVariations> files = new();
-
         // find all images
         var images = GetAllImagesInCurrentDirectory(directory);
         foreach (var image in images)
         {
-            files.Add(image, new(new ImageFile(image), new()));
+            Map.Add(image, new(new ImageFile(image), new()));
         }
 
         var xmps = GetAllXmpsInCurrentDirectory(directory);
@@ -74,19 +56,19 @@ public class FileScanner : IFileScanner
         {
             var filenameWithoutExtensionAndVersion = ExtractFilenameWithoutExtentionAndVersion(file);
 
-            if (files.TryGetValue(filenameWithoutExtensionAndVersion, out var value))
+            if (Map.TryGetValue(filenameWithoutExtensionAndVersion, out var value))
             {
                 value.SidecarFiles.Add(new ImageFile(file));
             }
             else
             {
-                _logger.LogInformation($"Expected base image {filenameWithoutExtensionAndVersion} not found for {file}");
+                _logger.LogDebug($"Expected base image {filenameWithoutExtensionAndVersion} not found for {file}");
                 value = new FileVariations(null, new List<IImageFile>() { new ImageFile(file) });
-                files.Add(filenameWithoutExtensionAndVersion, value);
+                Map.Add(filenameWithoutExtensionAndVersion, value);
             }
         }
 
-        foreach (var file in files)
+        foreach (var file in Map)
         {
             if (!_all.Add(file.Value))
             {
@@ -106,7 +88,21 @@ public class FileScanner : IFileScanner
 
     public IEnumerable<string> GetAllImagesInCurrentDirectory(IDirectory directory)
     {
-        var regexString = @".*\.(?:" + string.Join(@"|", _extensions) + ")$";
+        var extensions = new string[]
+        {
+            "jpg",
+            "jpeg",
+            "nef",
+            "gif",
+            "png",
+            "psd",
+            "cr3",
+            "arw",
+            "mp4",
+            "mov"
+        };
+
+        var regexString = @".*\.(?:" + string.Join(@"|", extensions) + ")$";
         var extensionRegex = new Regex(regexString, RegexOptions.IgnoreCase);
         var path = directory.GetCurrentDirectory();
 
@@ -115,6 +111,7 @@ public class FileScanner : IFileScanner
 
     private static IEnumerable<string> FindMatchingFiles(IDirectory directory, Regex extensionRegex, string path)
     {
+        #warning Check AsParallel and measure
         var res = directory
             .EnumerateFiles(path, "*", SearchOption.AllDirectories)
             .Where(x => extensionRegex.IsMatch(x))
@@ -192,4 +189,6 @@ public class FileScanner : IFileScanner
     public IEnumerable<FileVariations> HealtyFileVariations => All.Where(x => x.Data != null);
 
     public string? ScanDirectory { get; private set; }
+
+    public IDictionary<string, FileVariations> Map { get; }
 }
