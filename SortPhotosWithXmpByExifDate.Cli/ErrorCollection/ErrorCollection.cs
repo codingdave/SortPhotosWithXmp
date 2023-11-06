@@ -8,13 +8,10 @@ public class ErrorCollection : IErrorCollection, IReadOnlyErrorCollection
 {
     private readonly ILogger _logger;
 
-    public ErrorCollection(ILogger logger)
-    {
-        _logger = logger;
-    }
+    public ErrorCollection(ILogger logger) => _logger = logger;
 
-    public IReadOnlyList<IError> Errors => _errors;
-    private readonly List<IError> _errors = new();
+    public IReadOnlyList<IError> Errors => _errors.ToList();
+    private readonly ConcurrentBag<IError> _errors = new();
 
     public void Add(IError error)
     {

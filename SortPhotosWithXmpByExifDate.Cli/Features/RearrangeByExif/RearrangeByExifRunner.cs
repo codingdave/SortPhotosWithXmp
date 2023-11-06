@@ -45,7 +45,7 @@ internal class RearrangeByExifRunner : IRun
         DateTimeResolver dateTimeResolver = new(logger);
         logger.LogInformation($"Starting {nameof(RearrangeByExifRunner)}.{nameof(Run)} with search path: '{_sourceDirectory}' and destination path '{_destinationDirectory}'. {_operationPerformer}");
 
-        foreach (var fileDatum in _fileScanner.Map.Values)
+        _fileScanner.Map.Values.AsParallel().ForAll(fileDatum =>
         {
             if (fileDatum.Data != null)
             {
@@ -89,7 +89,7 @@ internal class RearrangeByExifRunner : IRun
                     _statistics.AddError(new ExceptionError(file, e));
                 }
             }
-        }
+        });
 
         var statistics = new DirectoriesDeletedStatistics(logger, _deleteDirectoryOperation);
         Helpers.RecursivelyDeleteEmptyDirectories(logger, _sourceDirectory, _deleteDirectoryOperation);
