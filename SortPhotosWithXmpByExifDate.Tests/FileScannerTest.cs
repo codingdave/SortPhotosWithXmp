@@ -151,7 +151,7 @@ public class FileScannerTest
     [InlineData("some/other/path/050826_foo_03.JPG", "some/other/path/050826_foo_03.JPG.xmp")]
     [InlineData("some/other/path/050826_foo_03.JPG", "some/other/path/050826_foo_03.JPG")]
     // images/20181027/DSC_0051s.xmp does not have an image extension. We keep the filename as is.
-    [InlineData("some/other/path/images/DSC_0051.xmp", "DSC_0051.xmp")]
+    [InlineData("some/other/path/images/DSC_0051.xmp", "some/other/path/images/DSC_0051.xmp")]
 
     public void GetBaseFilename(string baseFilename, string filepath)
     {
