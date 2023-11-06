@@ -5,7 +5,6 @@ public interface IFileScanner
     public static string SidecarFileExtension { get; } = ".xmp";
 
     public IDictionary<string, FileVariations> Map { get; }
-    public IEnumerable<FileVariations> All { get; }
 
     public IEnumerable<FileVariations> MultipleEdits { get; }
     // having sidecar files but no source data is not healthy

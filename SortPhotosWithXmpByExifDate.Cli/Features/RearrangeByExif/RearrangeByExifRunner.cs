@@ -45,7 +45,7 @@ internal class RearrangeByExifRunner : IRun
         DateTimeResolver dateTimeResolver = new(logger);
         logger.LogInformation($"Starting {nameof(RearrangeByExifRunner)}.{nameof(Run)} with search path: '{_sourceDirectory}' and destination path '{_destinationDirectory}'. {_operationPerformer}");
 
-        foreach (var fileDatum in _fileScanner.All)
+        foreach (var fileDatum in _fileScanner.Map.Values)
         {
             if (fileDatum.Data != null)
             {

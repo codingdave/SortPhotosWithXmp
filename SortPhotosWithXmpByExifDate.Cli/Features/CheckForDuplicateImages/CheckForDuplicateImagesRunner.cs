@@ -41,7 +41,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Features.CheckForDuplicateImages
                 // 3.2 when we have a different image, the xmp should also be different. What if it is not?
                 // 3.3 when we have a different xmp but the same image, the xmp might be a different development of the same file
                 CreateHashes();
-                CreateSimilarityMap(_fileScanner.All, _similarity);
+                CreateSimilarityMap(_fileScanner.Map.Values, _similarity);
                 HandleMostSimilarImages();
             }
             catch (Exception e)
@@ -68,7 +68,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Features.CheckForDuplicateImages
 
             // xmps: only supports 100% match if its an edit of the same image data. 
             // Do not check edits across different data.
-            foreach (var hashedSidecars in _fileScanner.All)
+            foreach (var hashedSidecars in _fileScanner.Map.Values)
             {
                 var xmpDuplicatesGroup = hashedSidecars.SidecarFiles.Cast<SidecarFileHash>().GroupBy(x => x.Hash).Where(g => g.Count() > 1);
                 foreach (var duplicates in xmpDuplicatesGroup)
@@ -142,12 +142,12 @@ namespace SortPhotosWithXmpByExifDate.Cli.Features.CheckForDuplicateImages
 
             void SaveStorageTick(object? state)
             {
-                _hashRepository.SaveRepository(_fileScanner.All.ToList());
+                _hashRepository.SaveRepository(_fileScanner.Map.Values.ToList());
             }
 
             using var saveStorageTimer = new Timer(SaveStorageTick, null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
 
-            var result = Parallel.ForEach(_fileScanner.All, CreateHashes);
+            var result = Parallel.ForEach(_fileScanner.Map.Values, CreateHashes);
             if(!result.IsCompleted)
             {
                 _logger.LogError($"Parallel.ForEach failed: LowestBreakIteration: {result.LowestBreakIteration}, {result}");

@@ -11,7 +11,6 @@ namespace SortPhotosWithXmpByExifDate.Cli.Repository;
 
 public class FileScanner : IFileScanner
 {
-    private readonly HashSet<FileVariations> _all = new();
     private readonly ILogger _logger;
 
     public FileScanner(ILogger logger)
@@ -54,12 +53,7 @@ public class FileScanner : IFileScanner
         var (images, xmps) = GetAllImageDataInCurrentDirectory(directory);
 
         images.ForEach(image => Map.Add(image, new(new ImageFile(image), new())));
-        foreach (var image in images)
-        {
-            Map.Add(image, new(new ImageFile(image), new()));
-        }
-
-        foreach (var file in xmps)
+        xmps.ForEach(file =>
         {
             var filenameWithoutExtensionAndVersion = ExtractFilenameWithoutExtentionAndVersion(file);
 
@@ -73,15 +67,7 @@ public class FileScanner : IFileScanner
                 value = new FileVariations(null, new List<IImageFile>() { new ImageFile(file) });
                 Map.Add(filenameWithoutExtensionAndVersion, value);
             }
-        }
-
-        foreach (var file in Map)
-        {
-            if (!_all.Add(file.Value))
-            {
-                throw new InvalidOperationException("key already present. This should not be possible.");
-            }
-        }
+        });
     }
 
     public (IEnumerable<string> images, IEnumerable<string> xmps) GetAllImageDataInCurrentDirectory(IDirectory directory)
@@ -197,10 +183,9 @@ public class FileScanner : IFileScanner
     private const string Extension = @"(?<extension>\.\w+)";
     public Regex XmpFileWithOptionalRevision = new($"{BaseNumber}?{Extension}{XmpExtension}");
 
-    public IEnumerable<FileVariations> All => _all;
-    public IEnumerable<FileVariations> MultipleEdits => All.Where(x => x.SidecarFiles.Count > 1);
-    public IEnumerable<IImageFile> LonelySidecarFiles => All.Where(x => x.Data == null).SelectMany(x => x.SidecarFiles);
-    public IEnumerable<FileVariations> HealtyFileVariations => All.Where(x => x.Data != null);
+    public IEnumerable<FileVariations> MultipleEdits => Map.Values.Where(x => x.SidecarFiles.Count > 1);
+    public IEnumerable<IImageFile> LonelySidecarFiles => Map.Values.Where(x => x.Data == null).SelectMany(x => x.SidecarFiles);
+    public IEnumerable<FileVariations> HealtyFileVariations => Map.Values.Where(x => x.Data != null);
 
     public string? ScanDirectory { get; private set; }
 
