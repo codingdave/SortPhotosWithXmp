@@ -63,9 +63,21 @@ public class FileScanner : IFileScanner
             }
             else
             {
-                _logger.LogDebug($"Expected base image {filenameWithoutExtensionAndVersion} not found for {file}");
-                value = new FileVariations(null, new List<IImageFile>() { new ImageFile(file) });
-                Map.Add(filenameWithoutExtensionAndVersion, value);
+                // Could be a wrong positive:                 
+                // some/other/path/050826_foo_03.JPG.xmp could be Version0 for some/other/path/050826_foo_03.JPG but detected as Version3
+                if (
+                    string.Equals(file[^XmpExtension.Length..], XmpExtension, StringComparison.OrdinalIgnoreCase)
+                    && Map.TryGetValue(file[..^XmpExtension.Length], out var fileVariation))
+                {
+                    fileVariation.SidecarFiles.Add(new ImageFile(file));
+                }
+                else
+                {
+                    // We did not find the image, so we assume it does not exist
+                    _logger.LogDebug($"Expected base image {filenameWithoutExtensionAndVersion} not found for {file}");
+                    value = new FileVariations(null, new List<IImageFile>() { new ImageFile(file) });
+                    Map.Add(filenameWithoutExtensionAndVersion, value);
+                }
             }
         });
     }
