@@ -32,17 +32,20 @@ public class FileScannerTest
         // _ = directoryMock.Setup(x => x.SetCurrentDirectory(It.IsAny<string>()));
 
         _images = new List<string>() {
-            @"/home/foo/some/path/DSC_9287.NEF"
+            "/home/foo/some/path/DSC_9287.NEF",
+            "some/other/path/050826_foo_03.JPG"
             };
 
         _sidecarFiles = new List<string>() {
-            @"/home/foo/some/path/DSC_9287.NEF.xmp",
-            @"/home/foo/some/path/DSC_9287_01.NEF.xmp",
-            @"/home/foo/some/path/DSC_9287_02.NEF.xmp"
+            "/home/foo/some/path/DSC_9287.NEF.xmp",
+            "/home/foo/some/path/DSC_9287_01.NEF.xmp",
+            "/home/foo/some/path/DSC_9287_02.NEF.xmp",
+            "some/other/path/050826_foo_03.JPG.xmp",
+            "some/other/path/images/DSC_0051.xmp"
         };
 
         _bogusFiles = new List<string>() {
-            @"/home/foo/some/path/DSC_9287_02.NEfF.xmpp"
+            "/home/foo/some/path/DSC_9287_02.NEfF.xmpp"
         };
 
         var fileList = new List<string>();
