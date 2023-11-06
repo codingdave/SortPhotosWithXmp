@@ -1,10 +1,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+
 using Microsoft.Extensions.Logging;
+
 using Moq;
+
 using SortPhotosWithXmpByExifDate.Cli.Repository;
+
 using SystemInterface.IO;
+
 using Xunit;
 
 namespace SortPhotosWithXmpByExifDate.Tests;
@@ -81,26 +86,45 @@ public class FileScannerTest
         .AsParallel();
         var op = f.Where(x => extensionRegex.IsMatch(x));
 
-        var image = GetIImageFile("/home/foo/some/path/DSC_9287.NEF");
-        var imageVersion1 = GetIImageFile("/home/foo/some/path/DSC_9287.NEF.xmp");
-        var imageVersion2 = GetIImageFile("/home/foo/some/path/DSC_9287_01.NEF.xmp");
-        var imageVersion3 = GetIImageFile("/home/foo/some/path/DSC_9287_02.NEF.xmp");
+        var image0 = GetIImageFile("/home/foo/some/path/DSC_9287.NEF");
+        var image0Version0 = GetIImageFile("/home/foo/some/path/DSC_9287.NEF.xmp");
+        var image0Version1 = GetIImageFile("/home/foo/some/path/DSC_9287_01.NEF.xmp");
+        var image0Version2 = GetIImageFile("/home/foo/some/path/DSC_9287_02.NEF.xmp");
+
+        var image1 = GetIImageFile("some/other/path/050826_foo_03.JPG");
+        var image1Version0 = GetIImageFile("some/other/path/050826_foo_03.JPG.xmp");
+
+        var image2Version0 = GetIImageFile("some/other/path/images/DSC_0051.xmp");
 
         IEnumerable<FileVariations> fileVariation = new HashSet<FileVariations>()
         {
-            new(image, new() { imageVersion1, imageVersion2, imageVersion3 })
+            // valid multiple edits
+            new(image0, new() { image0Version0, image0Version1, image0Version2 }),
+            // valid file with edit version 0 that looks like version 3
+            new(image1, new() { image1Version0}),
+            // no image but xmp found
+            new(null, new() { image2Version0}),
         };
 
         // act
         _fileScanner.Crawl(_directoryMock.Object);
 
         // assert
-        Assert.Equal(fileVariation.Count(), _fileScanner.All.Count());
-        Assert.Equal(fileVariation.First().Data, _fileScanner.All.First().Data);
-        Assert.Equal(fileVariation.First().SidecarFiles.Count, _fileScanner.All.First().SidecarFiles.Count);
-        Assert.Equal(fileVariation.First().SidecarFiles.ElementAt(0), _fileScanner.All.First().SidecarFiles.ElementAt(0));
-        Assert.Equal(fileVariation.First().SidecarFiles.ElementAt(1), _fileScanner.All.First().SidecarFiles.ElementAt(1));
-        Assert.Equal(fileVariation.First().SidecarFiles.ElementAt(2), _fileScanner.All.First().SidecarFiles.ElementAt(2));
+        Assert.Equal(_fileScanner.All.Count(), fileVariation.Count());
+        
+        Assert.Equal(_fileScanner.All.ElementAt(0).Data, fileVariation.ElementAt(0).Data);
+        Assert.Equal(_fileScanner.All.ElementAt(0).SidecarFiles.Count, fileVariation.ElementAt(0).SidecarFiles.Count);
+        Assert.Equal(_fileScanner.All.ElementAt(0).SidecarFiles.ElementAt(0), fileVariation.ElementAt(0).SidecarFiles.ElementAt(0));
+        Assert.Equal(_fileScanner.All.ElementAt(0).SidecarFiles.ElementAt(1), fileVariation.ElementAt(0).SidecarFiles.ElementAt(1));
+        Assert.Equal(_fileScanner.All.ElementAt(0).SidecarFiles.ElementAt(2), fileVariation.ElementAt(0).SidecarFiles.ElementAt(2));
+
+        Assert.Equal(_fileScanner.All.ElementAt(1).Data, _fileScanner.All.ElementAt(1).Data);
+        Assert.Equal(_fileScanner.All.ElementAt(1).SidecarFiles.Count, fileVariation.ElementAt(1).SidecarFiles.Count);
+        Assert.Equal(_fileScanner.All.ElementAt(1).SidecarFiles.ElementAt(0), fileVariation.ElementAt(1).SidecarFiles.ElementAt(0));
+        
+        Assert.Equal(_fileScanner.All.ElementAt(2).Data, fileVariation.ElementAt(2).Data);
+        Assert.Equal(_fileScanner.All.ElementAt(2).SidecarFiles.Count, fileVariation.ElementAt(2).SidecarFiles.Count);
+        Assert.Equal(_fileScanner.All.ElementAt(2).SidecarFiles.ElementAt(0), fileVariation.ElementAt(2).SidecarFiles.ElementAt(0));
     }
 
     private IImageFile GetIImageFile(string filepath)
@@ -128,7 +152,7 @@ public class FileScannerTest
     [InlineData("some/other/path/050826_foo_03.JPG", "some/other/path/050826_foo_03.JPG")]
     // images/20181027/DSC_0051s.xmp does not have an image extension. We keep the filename as is.
     [InlineData("some/other/path/images/DSC_0051.xmp", "DSC_0051.xmp")]
-    
+
     public void GetBaseFilename(string baseFilename, string filepath)
     {
         // arrange
