@@ -3,6 +3,8 @@ namespace SortPhotosWithXmpByExifDate.Cli.Repository;
 public interface IFileScanner
 {
     public static string SidecarFileExtension { get; } = ".xmp";
+
+    public IDictionary<string, FileVariations> Map { get; }
     public IEnumerable<FileVariations> All { get; }
 
     public IEnumerable<FileVariations> MultipleEdits { get; }

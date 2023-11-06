@@ -1,6 +1,12 @@
+using AutoMapper.Internal.Mappers;
+
 namespace SortPhotosWithXmpByExifDate.Cli.Repository;
 
-public record struct ImageFile(string Filename, DateTime LastWriteTimeUtc) : IImageFile
+public record struct ImageFile(string OriginalFilename, DateTime LastWriteTimeUtc) : IImageFile
 {
-    public ImageFile(string filename) : this(filename, File.GetLastWriteTimeUtc(filename)) { }
+    #warning unmockable FILE
+    #warning Update file when setting NewFilename?
+    public ImageFile(string originalFilename) : this(originalFilename, File.GetLastWriteTimeUtc(originalFilename)) { }
+    public string? NewFilename { get; set; } = null;
+    public string CurrentFilename => NewFilename ?? OriginalFilename;
 }

@@ -32,7 +32,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Features.CheckForDuplicateImages
         {
             try
             {
-#warning TODO
+#warning CheckForDuplicateImagesRunner.Run
                 // 0. Work only on non-lonely xmps
                 // REM - 1. before we search for duplicate images and xmps we check for lonely xmps
                 // REM - 2. now we are sure to find pairs <img,xmp> or <img, null>
@@ -73,14 +73,14 @@ namespace SortPhotosWithXmpByExifDate.Cli.Features.CheckForDuplicateImages
                 var xmpDuplicatesGroup = hashedSidecars.SidecarFiles.Cast<SidecarFileHash>().GroupBy(x => x.Hash).Where(g => g.Count() > 1);
                 foreach (var duplicates in xmpDuplicatesGroup)
                 {
-                    DeleteDuplicateXmps(duplicates.Select(s => s.Filename));
+                    DeleteDuplicateXmps(duplicates.Select(s => s.OriginalFilename));
                 }
             }
         }
 
         public void DeleteDuplicateImages(FileVariations first, FileVariations second, double similarity)
         {
-#warning TODO
+#warning DeleteDuplicateImages
             // deletion of images - which one shall we delete?
             // imagine one of them has a descriptive filename, the other does not
             // we should at first copy them all next to each other to evaluate in the duplicate directory
@@ -97,8 +97,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Features.CheckForDuplicateImages
 
         public void DeleteDuplicateXmps(IEnumerable<string> enumerable)
         {
-#warning TODO
-
+#warning DeleteDuplicateXmps
             // deletion of duplicate xmps is critical:
             // - We need to delete the one that is not next to the corresponding image.
             // - if there are more locations with existing images the images would need to match as well and then we could delete the image with its xmp.
@@ -159,7 +158,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Features.CheckForDuplicateImages
                 if (variations.Data is not null &&
                     (variations.Data is not Repository.IPerceptualHash || variations.Data.IsModified))
                 {
-                    variations.Data = CreateImageHash(variations.Data.Filename);
+                    variations.Data = CreateImageHash(variations.Data.OriginalFilename);
                 }
 
                 if (variations.SidecarFiles.Any(x => x is not IHash || x.IsModified))
@@ -174,7 +173,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Features.CheckForDuplicateImages
                         else
                         {
                             using var md5 = MD5.Create();
-                            sidecarFiles.Add(CreateXmpHash(md5, sidecarFile.Filename));
+                            sidecarFiles.Add(CreateXmpHash(md5, sidecarFile.OriginalFilename));
                         }
                     }
                 }

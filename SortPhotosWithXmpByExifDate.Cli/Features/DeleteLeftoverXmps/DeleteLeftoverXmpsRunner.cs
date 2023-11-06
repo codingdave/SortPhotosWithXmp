@@ -31,7 +31,7 @@ public class DeleteLeftoverXmpsRunner : IRun
         {
             foreach (var lonely in lonelies)
             {
-                _fileWrapper.Delete(lonely.Filename);
+                _fileWrapper.Delete(lonely.OriginalFilename);
                 throw new NotImplementedException();
             }
         }

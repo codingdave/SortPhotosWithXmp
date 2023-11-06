@@ -1,9 +1,13 @@
 using MetadataExtractor.Formats.Xmp;
+
 using Microsoft.Extensions.Logging;
+
 using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 using SortPhotosWithXmpByExifDate.Cli.Operations;
 using SortPhotosWithXmpByExifDate.Cli.Repository;
 using SortPhotosWithXmpByExifDate.Cli.Statistics;
+
+using SystemInterface.IO;
 
 namespace SortPhotosWithXmpByExifDate.Cli;
 
@@ -19,24 +23,6 @@ public static class Helpers
         }
 
         return path;
-    }
-
-    public static string[] GetCorrespondingXmpFiles(string file)
-    {
-        if (string.IsNullOrWhiteSpace(file))
-        {
-            throw new ArgumentException($"'{nameof(file)}' cannot be null or whitespace.", nameof(file));
-        }
-
-        var directory = Path.GetDirectoryName(file) ?? throw new InvalidOperationException("can not determine directory of file '{file}'");
-
-        var searchPattern = Path.GetFileName(file) + "*" + FileScanner.XmpExtension;
-        var options = new EnumerationOptions
-        {
-            MatchCasing = MatchCasing.CaseInsensitive,
-            RecurseSubdirectories = false,
-        };
-        return Directory.GetFiles(directory, searchPattern, options);
     }
 
     private static IList<string> GetPropertyDescriptions(XmpDirectory xmpDirectory)
@@ -79,38 +65,65 @@ public static class Helpers
         return ret;
     }
 
-    public static void MoveImageAndXmpToExifPath(string imageFile,
-                                                 string[] xmpFiles,
-                                                 DateTime dateTime,
-                                                 string destinationDirectory,
-                                                 FilesFoundStatistics statistics,
-                                                 IFileOperation operationPerformer)
+    public static void MoveImageAndXmpToExifPath(
+        IDirectory directory,
+        FileVariations fileVariations,
+        DateTime dateTime,
+        string destinationDirectory,
+        FilesFoundStatistics statistics,
+        IFileOperation operationPerformer)
     {
+        if (directory is null)
+        {
+            throw new ArgumentNullException(nameof(directory));
+        }
+
+        if (fileVariations.Data == null)
+        {
+            throw new InvalidOperationException($"The image that shall be moved was not found.");
+        }
+
+        if (string.IsNullOrEmpty(destinationDirectory))
+        {
+            throw new ArgumentException($"'{nameof(destinationDirectory)}' cannot be null or empty.", nameof(destinationDirectory));
+        }
+
+        if (statistics is null)
+        {
+            throw new ArgumentNullException(nameof(statistics));
+        }
+
+        if (operationPerformer is null)
+        {
+            throw new ArgumentNullException(nameof(operationPerformer));
+        }
+
         var destinationSuffix = dateTime.ToString("yyyy/MM/dd");
         var finalDestinationPath = Path.Combine(destinationDirectory, destinationSuffix);
 
-        if (!Directory.Exists(finalDestinationPath))
+        if (!directory.Exists(finalDestinationPath))
         {
-            Directory.CreateDirectory(finalDestinationPath);
+            _ = directory.CreateDirectory(finalDestinationPath);
         }
 
         statistics.FoundImages++;
-        statistics.FoundXmps += xmpFiles.Length;
+        statistics.FoundXmps += fileVariations.SidecarFiles.Count;
 
-        var allSourceFiles = xmpFiles.ToList();
-        allSourceFiles.Add(imageFile);
+        var allSourceFiles = fileVariations.SidecarFiles;
+        allSourceFiles.Add(fileVariations.Data);
 
         foreach (var file in allSourceFiles)
         {
-            var targetName = Path.Combine(finalDestinationPath, Path.GetFileName(file));
+            var targetName = Path.Combine(finalDestinationPath, Path.GetFileName(file.OriginalFilename));
 
             if (!File.Exists(targetName))
             {
-                operationPerformer.ChangeFile(file, targetName);
+                operationPerformer.ChangeFile(file.OriginalFilename, targetName);
+                file.NewFilename = targetName;
             }
             else
             {
-                statistics.AddError(new FileAlreadyExistsError(targetName, file, $"File {file} already exists at {targetName}"));
+                statistics.AddError(new FileAlreadyExistsError(targetName, file.OriginalFilename, $"File {file.OriginalFilename} already exists at {targetName}"));
             }
         }
     }

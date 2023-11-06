@@ -18,6 +18,8 @@ internal class RearrangeByExifRunner : IRun
     private readonly FilesFoundStatistics _statistics;
     private readonly IFileOperation _operationPerformer;
     private readonly IFileScanner _fileScanner;
+    private readonly IDirectory _directory;
+
     private readonly DeleteDirectoryOperation _deleteDirectoryOperation;
 
     internal RearrangeByExifRunner(ILogger logger,
@@ -34,6 +36,7 @@ internal class RearrangeByExifRunner : IRun
         _operationPerformer = OperationPerformerFactory.GetCopyOrMovePerformer(logger, file, move, force);
         _statistics = new FilesFoundStatistics(logger, _operationPerformer);
         _fileScanner = fileScanner;
+        _directory = directory;
         _deleteDirectoryOperation = new DeleteDirectoryOperation(logger, directory, force);
     }
 
@@ -46,7 +49,7 @@ internal class RearrangeByExifRunner : IRun
         {
             if (fileDatum.Data != null)
             {
-                var file = fileDatum.Data.Filename;
+                var file = fileDatum.Data.OriginalFilename;
                 try
                 {
                     var metaDataDirectories = ImageMetadataReader.ReadMetadata(file);
@@ -61,10 +64,10 @@ internal class RearrangeByExifRunner : IRun
                     if (possibleDateTime is DateTime dateTime)
                     {
                         logger.LogTrace("Extracted date {dateTime} from '{file}'", dateTime, file);
-                        var xmpFiles = Helpers.GetCorrespondingXmpFiles(file);
+
                         if (!errors.Any())
                         {
-                            Helpers.MoveImageAndXmpToExifPath(file, xmpFiles, dateTime, _destinationDirectory, _statistics, _operationPerformer);
+                            Helpers.MoveImageAndXmpToExifPath(_directory, _fileScanner.Map[file], dateTime, _destinationDirectory, _statistics, _operationPerformer);
                         }
                         else
                         {
