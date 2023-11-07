@@ -68,7 +68,7 @@ public static class Helpers
             {
                 if (directory.Exists(path))
                 {
-                    deleteDirectoryPerformer.Statistics.DirectoriesFound++;
+                    deleteDirectoryPerformer.Result.DirectoriesFound++;
                     // if no directories and no files are within this path
                     if (!directory.GetDirectories(path).Any() && !directory.GetFiles(path).Any())
                     {

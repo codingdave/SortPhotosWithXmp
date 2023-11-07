@@ -16,13 +16,13 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
         {
             _logger = logger;
             _directory = directory;
-
             IsChanging = force;
-            Statistics = new DirectoriesDeletedResult(logger, this);
+            #warning does a DeleteDirectoryOperation contain a DirectoriesDeletedResult or vive versa
+            Result = new DirectoriesDeletedResult(logger, directory, _directory.GetCurrentDirectory(), force);
         }
 
         public bool IsChanging { get; }
-        public DirectoriesDeletedResult Statistics { get; }
+        public DirectoriesDeletedResult Result { get; }
 
         public void DeleteDirectory(string path)
         {
@@ -37,7 +37,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
             }
 
             // when we simulate, we still want to count
-            Statistics.DirectoriesDeleted++;
+            Result.DirectoriesDeleted++;
         }
 
 

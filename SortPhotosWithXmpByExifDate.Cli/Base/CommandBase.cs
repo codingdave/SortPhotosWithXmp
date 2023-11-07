@@ -54,6 +54,10 @@ internal abstract class CommandBase
             {
                 result.SuccessfulCollection.Successes.Do(s => s.Perform(Logger));
                 result.ErrorCollection.HandleErrorFiles(Logger, filesFoundStatistics, File, Directory);
+                if (filesFoundStatistics is FilesFoundResult res)
+                {
+                    res.CleanupResult.Perform();
+                }
             }
             result.Log();
 

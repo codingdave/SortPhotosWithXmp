@@ -21,6 +21,9 @@ public class FilesFoundResult : IResult, IModifiableErrorCollection, IFoundStati
     private readonly IErrorCollection _errorCollection;
 
     public IReadOnlySuccessCollection SuccessfulCollection => _successfulCollection;
+
+    public DirectoriesDeletedResult CleanupResult { get; internal set; }
+
     private readonly ISuccessCollection _successfulCollection;
 
 

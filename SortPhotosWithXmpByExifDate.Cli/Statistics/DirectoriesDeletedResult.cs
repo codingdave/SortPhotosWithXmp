@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Logging;
-
-
 using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 using SortPhotosWithXmpByExifDate.Cli.Operations;
+
+using SystemInterface.IO;
 
 namespace SortPhotosWithXmpByExifDate.Cli.Statistics;
 
@@ -10,13 +10,23 @@ public class DirectoriesDeletedResult : IResult
 {
     private readonly DeleteDirectoryOperation _deleteDirectoryOperation;
     private readonly ILogger _logger;
+    private readonly IDirectory _directory;
+    private readonly string _sourceDirectory;
 
-    public DirectoriesDeletedResult(ILogger logger, DeleteDirectoryOperation deleteDirectoryOperation)
+    public DirectoriesDeletedResult(ILogger logger, IDirectory directory, string sourceDirectory, bool force)
     {
         _logger = logger;
-        _deleteDirectoryOperation = deleteDirectoryOperation;
+        _directory = directory;
+        _sourceDirectory = sourceDirectory;
+        _deleteDirectoryOperation = new DeleteDirectoryOperation(logger, _directory, force);
         ErrorCollection = new ErrorCollection.ErrorCollection(logger);
-        SuccessfulCollection = new SuccessCollection();
+        SuccessfulCollection = new SuccessCollection();        
+    }
+
+    public void Perform()
+    {
+        // DeleteEmptyDirectoryRunner?
+        Helpers.RecursivelyDeleteEmptyDirectories(_logger, _directory, _sourceDirectory, _deleteDirectoryOperation);
     }
 
     public int DirectoriesFound { get; set; }

@@ -18,6 +18,6 @@ public class DeleteEmptyDirectoryRunner : IRun
     {
         var deleteDirectoryPerformer = new DeleteDirectoryOperation(logger, _directory, _force);
         Helpers.RecursivelyDeleteEmptyDirectories(logger, _directory, _path, deleteDirectoryPerformer);
-        return deleteDirectoryPerformer.Statistics;
+        return deleteDirectoryPerformer.Result;
     }
 }

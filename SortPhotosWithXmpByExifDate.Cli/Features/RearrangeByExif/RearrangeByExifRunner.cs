@@ -16,12 +16,11 @@ internal class RearrangeByExifRunner : IRun
 {
     private readonly string _destinationDirectory;
     private readonly string _sourceDirectory;
-    private readonly FilesFoundResult _filesFoundStatistics;
+    private readonly FilesFoundResult _filesFoundResult;
     private readonly IFileOperation _operationPerformer;
     private readonly IFileScanner _fileScanner;
     private readonly IDirectory _directory;
-
-    private readonly DeleteDirectoryOperation _deleteDirectoryOperation;
+    private readonly bool _force;
 
     internal RearrangeByExifRunner(ILogger logger,
                              string sourceDirectory,
@@ -35,10 +34,10 @@ internal class RearrangeByExifRunner : IRun
         _sourceDirectory = sourceDirectory ?? throw new ArgumentNullException(nameof(sourceDirectory));
         _destinationDirectory = destinationDirectory ?? throw new ArgumentNullException(nameof(destinationDirectory));
         _operationPerformer = OperationPerformerFactory.GetCopyOrMovePerformer(logger, file, directory, move, force);
-        _filesFoundStatistics = new FilesFoundResult(logger, _operationPerformer);
+        _filesFoundResult = new FilesFoundResult(logger, _operationPerformer);
         _fileScanner = fileScanner;
         _directory = directory;
-        _deleteDirectoryOperation = new DeleteDirectoryOperation(logger, directory, force);
+        _force = force;
     }
 
     public IResult Run(ILogger logger)
@@ -65,20 +64,20 @@ internal class RearrangeByExifRunner : IRun
                     if (hasErrors)
                     {
                         logger.LogTrace("found errors while extracting metadata from '{file}': {errors}", file, string.Join(Environment.NewLine, errors));
-                        _filesFoundStatistics.AddError(new MetaDataError(file, errors));
+                        _filesFoundResult.AddError(new MetaDataError(file, errors));
                     }
 
                     var possibleDateTime = dateTimeResolver.GetDateTimeFromImage(logger, metaDataDirectories);
                     if (possibleDateTime is not DateTime dateTime)
                     {
                         hasErrors = true;
-                        _filesFoundStatistics.AddError(new NoTimeFoundError(file, Helpers.GetMetadata(metaDataDirectories)));
+                        _filesFoundResult.AddError(new NoTimeFoundError(file, Helpers.GetMetadata(metaDataDirectories)));
                     }
                     else
                     {
-                        _filesFoundStatistics.AddSuccessful(new ToExifPath(fileDatum, _destinationDirectory, dateTime, _operationPerformer));
-                        _filesFoundStatistics.FoundImages++;
-                        _filesFoundStatistics.FoundXmps += fileDatum.SidecarFiles.Count;
+                        _filesFoundResult.AddSuccessful(new ToExifPath(fileDatum, _destinationDirectory, dateTime, _operationPerformer));
+                        _filesFoundResult.FoundImages++;
+                        _filesFoundResult.FoundXmps += fileDatum.SidecarFiles.Count;
                     }
 
                     if (hasErrors)
@@ -88,20 +87,19 @@ internal class RearrangeByExifRunner : IRun
                 }
                 catch (MetadataExtractor.ImageProcessingException e)
                 {
-                    _filesFoundStatistics.AddError(new ImageProcessingExceptionError(file, e));
+                    _filesFoundResult.AddError(new ImageProcessingExceptionError(file, e));
                 }
                 catch (Exception e)
                 {
-                    _filesFoundStatistics.AddError(new GeneralExceptionError(file, e));
+                    _filesFoundResult.AddError(new GeneralExceptionError(file, e));
                 }
             }
         });
 
-#warning Delete in then end, add a Cleanup/final step that comes after processing successful and unsuccessful data. This will also simplify the Merging of FilesAndDirectoriesResult
-        // _filesFoundStatistics.AddCleanup();
+        _filesFoundResult.CleanupResult = new DirectoriesDeletedResult(logger, _directory, _sourceDirectory, _force);
+
         logger.LogInformation($"{nameof(RearrangeByExifRunner)}.{nameof(Run)} has finished");
-        var directoriesDeletedStatistics = new DirectoriesDeletedResult(logger, _deleteDirectoryOperation);
-        Helpers.RecursivelyDeleteEmptyDirectories(logger, _directory, _sourceDirectory, _deleteDirectoryOperation);
-        return new FilesAndDirectoriesResult(_filesFoundStatistics, directoriesDeletedStatistics);
+
+        return _filesFoundResult;
     }
 }
