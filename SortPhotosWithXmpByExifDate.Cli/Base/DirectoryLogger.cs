@@ -162,7 +162,7 @@ internal class DirectoryLogger : IDirectory
 
     public void Move(string sourceDirName, string destDirName)
     {
-        throw new NotImplementedException();
+        Directory.Move(sourceDirName, destDirName);
     }
 
     public void SetAccessControl(string path, IDirectorySecurity directorySecurity)
