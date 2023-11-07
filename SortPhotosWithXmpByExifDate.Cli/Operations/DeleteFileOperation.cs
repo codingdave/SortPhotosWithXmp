@@ -31,10 +31,14 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
 
         public void Delete(string path)
         {
-            _logger.LogTrace($"IFile.Delete '{path}';");
             if (IsChanging)
             {
+                _logger.LogTrace($"IFile.Delete '{path}';");
                 _file.Delete(path);
+            }
+            else
+            {
+                _logger.LogTrace($"Ignoring IFile.Delete '{path}';");
             }
         }
 

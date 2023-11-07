@@ -9,7 +9,7 @@ using SystemInterface.IO;
 
 namespace SortPhotosWithXmpByExifDate.Cli
 {
-    public static class CopyErrorFilesHelper
+    public static class IReadOnlyErrorCollectionExtensions
     {
         public static void HandleErrorFiles(this IReadOnlyErrorCollection errorCollection,
             ILogger logger,
@@ -20,12 +20,19 @@ namespace SortPhotosWithXmpByExifDate.Cli
             var copyFileOperation = new CopyFileOperation(logger, file, directory, foundStatistics.FileOperation.IsChanging);
             var deleteFileOperation = new DeleteFileOperation(logger, file, foundStatistics.FileOperation.IsChanging);
 
-            CollectCollisions(logger, errorCollection.Errors.OfType<FileAlreadyExistsError>(), (FileDecomposition targetFile, FileAlreadyExistsError error) => HandleCollisionOrDuplicate(logger, foundStatistics, copyFileOperation, deleteFileOperation, error, targetFile, file));
-            CollectCollisions(logger, errorCollection.Errors.OfType<NoTimeFoundError>(), (FileDecomposition targetFile, NoTimeFoundError error) => CreateDirectoryAndCopyFile(logger, error, targetFile, copyFileOperation));
-            CollectCollisions(logger, errorCollection.Errors.OfType<MetaDataError>(), (FileDecomposition targetFile, MetaDataError error) => CreateDirectoryAndCopyFile(logger, error, targetFile, copyFileOperation));
+            CollectCollisions(logger, directory, errorCollection.Errors.OfType<FileAlreadyExistsError>(), 
+                (FileDecomposition targetFile, FileAlreadyExistsError error) 
+                => HandleCollisionOrDuplicate(logger,file, directory, foundStatistics, copyFileOperation, deleteFileOperation, error, targetFile));
+            CollectCollisions(logger, directory, errorCollection.Errors.OfType<NoTimeFoundError>(), 
+                (FileDecomposition targetFile, NoTimeFoundError error) 
+                => CreateDirectoryAndCopyFile(logger, directory, error, targetFile, copyFileOperation));
+            CollectCollisions(logger, directory, errorCollection.Errors.OfType<MetaDataError>(), 
+                (FileDecomposition targetFile, MetaDataError error) 
+                => CreateDirectoryAndCopyFile(logger, directory, error, targetFile, copyFileOperation));
         }
 
         private static void CollectCollisions<T>(ILogger logger,
+                                              IDirectory directory,
                                               IEnumerable<T> errors,
                                               Action<FileDecomposition, T> action) where T : ErrorBase
         {
@@ -36,8 +43,8 @@ namespace SortPhotosWithXmpByExifDate.Cli
 
                 logger.LogError($"{errors.Count()} {directoryName} issues will be located in the directory '{targetDirectory}'");
 
-                RenamePossiblyExistingDirectory(logger, targetDirectory);
-                CreateDirectory(logger, targetDirectory);
+                RenamePossiblyExistingDirectory(logger, directory, targetDirectory);
+                CreateDirectory(logger, directory, targetDirectory);
 
                 foreach (var error in errors)
                 {
@@ -54,22 +61,23 @@ namespace SortPhotosWithXmpByExifDate.Cli
             }
         }
 
-        private static void CreateDirectoryAndCopyFile(ILogger logger, ErrorBase error, FileDecomposition targetFile, CopyFileOperation copyFileOperation)
+        private static void CreateDirectoryAndCopyFile(ILogger logger, IDirectory directory, ErrorBase error, FileDecomposition targetFile, CopyFileOperation copyFileOperation)
         {
             // 1: make sure directory exists
-            CreateDirectory(logger, targetFile.Directory);
+            CreateDirectory(logger, directory, targetFile.Directory);
 
             // 2: copy the first file of the collision to the other duplicates s.t. we can investigate easily
-            CopyFileWithAppendedNumber(logger, error.File, targetFile, copyFileOperation);
+            CopyFileWithAppendedNumber(logger, directory, error.File, targetFile, copyFileOperation);
         }
 
         private static void HandleCollisionOrDuplicate(ILogger logger,
+                                                       IFile file,
+                                                       IDirectory directory,
                                                        IFoundStatistics foundStatistics,
                                                        CopyFileOperation copyFileOperation,
                                                        DeleteFileOperation deleteFileOperation,
                                                        FileAlreadyExistsError error,
-                                                       FileDecomposition targetFile,
-                                                       IFile file)
+                                                       FileDecomposition targetFile)
         {
             if (IsDuplicate(logger, error, foundStatistics, file))
             {
@@ -77,7 +85,7 @@ namespace SortPhotosWithXmpByExifDate.Cli
             }
             else
             {
-                HandleCollision(logger, targetFile, error, copyFileOperation);
+                HandleCollision(logger, directory, targetFile, error, copyFileOperation);
             }
         }
 
@@ -161,11 +169,12 @@ namespace SortPhotosWithXmpByExifDate.Cli
         }
 
         private static void HandleCollision(ILogger logger,
+                                            IDirectory directory,
                                             FileDecomposition targetFile,
                                             FileAlreadyExistsError error,
                                             CopyFileOperation copyFileOperation)
         {
-            logger.LogTrace($"Handling collision between {error.File} and {error.OtherFile}!");
+            logger.LogDebug($"Handling collision between {error.File} and {error.OtherFile}!");
 
             // if we have a collision, we create a directory and copy all collisions with appended number into it
             // A collision happens when we have several files with the same name and the same target directory
@@ -184,33 +193,33 @@ namespace SortPhotosWithXmpByExifDate.Cli
             //  * skip copying error2.File ("20230101/1.jpg") to ErrorFiles/20230101/1.jpg
             //  * copy error2.OtherFile with appended number to ErrorFiles/20230101/1_2.jpg
 
-            CreateDirectoryAndCopyFile(logger, error, targetFile, copyFileOperation);
+            CreateDirectoryAndCopyFile(logger, directory, error, targetFile, copyFileOperation);
 
             // 3: copy the other file into subdirectory with appended _number
-            CopyFileWithAppendedNumber(logger, error.OtherFile, targetFile, copyFileOperation);
+            CopyFileWithAppendedNumber(logger, directory, error.OtherFile, targetFile, copyFileOperation);
         }
 
-        private static void CreateDirectory(ILogger logger, string directory)
+        private static void CreateDirectory(ILogger logger, IDirectory directory, string path)
         {
-            if (!Directory.Exists(directory))
+            if (!directory.Exists(path))
             {
-                logger.LogTrace("Creating directory '{newDirectory}'", directory);
-                _ = Directory.CreateDirectory(directory);
+                logger.LogDebug("Creating directory '{newDirectory}'", path);
+                _ = directory.CreateDirectory(path);
             }
         }
 
-        private static void RenamePossiblyExistingDirectory(ILogger logger, string directory)
+        private static void RenamePossiblyExistingDirectory(ILogger logger, IDirectory directory, string path)
         {
             // rename possibly existing ErrorFiles directory (add lastWriteTime to the end)
-            if (Directory.Exists(directory))
+            if (directory.Exists(path))
             {
-                var time = File.GetLastWriteTime(directory).ToString("yyyyMMddTHHmmss");
-                var d = new DirectoryInfo(directory);
+                var time = File.GetLastWriteTime(path).ToString("yyyyMMddTHHmmss");
+                var d = new DirectoryInfo(path);
                 var parentDirectory = d.Parent ?? throw new InvalidOperationException("Path does not exist");
                 var directoryName = d.Name;
                 var newName = Path.Combine(parentDirectory.FullName, directoryName + "_" + time);
-                logger.LogTrace("Renaming {oldDirectory} to {newDirectory}", directory, newName);
-                Directory.Move(directory, newName);
+                logger.LogTrace("Renaming '{oldDirectory}' to '{newDirectory}'", path, newName);
+                directory.Move(path, newName);
             }
         }
 
@@ -240,19 +249,18 @@ namespace SortPhotosWithXmpByExifDate.Cli
         }
 
         private static void CopyFileWithAppendedNumber(ILogger logger,
+                                                       IDirectory directory,
                                                        string errorFile,
                                                        FileDecomposition targetFile,
                                                        CopyFileOperation copyFileOperation)
         {
             // copy this file into subdirectory with appended _number
-            var directory = targetFile.Directory;
-            var fileCount = Directory.GetFiles(directory, "*" + targetFile.Extension).Length;
+            var path = targetFile.Directory;
+            var fileCount = directory.GetFiles(path, "*" + targetFile.Extension).Length;
             var numberString = fileCount > 0 ? "_" + fileCount : string.Empty;
-            var fullname = Path.Combine(directory, targetFile.Name + numberString + targetFile.Extension);
-            logger.LogTrace("Collision for '{errorFile}'. Arrange next to others as '{fullname}'", errorFile, fullname);
+            var fullname = Path.Combine(path, targetFile.Name + numberString + targetFile.Extension);
+            logger.LogDebug("Collision for '{errorFile}'. Arrange next to others as '{fullname}'", errorFile, fullname);
             copyFileOperation.ChangeFiles(new List<IImageFile>() { new ImageFile("errorFile") }, fullname);
         }
     }
-
-    public readonly record struct FileDecomposition(string CompletePath, string Directory, string Name, string Extension);
 }

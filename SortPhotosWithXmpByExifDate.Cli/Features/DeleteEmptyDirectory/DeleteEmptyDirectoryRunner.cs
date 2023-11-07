@@ -17,7 +17,7 @@ public class DeleteEmptyDirectoryRunner : IRun
     public IStatistics Run(ILogger logger)
     {
         var deleteDirectoryPerformer = new DeleteDirectoryOperation(logger, _directory, _force);
-        Helpers.RecursivelyDeleteEmptyDirectories(logger, _path, deleteDirectoryPerformer);
+        Helpers.RecursivelyDeleteEmptyDirectories(logger, _directory, _path, deleteDirectoryPerformer);
         return deleteDirectoryPerformer.Statistics;
     }
 }

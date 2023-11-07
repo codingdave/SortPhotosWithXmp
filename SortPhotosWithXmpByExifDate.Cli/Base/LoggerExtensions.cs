@@ -7,25 +7,25 @@ namespace SortPhotosWithXmpByExifDate.Cli.ErrorCollection
         public static void LogExceptionError(this ILogger logger, Exception e)
         {
             logger.LogError(e.Message);
-            logger.LogTrace(e.StackTrace);
+            logger.LogDebug(e.StackTrace);
         }
 
         public static void LogExceptionError(this ILogger logger, string message, Exception e)
         {
             logger.LogError(message + ": " + e.Message);
-            logger.LogTrace(e.StackTrace);
+            logger.LogDebug(e.StackTrace);
         }
 
         public static void LogExceptionWarning(this ILogger logger, Exception e)
         {
             logger.LogWarning(e.Message);
-            logger.LogTrace(e.StackTrace);
+            logger.LogDebug(e.StackTrace);
         }
 
         public static void LogExceptionWarning(this ILogger logger, string message, Exception e)
         {
             logger.LogWarning(message + ": " + e.Message);
-            logger.LogTrace(e.StackTrace);
+            logger.LogDebug(e.StackTrace);
         }
 
         public static void TestInformationLevels(this ILogger logger)

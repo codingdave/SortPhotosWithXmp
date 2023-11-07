@@ -30,7 +30,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
 
         public void ChangeFiles(IEnumerable<IImageFile> files, string targetPath)
         {
-            if (!_directory.Exists(targetPath))
+            if (IsChanging && !_directory.Exists(targetPath))
             {
                 _ = _directory.CreateDirectory(targetPath);
             }
@@ -49,7 +49,6 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
                     if (IsChanging)
                     {
                         _logger.LogTrace($"IFile.Move({file.OriginalFilename}, {targetName});");
-
                         _file.Move(file.OriginalFilename, targetName);
                         file.NewFilename = targetName;
                     }

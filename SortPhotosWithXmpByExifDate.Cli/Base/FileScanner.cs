@@ -55,8 +55,8 @@ public class FileScanner : IFileScanner
         // find all images
         var (images, xmps) = GetAllImageDataInCurrentDirectory(directory);
 
-        images.ForEach(image => Map.Add(image, new(new ImageFile(image), new())));
-        xmps.ForEach(file =>
+        images.Do(image => Map.Add(image, new(new ImageFile(image), new())));
+        xmps.Do(file =>
         {
             var filenameWithoutExtensionAndVersion = ExtractFilenameWithoutExtentionAndVersion(file);
 

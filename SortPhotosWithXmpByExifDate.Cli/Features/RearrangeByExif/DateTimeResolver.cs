@@ -187,6 +187,7 @@ public class DateTimeResolver
 
         foreach (var tag in tags)
         {
+            // TODO: Explain
             var found = exifDates.Where(t => t.tag == tag).ToList();
             if (found.Any())
             {
@@ -198,7 +199,7 @@ public class DateTimeResolver
 
                     if (distinctDates.Count == 1)
                     {
-                        logger.LogTrace("Several identical tags have been found");
+                        logger.LogTrace($"Several ({distinctDates.Count}) identical tags have been found");
                     }
                     else
                     {

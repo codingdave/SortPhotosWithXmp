@@ -3,6 +3,7 @@ using MetadataExtractor;
 using Microsoft.Extensions.Logging;
 
 using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
+using SortPhotosWithXmpByExifDate.Cli.Extensions;
 using SortPhotosWithXmpByExifDate.Cli.Operations;
 using SortPhotosWithXmpByExifDate.Cli.Repository;
 using SortPhotosWithXmpByExifDate.Cli.Statistics;
@@ -45,7 +46,13 @@ internal class RearrangeByExifRunner : IRun
         DateTimeResolver dateTimeResolver = new(logger);
         logger.LogInformation($"Starting {nameof(RearrangeByExifRunner)}.{nameof(Run)} with search path: '{_sourceDirectory}' and destination path '{_destinationDirectory}'. {_operationPerformer}");
 
-        _fileScanner.Map.Values.AsParallel().ForAll(fileDatum =>
+        _fileScanner.Map.Values
+#if RELEASE
+        .AsParallel().ForAll(
+#else
+        .Do(
+#endif
+        fileDatum =>
         {
             if (fileDatum.Data != null)
             {
@@ -56,14 +63,14 @@ internal class RearrangeByExifRunner : IRun
                     var errors = Helpers.GetErrorsFromMetadata(metaDataDirectories);
                     if (errors.Any())
                     {
-                        logger.LogTrace("found errors while extracting metadata from '{file}'", file);
+                        logger.LogError("found errors while extracting metadata from '{file}'", file);
                         _filesFoundStatistics.AddError(new MetaDataError(file, errors));
                     }
 
                     var possibleDateTime = dateTimeResolver.GetDateTimeFromImage(logger, metaDataDirectories);
                     if (possibleDateTime is DateTime dateTime)
                     {
-                        logger.LogTrace("Extracted date {dateTime} from '{file}'", dateTime, file);
+                        logger.LogError("Extracted date {dateTime} from '{file}'", dateTime, file);
 
                         if (!errors.Any())
                         {
@@ -71,7 +78,7 @@ internal class RearrangeByExifRunner : IRun
                         }
                         else
                         {
-                            logger.LogTrace("Keep '{file}' as errors have happened. We will copy it later when dealing about the error.", file);
+                            logger.LogDebug("Keep '{file}' as errors have happened. We will copy it later when dealing about the error.", file);
                         }
                     }
                     else
@@ -94,7 +101,7 @@ internal class RearrangeByExifRunner : IRun
         logger.LogInformation($"{nameof(RearrangeByExifRunner)}.{nameof(Run)} has finished");
 
         var directoriesDeletedStatistics = new DirectoriesDeletedStatistics(logger, _deleteDirectoryOperation);
-        Helpers.RecursivelyDeleteEmptyDirectories(logger, _sourceDirectory, _deleteDirectoryOperation);
+        Helpers.RecursivelyDeleteEmptyDirectories(logger, _directory, _sourceDirectory, _deleteDirectoryOperation);
         return new FilesAndDirectoriesStatistics(_filesFoundStatistics, directoriesDeletedStatistics);
     }
 
