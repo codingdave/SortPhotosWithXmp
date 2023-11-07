@@ -45,13 +45,14 @@ internal abstract class CommandBase
             var result = f.Run(Logger);
 
             Logger.LogInformation($"Processing statistics");
-            if(result is FilesFoundResult filesFoundResult)
+            if (result is FilesFoundResult filesFoundResult)
             {
                 filesFoundResult.SuccessfulCollection.Successes.Do(success => success.Perform(Logger));
             }
 
             if (result is IFoundStatistics filesFoundStatistics)
             {
+                result.SuccessfulCollection.Successes.Do(s => s.Perform(Logger));
                 result.ErrorCollection.HandleErrorFiles(Logger, filesFoundStatistics, File, Directory);
             }
             result.Log();

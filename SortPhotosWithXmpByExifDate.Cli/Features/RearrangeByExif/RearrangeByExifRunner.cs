@@ -83,7 +83,7 @@ internal class RearrangeByExifRunner : IRun
 
                     if (hasErrors)
                     {
-                        logger.LogDebug("Keep '{file}' as errors have happened. We will copy it later when dealing about the error.", file);
+                        logger.LogTrace("Keep '{file}' as errors have happened. We will copy it later when dealing about the error.", file);
                     }
                 }
                 catch (MetadataExtractor.ImageProcessingException e)
@@ -97,8 +97,9 @@ internal class RearrangeByExifRunner : IRun
             }
         });
 
+#warning Delete in then end, add a Cleanup/final step that comes after processing successful and unsuccessful data. This will also simplify the Merging of FilesAndDirectoriesResult
+        // _filesFoundStatistics.AddCleanup();
         logger.LogInformation($"{nameof(RearrangeByExifRunner)}.{nameof(Run)} has finished");
-
         var directoriesDeletedStatistics = new DirectoriesDeletedResult(logger, _deleteDirectoryOperation);
         Helpers.RecursivelyDeleteEmptyDirectories(logger, _directory, _sourceDirectory, _deleteDirectoryOperation);
         return new FilesAndDirectoriesResult(_filesFoundStatistics, directoriesDeletedStatistics);
