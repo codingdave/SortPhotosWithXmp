@@ -22,7 +22,6 @@ public class DeleteLeftoverXmpsRunner : IRun
 
     public IResult Run(ILogger logger)
     {
-
         // find all xmps that do not have an image
         var lonelies = _fileScanner.LonelySidecarFiles;
         logger.LogInformation($"Found lonely xmps: {string.Join(", ", lonelies)}");
