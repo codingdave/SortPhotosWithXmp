@@ -4,8 +4,8 @@ using CoenM.ImageHash.HashAlgorithms;
 using Microsoft.Extensions.Logging;
 using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 using SortPhotosWithXmpByExifDate.Cli.Repository;
-using SortPhotosWithXmpByExifDate.Cli.Statistics;
-using IResult = SortPhotosWithXmpByExifDate.Cli.Statistics.IResult;
+using SortPhotosWithXmpByExifDate.Cli.Result;
+using SortPhotosWithXmpByExifDate.Cli.Operations;
 
 namespace SortPhotosWithXmpByExifDate.Cli.Features.CheckForDuplicateImages
 {
@@ -15,9 +15,10 @@ namespace SortPhotosWithXmpByExifDate.Cli.Features.CheckForDuplicateImages
         private readonly int _similarity;
         private readonly HashRepository _hashRepository;
         private readonly FileScanner _fileScanner;
-        private readonly bool _force;
         private readonly List<(double similarity, FileVariations first, FileVariations second)> _imageSimilarity = new();
         private readonly IImageHash _hashAlgorithm = new AverageHash();
+
+        public bool Force { get ; set; }
 
         public CheckForDuplicateImagesRunner(ILogger<CommandLine> logger, FileScanner fileScanner, bool force, int similarity = 100)
         {
@@ -25,7 +26,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Features.CheckForDuplicateImages
             _similarity = similarity;
             _hashRepository = new HashRepository(logger, Configuration.GetBasePath());
             _fileScanner = fileScanner;
-            _force = force;
+            Force = force;
         }
 
         public IResult Run(ILogger logger)
@@ -90,7 +91,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Features.CheckForDuplicateImages
                 second,
                 similarity);
 
-            if (_force)
+            if (Force)
             {
             }
         }
@@ -107,7 +108,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Features.CheckForDuplicateImages
             _logger.LogInformation("Found {amount} xmp files that are duplicates: {images}",
                                    list.Count,
                                    list);
-            if (_force)
+            if (Force)
             {
             }
         }

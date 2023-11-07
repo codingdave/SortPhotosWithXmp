@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using ImageMagick;
 using System.Diagnostics;
-using SortPhotosWithXmpByExifDate.Cli.Statistics;
+using SortPhotosWithXmpByExifDate.Cli.Result;
 using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 using SortPhotosWithXmpByExifDate.Cli.Operations;
 using SortPhotosWithXmpByExifDate.Cli.Repository;
@@ -15,10 +15,11 @@ namespace SortPhotosWithXmpByExifDate.Cli
             ILogger logger,
             IFoundStatistics foundStatistics,
             IFile file,
-            IDirectory directory)
+            IDirectory directory,
+            bool force)
         {
-            var copyFileOperation = new CopyFileOperation(logger, file, directory, foundStatistics.FileOperation.IsChanging);
-            var deleteFileOperation = new DeleteFileOperation(logger, file, foundStatistics.FileOperation.IsChanging);
+            var copyFileOperation = new CopyFileOperation(logger, file, directory, force);
+            var deleteFileOperation = new DeleteFileOperation(logger, file, directory, force);
 
             CollectCollisions(logger, directory, errorCollection.Errors.OfType<FileAlreadyExistsError>(), 
                 (FileDecomposition targetFile, FileAlreadyExistsError error) 

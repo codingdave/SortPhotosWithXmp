@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 
-using SortPhotosWithXmpByExifDate.Cli.Statistics;
+using SortPhotosWithXmpByExifDate.Cli.Result;
 
 namespace SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 

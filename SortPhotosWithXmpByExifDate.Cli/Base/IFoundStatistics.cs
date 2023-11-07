@@ -1,6 +1,6 @@
-namespace SortPhotosWithXmpByExifDate.Cli.Statistics;
+namespace SortPhotosWithXmpByExifDate.Cli.Result;
 
-public interface IFoundStatistics: IFileOperationStatistics
+public interface IFoundStatistics
 {
     int FoundXmps { get; set; }
     int FoundImages { get; set; }

@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace SortPhotosWithXmpByExifDate.Cli.Statistics;
+namespace SortPhotosWithXmpByExifDate.Cli.Result;
 
 public interface ISuccess
 {

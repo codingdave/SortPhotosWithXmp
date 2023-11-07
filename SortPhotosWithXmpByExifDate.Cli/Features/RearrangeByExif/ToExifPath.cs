@@ -2,7 +2,7 @@ using Microsoft.Extensions.Logging;
 
 using SortPhotosWithXmpByExifDate.Cli.Operations;
 using SortPhotosWithXmpByExifDate.Cli.Repository;
-using SortPhotosWithXmpByExifDate.Cli.Statistics;
+using SortPhotosWithXmpByExifDate.Cli.Result;
 
 namespace SortPhotosWithXmpByExifDate.Cli.Features.RearrangeByExif;
 
@@ -11,9 +11,9 @@ internal class ToExifPath : ISuccess
     private readonly FileVariations _file;
     private readonly string _destinationDirectory;
     private readonly DateTime _dateTime;
-    private readonly IFileOperation _operationPerformer;
+    private readonly ICopyOrMoveFileOperation _operationPerformer;
 
-    public ToExifPath(FileVariations file, string destinationDirectory, DateTime dateTime, IFileOperation operationPerformer)
+    public ToExifPath(FileVariations file, string destinationDirectory, DateTime dateTime, ICopyOrMoveFileOperation operationPerformer)
     {
         _file = file;
         _destinationDirectory = destinationDirectory;

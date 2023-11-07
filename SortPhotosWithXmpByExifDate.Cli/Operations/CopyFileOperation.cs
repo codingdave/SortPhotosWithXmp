@@ -9,12 +9,11 @@ using SystemInterface.IO;
 
 namespace SortPhotosWithXmpByExifDate.Cli.Operations
 {
-    public class CopyFileOperation : IFileOperation
+    public class CopyFileOperation : ICopyOrMoveFileOperation
     {
         private readonly ILogger _logger;
         private readonly IFile _file;
         private readonly IDirectory _directory;
-
 
         internal CopyFileOperation(
             ILogger logger,
@@ -25,14 +24,14 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
             _logger = logger;
             _file = file;
             _directory = directory;
-            IsChanging = force;
+            Force = force;
         }
 
-        public bool IsChanging { get; }
+        public bool Force { get; }
 
         private void ChangeFile(string sourceFileName, string destFileName)
         {
-            if (IsChanging)
+            if (Force)
             {
                 _logger.LogTrace($"IFile.Copy({sourceFileName}, {destFileName});");
                 _file.Copy(sourceFileName, destFileName);
@@ -58,10 +57,9 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
 
         public override string ToString()
         {
-            var message = IsChanging ? "performing" : "simulating";
+            var message = Force ? "performing" : "simulating";
             message += " copy";
             return message;
         }
-
     }
 }

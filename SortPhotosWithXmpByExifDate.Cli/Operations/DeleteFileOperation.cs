@@ -1,52 +1,89 @@
 using Microsoft.Extensions.Logging;
-
 using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
-
-using SortPhotosWithXmpByExifDate.Cli.Repository;
-
+using SortPhotosWithXmpByExifDate.Cli.Result;
 using SystemInterface.IO;
 
-namespace SortPhotosWithXmpByExifDate.Cli.Operations
+namespace SortPhotosWithXmpByExifDate.Cli.Operations;
+
+public class DeleteFileOperation : IOperation
 {
-    public class DeleteFileOperation : IFileOperation
+    private readonly ILogger _logger;
+    private readonly IFile _file;
+    private readonly IDirectory _directory;
+    public bool Force { get; }
+    public DirectoriesDeletedResult Result { get; }
+    public DirectoryStatistics DirectoryStatistics { get; }
+
+    internal DeleteFileOperation(ILogger logger, IFile file, IDirectory directory, bool force)
     {
-        private readonly ILogger _logger;
-        private readonly IFile _file;
+        _logger = logger;
+        _file = file;
+        _directory = directory;
+        Force = force;
+        Result = new DirectoriesDeletedResult(logger, directory, _directory.GetCurrentDirectory());
+        DirectoryStatistics = new DirectoryStatistics();
+    }
 
-
-        internal DeleteFileOperation(ILogger logger, IFile file, bool force)
+    public void Delete(string path)
+    {
+        if (Force)
         {
-            _logger = logger;
-            _file = file;
-
-            IsChanging = force;
+            _logger.LogTrace($"IFile.Delete '{path}';");
+            _file.Delete(path);
         }
-
-        public bool IsChanging { get; }
-
-        public void ChangeFiles(IEnumerable<IImageFile> files, string targetPath)
+        else
         {
-            throw new NotImplementedException("The interface is not SOLID, it break the interface seggregation principle");
+            _logger.LogTrace($"Ignoring IFile.Delete '{path}';");
         }
+    }
 
-        public void Delete(string path)
+    public void RecursivelyDeleteEmptyDirectories(string path, bool isFirstRun = true)
+    {
+        void DeleteDirectoryIfEmpty(string path)
         {
-            if (IsChanging)
+            try
             {
-                _logger.LogTrace($"IFile.Delete '{path}';");
-                _file.Delete(path);
+                if (_directory.Exists(path))
+                {
+                    DirectoryStatistics.DirectoriesFound++;
+                    // if no directories and no files are within this path
+                    if (!_directory.GetDirectories(path).Any() && !_directory.GetFiles(path).Any())
+                    {
+                        DeleteDirectory(path);
+                    }
+                }
             }
-            else
+            catch (Exception e)
             {
-                _logger.LogTrace($"Ignoring IFile.Delete '{path}';");
+                _logger.LogExceptionError(e);
             }
         }
 
-        public override string ToString()
+        foreach (var subDirectory in _directory.GetDirectories(path))
         {
-            var message = IsChanging ? "performing" : "simulating";
-            message += " delete";
-            return message;
+            RecursivelyDeleteEmptyDirectories(subDirectory);
+            DeleteDirectoryIfEmpty(subDirectory);
         }
+
+        if (isFirstRun)
+        {
+            DeleteDirectoryIfEmpty(path);
+        }
+    }
+
+    public void DeleteDirectory(string path)
+    {
+        if (Force)
+        {
+            _logger.LogTrace("IDirectory.Delete({path});", path);
+            _directory.Delete(path, false);
+        }
+        else
+        {
+            _logger.LogTrace("Ignoring IDirectory.Delete({path});", path);
+        }
+
+        // when we simulate, we still want to count
+        DirectoryStatistics.DirectoriesDeleted++;
     }
 }

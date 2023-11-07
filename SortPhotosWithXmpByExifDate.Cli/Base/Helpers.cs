@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 using SortPhotosWithXmpByExifDate.Cli.Operations;
 using SortPhotosWithXmpByExifDate.Cli.Repository;
-using SortPhotosWithXmpByExifDate.Cli.Statistics;
+using SortPhotosWithXmpByExifDate.Cli.Result;
 
 using SystemInterface.IO;
 
@@ -60,37 +60,5 @@ public static class Helpers
         return ret;
     }
 
-    public static void RecursivelyDeleteEmptyDirectories(ILogger logger, IDirectory directory, string path, DeleteDirectoryOperation deleteDirectoryPerformer, bool isFirstRun = true)
-    {
-        void DeleteDirectoryIfEmpty(string path)
-        {
-            try
-            {
-                if (directory.Exists(path))
-                {
-                    deleteDirectoryPerformer.Result.DirectoriesFound++;
-                    // if no directories and no files are within this path
-                    if (!directory.GetDirectories(path).Any() && !directory.GetFiles(path).Any())
-                    {
-                        deleteDirectoryPerformer.DeleteDirectory(path);
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                logger.LogExceptionError(e);
-            }
-        }
-
-        foreach (var subDirectory in directory.GetDirectories(path))
-        {
-            RecursivelyDeleteEmptyDirectories(logger, directory, subDirectory, deleteDirectoryPerformer);
-            DeleteDirectoryIfEmpty(subDirectory);
-        }
-
-        if (isFirstRun)
-        {
-            DeleteDirectoryIfEmpty(path);
-        }
-    }
+   
 }

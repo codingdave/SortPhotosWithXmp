@@ -1,9 +1,7 @@
-using SortPhotosWithXmpByExifDate.Cli.Operations;
-
-namespace SortPhotosWithXmpByExifDate.Cli.Statistics
+namespace SortPhotosWithXmpByExifDate.Cli.Operations
 {
     public interface IFileOperationStatistics
     {
-        IFileOperation FileOperation { get; }
+        ICopyOrMoveFileOperation FileOperation { get; }
     }
 }

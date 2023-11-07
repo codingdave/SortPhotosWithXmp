@@ -1,10 +1,10 @@
 using Microsoft.Extensions.Logging;
-using SortPhotosWithXmpByExifDate.Cli.Statistics;
+using SortPhotosWithXmpByExifDate.Cli.Result;
 using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 using System.CommandLine;
 using SystemInterface.IO;
-using SystemWrapper.IO;
 using SortPhotosWithXmpByExifDate.Cli.Extensions;
+using SortPhotosWithXmpByExifDate.Cli.Operations;
 
 namespace SortPhotosWithXmpByExifDate.Cli.Commands;
 
@@ -24,9 +24,7 @@ internal abstract class CommandBase
 
     public IDirectory Directory { get; }
 
-
     protected CommandBase(
-
         ILogger<CommandLine> logger,
         CommandlineOptions commandlineOptions,
         IFile file,
@@ -49,15 +47,16 @@ internal abstract class CommandBase
             {
                 filesFoundResult.SuccessfulCollection.Successes.Do(success => success.Perform(Logger));
             }
-
             if (result is IFoundStatistics filesFoundStatistics)
             {
                 result.SuccessfulCollection.Successes.Do(s => s.Perform(Logger));
-                result.ErrorCollection.HandleErrorFiles(Logger, filesFoundStatistics, File, Directory);
+                result.ErrorCollection.HandleErrorFiles(Logger, filesFoundStatistics, File, Directory, f.Force);
                 if (filesFoundStatistics is FilesFoundResult res)
                 {
-                    res.CleanupResult.Perform();
+                    var deleteFileOperation = new DeleteFileOperation(Logger, File, Directory, f.Force);
+                    res.CleanupResult.Perform(deleteFileOperation);
                 }
+                // DirectoryStatistics
             }
             result.Log();
 

@@ -1,7 +1,7 @@
 using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 using SortPhotosWithXmpByExifDate.Cli.Operations;
 
-namespace SortPhotosWithXmpByExifDate.Cli.Statistics;
+namespace SortPhotosWithXmpByExifDate.Cli.Result;
 
 public class FilesAndDirectoriesResult : IResult, IFoundStatistics
 {
@@ -25,8 +25,7 @@ public class FilesAndDirectoriesResult : IResult, IFoundStatistics
     public int SkippedXmps { get => _imagesStatistics.SkippedXmps; set => _imagesStatistics.SkippedXmps = value; }
     public int SkippedImages { get => _imagesStatistics.SkippedImages; set => _imagesStatistics.SkippedImages = value; }
 
-    public IFileOperation FileOperation => _imagesStatistics.FileOperation;
-
+    public ICopyOrMoveFileOperation FileOperation => _imagesStatistics.FileOperation;
 
     public void Log()
     {

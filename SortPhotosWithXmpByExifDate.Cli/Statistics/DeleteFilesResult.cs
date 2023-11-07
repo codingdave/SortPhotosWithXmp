@@ -1,6 +1,6 @@
 using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 
-namespace SortPhotosWithXmpByExifDate.Cli.Statistics;
+namespace SortPhotosWithXmpByExifDate.Cli.Result;
 
 public class DeleteFilesResult : IResult
 {

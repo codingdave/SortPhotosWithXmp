@@ -1,4 +1,4 @@
-using SortPhotosWithXmpByExifDate.Cli.Statistics;
+using SortPhotosWithXmpByExifDate.Cli.Result;
 
 namespace SortPhotosWithXmpByExifDate.Cli.ErrorCollection
 {

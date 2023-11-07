@@ -6,7 +6,7 @@ using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 using SortPhotosWithXmpByExifDate.Cli.Extensions;
 using SortPhotosWithXmpByExifDate.Cli.Operations;
 using SortPhotosWithXmpByExifDate.Cli.Repository;
-using SortPhotosWithXmpByExifDate.Cli.Statistics;
+using SortPhotosWithXmpByExifDate.Cli.Result;
 
 using SystemInterface.IO;
 
@@ -17,10 +17,9 @@ internal class RearrangeByExifRunner : IRun
     private readonly string _destinationDirectory;
     private readonly string _sourceDirectory;
     private readonly FilesFoundResult _filesFoundResult;
-    private readonly IFileOperation _operationPerformer;
+    private readonly ICopyOrMoveFileOperation _operationPerformer;
     private readonly IFileScanner _fileScanner;
     private readonly IDirectory _directory;
-    private readonly bool _force;
 
     internal RearrangeByExifRunner(ILogger logger,
                              string sourceDirectory,
@@ -37,8 +36,10 @@ internal class RearrangeByExifRunner : IRun
         _filesFoundResult = new FilesFoundResult(logger, _operationPerformer);
         _fileScanner = fileScanner;
         _directory = directory;
-        _force = force;
+        Force = force;
     }
+
+    public bool Force { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
     public IResult Run(ILogger logger)
     {
@@ -96,8 +97,8 @@ internal class RearrangeByExifRunner : IRun
             }
         });
 
-        _filesFoundResult.CleanupResult = new DirectoriesDeletedResult(logger, _directory, _sourceDirectory, _force);
-
+#warning Result or Task List?
+        _filesFoundResult.CleanupResult = new DirectoriesDeletedResult(logger, _directory, _sourceDirectory);
         logger.LogInformation($"{nameof(RearrangeByExifRunner)}.{nameof(Run)} has finished");
 
         return _filesFoundResult;

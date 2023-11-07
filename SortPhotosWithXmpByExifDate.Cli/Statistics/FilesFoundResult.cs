@@ -3,13 +3,13 @@ using Microsoft.Extensions.Logging;
 using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 using SortPhotosWithXmpByExifDate.Cli.Operations;
 
-namespace SortPhotosWithXmpByExifDate.Cli.Statistics;
+namespace SortPhotosWithXmpByExifDate.Cli.Result;
 
 public class FilesFoundResult : IResult, IModifiableErrorCollection, IFoundStatistics, IFileOperationStatistics
 {
     private readonly ILogger _logger;
-    public IFileOperation FileOperation { get; }
-    public FilesFoundResult(ILogger logger, IFileOperation fileOperation)
+    public ICopyOrMoveFileOperation FileOperation { get; }
+    public FilesFoundResult(ILogger logger, ICopyOrMoveFileOperation fileOperation)
         => (_logger, FileOperation, _errorCollection, _successfulCollection) = (logger, fileOperation, new ErrorCollection.ErrorCollection(logger), new SuccessCollection());
 
     public int FoundXmps { get; set; }
@@ -25,7 +25,6 @@ public class FilesFoundResult : IResult, IModifiableErrorCollection, IFoundStati
     public DirectoriesDeletedResult CleanupResult { get; internal set; }
 
     private readonly ISuccessCollection _successfulCollection;
-
 
     public void AddError(IError error)
     {
