@@ -107,7 +107,7 @@ internal class DirectoryLogger : IDirectory
 
     public string[] GetFiles(string path)
     {
-        throw new NotImplementedException();
+        return Directory.GetFiles(path);
     }
 
     public string[] GetFiles(string path, string searchPattern)
