@@ -87,7 +87,7 @@ internal class DirectoryLogger : IDirectory
 
     public string[] GetDirectories(string path)
     {
-        throw new NotImplementedException();
+        return Directory.GetDirectories(path);
     }
 
     public string[] GetDirectories(string path, string searchPattern)
