@@ -42,11 +42,16 @@ internal abstract class CommandBase
         try
         {
             var statistics = f.Run(Logger);
+
+            Logger.LogInformation($"Processing statistics");
+
             if (statistics is IFoundStatistics filesFoundStatistics)
             {
                 statistics.FileErrors.HandleErrorFiles(Logger, filesFoundStatistics, new FileWrap());
             }
             statistics.Log();
+
+            Logger.LogInformation($"Done processing statistics");
         }
         catch (Exception e)
         {

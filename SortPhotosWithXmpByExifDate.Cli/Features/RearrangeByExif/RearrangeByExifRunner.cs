@@ -91,6 +91,8 @@ internal class RearrangeByExifRunner : IRun
             }
         });
 
+        logger.LogInformation($"{nameof(RearrangeByExifRunner)}.{nameof(Run)} has finished");
+
         var statistics = new DirectoriesDeletedStatistics(logger, _deleteDirectoryOperation);
         Helpers.RecursivelyDeleteEmptyDirectories(logger, _sourceDirectory, _deleteDirectoryOperation);
         return new FilesAndDirectoriesStatistics(_statistics, statistics);
