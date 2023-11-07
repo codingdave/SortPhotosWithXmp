@@ -35,25 +35,25 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
 
             foreach (var file in files)
             {
-                var targetName = Path.Combine(targetPath, Path.GetFileName(file.OriginalFilename));
+                var targetName = Path.Combine(targetPath, Path.GetFileName(file.CurrentFilename));
 
                 if (File.Exists(targetName))
                 {
-                    var error = new FileAlreadyExistsError(targetName, file.OriginalFilename, $"File {file.OriginalFilename} already exists at {targetName}");
+                    var error = new FileAlreadyExistsError(targetName, file.CurrentFilename, $"File {file.CurrentFilename} already exists at {targetName}");
                     _logger.LogError(error.ToString());
                 }
                 else
                 {
                     if (Force)
                     {
-                        _logger.LogTrace($"IFile.Move({file.OriginalFilename}, {targetName});");
-                        _file.Move(file.OriginalFilename, targetName);
-                        file.NewFilename = targetName;
+                        _logger.LogTrace($"IFile.Move({file.CurrentFilename}, {targetName});");
+                        _file.Move(file.CurrentFilename, targetName);
                     }
                     else
                     {
-                        _logger.LogTrace($"Ignoring IFile.Move({file.OriginalFilename}, {targetName});");
+                        _logger.LogTrace($"Ignoring IFile.Move({file.CurrentFilename}, {targetName});");
                     }
+                    file.NewFilename = targetName;
                 }
             }
         }

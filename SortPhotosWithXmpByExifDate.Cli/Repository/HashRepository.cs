@@ -42,8 +42,8 @@ internal class HashRepository
                     var fileDataDto = JsonSerializer.Deserialize<IEnumerable<FileVariationsDto>>(File.ReadAllText(_filename))!;
                     fileData = fileDataDto.Select(x => _mapper.Map<FileVariations>(x))
                     .Where(x => x.Data != null
-                                && File.Exists(x.Data.OriginalFilename)
-                                && x.Data.LastWriteTimeUtc == File.GetLastWriteTimeUtc(x.Data.OriginalFilename)).ToHashSet();
+                                && File.Exists(x.Data.CurrentFilename)
+                                && x.Data.LastWriteTimeUtc == File.GetLastWriteTimeUtc(x.Data.CurrentFilename)).ToHashSet();
                 }
                 catch (Exception e)
                 {

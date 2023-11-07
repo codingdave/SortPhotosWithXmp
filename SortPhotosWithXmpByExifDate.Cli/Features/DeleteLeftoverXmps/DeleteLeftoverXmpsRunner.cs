@@ -29,7 +29,7 @@ public class DeleteLeftoverXmpsRunner : IRun
         {
             foreach (var lonely in lonelies)
             {
-                _file.Delete(lonely.OriginalFilename);
+                _file.Delete(lonely.CurrentFilename);
                 throw new NotImplementedException();
             }
         }
