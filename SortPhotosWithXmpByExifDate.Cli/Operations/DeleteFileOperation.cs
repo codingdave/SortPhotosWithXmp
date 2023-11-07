@@ -1,5 +1,9 @@
 using Microsoft.Extensions.Logging;
 
+using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
+
+using SortPhotosWithXmpByExifDate.Cli.Repository;
+
 using SystemInterface.IO;
 
 namespace SortPhotosWithXmpByExifDate.Cli.Operations
@@ -20,7 +24,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
 
         public bool IsChanging { get; }
 
-        public void ChangeFile(string path, string otherFile)
+        public void ChangeFiles(IEnumerable<IImageFile> files, string targetPath)
         {
             throw new NotImplementedException("The interface is not SOLID, it break the interface seggregation principle");
         }

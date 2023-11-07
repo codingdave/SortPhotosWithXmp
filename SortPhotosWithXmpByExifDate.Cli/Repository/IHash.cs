@@ -1,6 +1,6 @@
 namespace SortPhotosWithXmpByExifDate.Cli.Repository;
 
-internal interface IHash
+public interface IHash
 {
     byte[] Hash { get; }
 }

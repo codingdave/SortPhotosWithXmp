@@ -11,16 +11,16 @@ namespace SortPhotosWithXmpByExifDate.Cli
 {
     public static class CopyErrorFilesHelper
     {
-        public static void HandleErrorFiles(this IReadOnlyErrorCollection errorCollection, 
-            ILogger logger, 
-            IFoundStatistics statistics,    
+        public static void HandleErrorFiles(this IReadOnlyErrorCollection errorCollection,
+            ILogger logger,
+            IFoundStatistics foundStatistics,
             IFile file,
             IDirectory directory)
         {
-            var copyFileOperation = new CopyFileOperation(logger, file, statistics.FileOperation.IsChanging);
-            var deleteFileOperation = new DeleteFileOperation(logger, file, statistics.FileOperation.IsChanging);
+            var copyFileOperation = new CopyFileOperation(logger, file, directory, foundStatistics.FileOperation.IsChanging);
+            var deleteFileOperation = new DeleteFileOperation(logger, file, foundStatistics.FileOperation.IsChanging);
 
-            CollectCollisions(logger, errorCollection.Errors.OfType<FileAlreadyExistsError>(), (FileDecomposition targetFile, FileAlreadyExistsError error) => HandleCollisionOrDuplicate(logger, statistics, copyFileOperation, deleteFileOperation, error, targetFile, file));
+            CollectCollisions(logger, errorCollection.Errors.OfType<FileAlreadyExistsError>(), (FileDecomposition targetFile, FileAlreadyExistsError error) => HandleCollisionOrDuplicate(logger, foundStatistics, copyFileOperation, deleteFileOperation, error, targetFile, file));
             CollectCollisions(logger, errorCollection.Errors.OfType<NoTimeFoundError>(), (FileDecomposition targetFile, NoTimeFoundError error) => CreateDirectoryAndCopyFile(logger, error, targetFile, copyFileOperation));
             CollectCollisions(logger, errorCollection.Errors.OfType<MetaDataError>(), (FileDecomposition targetFile, MetaDataError error) => CreateDirectoryAndCopyFile(logger, error, targetFile, copyFileOperation));
         }
@@ -60,19 +60,18 @@ namespace SortPhotosWithXmpByExifDate.Cli
             CreateDirectory(logger, targetFile.Directory);
 
             // 2: copy the first file of the collision to the other duplicates s.t. we can investigate easily
-
             CopyFileWithAppendedNumber(logger, error.File, targetFile, copyFileOperation);
         }
 
         private static void HandleCollisionOrDuplicate(ILogger logger,
-                                                       IFoundStatistics statistics,
+                                                       IFoundStatistics foundStatistics,
                                                        CopyFileOperation copyFileOperation,
                                                        DeleteFileOperation deleteFileOperation,
                                                        FileAlreadyExistsError error,
                                                        FileDecomposition targetFile,
                                                        IFile file)
         {
-            if (IsDuplicate(logger, error, statistics, file))
+            if (IsDuplicate(logger, error, foundStatistics, file))
             {
                 HandleDuplicate(logger, deleteFileOperation, error);
             }
@@ -90,7 +89,7 @@ namespace SortPhotosWithXmpByExifDate.Cli
 
         private static bool IsDuplicate(ILogger logger,
                                         FileAlreadyExistsError error,
-                                        IFoundStatistics statistics,
+                                        IFoundStatistics foundStatistics,
                                         IFile file)
         {
             // when are 2 images identical?
@@ -105,15 +104,15 @@ namespace SortPhotosWithXmpByExifDate.Cli
             if (sameExtension)
             {
                 isDuplicate = extensionFile.EndsWith(FileScanner.XmpExtension, StringComparison.OrdinalIgnoreCase)
-                    ? AreXmpsDuplicates(error, statistics, file)
-                    : AreImagesDuplicates(logger, error, statistics);
+                    ? AreXmpsDuplicates(error, foundStatistics, file)
+                    : AreImagesDuplicates(logger, error, foundStatistics);
             }
 
             return isDuplicate;
         }
 
         private static bool AreXmpsDuplicates(FileAlreadyExistsError error,
-                                              IFoundStatistics statistics,
+                                              IFoundStatistics foundStatistics,
                                               IFile file)
         {
             // xmps are identical, if their hash is identical
@@ -126,7 +125,7 @@ namespace SortPhotosWithXmpByExifDate.Cli
             var isHashIdentical = hash1 == hash2;
             if (isHashIdentical)
             {
-                statistics.SkippedXmps++;
+                foundStatistics.SkippedXmps++;
             }
 
             return isHashIdentical;
@@ -134,7 +133,7 @@ namespace SortPhotosWithXmpByExifDate.Cli
 
         private static bool AreImagesDuplicates(ILogger logger,
                                                 FileAlreadyExistsError error,
-                                                IFoundStatistics statistics)
+                                                IFoundStatistics foundStatistics)
         {
             var isDuplicate = false;
 
@@ -150,7 +149,7 @@ namespace SortPhotosWithXmpByExifDate.Cli
 
                 if (isDuplicate)
                 {
-                    statistics.SkippedImages++;
+                    foundStatistics.SkippedImages++;
                 }
             }
             catch (Exception e)
@@ -251,7 +250,7 @@ namespace SortPhotosWithXmpByExifDate.Cli
             var numberString = fileCount > 0 ? "_" + fileCount : string.Empty;
             var fullname = Path.Combine(directory, targetFile.Name + numberString + targetFile.Extension);
             logger.LogTrace("Collision for '{errorFile}'. Arrange next to others as '{fullname}'", errorFile, fullname);
-            copyFileOperation.ChangeFile(errorFile, fullname);
+            copyFileOperation.ChangeFiles(new List<IImageFile>() { new ImageFile("errorFile") }, fullname);
         }
     }
 

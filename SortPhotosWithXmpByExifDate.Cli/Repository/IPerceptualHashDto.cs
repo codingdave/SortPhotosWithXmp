@@ -1,6 +1,6 @@
 namespace SortPhotosWithXmpByExifDate.Cli.Repository;
 
-internal interface IPerceptualHashDto
+public interface IPerceptualHashDto
 {
     ulong Hash { get; }
 }

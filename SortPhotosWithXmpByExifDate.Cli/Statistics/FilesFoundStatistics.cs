@@ -33,17 +33,16 @@ public class FilesFoundStatistics : IStatistics, IModifiableErrorCollection, IFo
         {
             switch (error)
             {
-                case MetaDataError:
-                    _logger.LogTrace(error.ToString());
-                    break;
-                case NoTimeFoundError:
-                    _logger.LogError(error.ToString());
+                case FileAlreadyExistsError:
+                    // nothing to do over here
                     break;
                 case ImageProcessingExceptionError ipe:
                     _logger.LogExceptionError(error.File, ipe.Exception);
                     break;
-                case FileAlreadyExistsError:
-                    // nothing to do over here
+                case GeneralExceptionError:
+                case MetaDataError:
+                case NoTimeFoundError:
+                    _logger.LogError(error.ToString());
                     break;
                 default:
                     throw new NotImplementedException($"{error}");

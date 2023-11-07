@@ -5,7 +5,7 @@ using SortPhotosWithXmpByExifDate.Cli.Statistics;
 
 namespace SortPhotosWithXmpByExifDate.Cli;
 
-internal interface IRun
+public interface IRun
 {
     public IStatistics Run(ILogger logger);
 }

@@ -15,7 +15,7 @@ internal class RearrangeByExifRunner : IRun
 {
     private readonly string _destinationDirectory;
     private readonly string _sourceDirectory;
-    private readonly FilesFoundStatistics _statistics;
+    private readonly FilesFoundStatistics _filesFoundStatistics;
     private readonly IFileOperation _operationPerformer;
     private readonly IFileScanner _fileScanner;
     private readonly IDirectory _directory;
@@ -33,8 +33,8 @@ internal class RearrangeByExifRunner : IRun
     {
         _sourceDirectory = sourceDirectory ?? throw new ArgumentNullException(nameof(sourceDirectory));
         _destinationDirectory = destinationDirectory ?? throw new ArgumentNullException(nameof(destinationDirectory));
-        _operationPerformer = OperationPerformerFactory.GetCopyOrMovePerformer(logger, file, move, force);
-        _statistics = new FilesFoundStatistics(logger, _operationPerformer);
+        _operationPerformer = OperationPerformerFactory.GetCopyOrMovePerformer(logger, file, directory, move, force);
+        _filesFoundStatistics = new FilesFoundStatistics(logger, _operationPerformer);
         _fileScanner = fileScanner;
         _directory = directory;
         _deleteDirectoryOperation = new DeleteDirectoryOperation(logger, directory, force);
@@ -57,7 +57,7 @@ internal class RearrangeByExifRunner : IRun
                     if (errors.Any())
                     {
                         logger.LogTrace("found errors while extracting metadata from '{file}'", file);
-                        _statistics.AddError(new MetaDataError(file, errors));
+                        _filesFoundStatistics.AddError(new MetaDataError(file, errors));
                     }
 
                     var possibleDateTime = dateTimeResolver.GetDateTimeFromImage(logger, metaDataDirectories);
@@ -67,7 +67,7 @@ internal class RearrangeByExifRunner : IRun
 
                         if (!errors.Any())
                         {
-                            MoveImageAndXmpToExifPath(_fileScanner.Map[file], dateTime, _destinationDirectory, _statistics, _operationPerformer);
+                            MoveImageAndXmpToExifPath(_fileScanner.Map[file], dateTime);
                         }
                         else
                         {
@@ -76,79 +76,40 @@ internal class RearrangeByExifRunner : IRun
                     }
                     else
                     {
-                        _statistics.AddError(new NoTimeFoundError(file, Helpers.GetMetadata(metaDataDirectories)));
+                        _filesFoundStatistics.AddError(new NoTimeFoundError(file, Helpers.GetMetadata(metaDataDirectories)));
                     }
                 }
                 catch (MetadataExtractor.ImageProcessingException e)
                 {
-                    _statistics.AddError(new ImageProcessingExceptionError(file, e));
+                    _filesFoundStatistics.AddError(new ImageProcessingExceptionError(file, e));
                 }
                 catch (Exception e)
                 {
                     logger.LogExceptionError($"Failed processing {file}:", e);
-                    _statistics.AddError(new ExceptionError(file, e));
+                    _filesFoundStatistics.AddError(new GeneralExceptionError(file, e));
                 }
             }
         });
 
         logger.LogInformation($"{nameof(RearrangeByExifRunner)}.{nameof(Run)} has finished");
 
-        var statistics = new DirectoriesDeletedStatistics(logger, _deleteDirectoryOperation);
+        var directoriesDeletedStatistics = new DirectoriesDeletedStatistics(logger, _deleteDirectoryOperation);
         Helpers.RecursivelyDeleteEmptyDirectories(logger, _sourceDirectory, _deleteDirectoryOperation);
-        return new FilesAndDirectoriesStatistics(_statistics, statistics);
+        return new FilesAndDirectoriesStatistics(_filesFoundStatistics, directoriesDeletedStatistics);
     }
 
-    private void MoveImageAndXmpToExifPath(
-        FileVariations fileVariations,
-        DateTime dateTime,
-        string destinationDirectory,
-        FilesFoundStatistics statistics,
-        IFileOperation operationPerformer)
+    private void MoveImageAndXmpToExifPath(FileVariations fileVariations, DateTime dateTime)
     {
         if (fileVariations.Data == null)
         {
             throw new InvalidOperationException($"The image that shall be moved was not found.");
         }
 
-        if (string.IsNullOrEmpty(destinationDirectory))
-        {
-            throw new ArgumentException($"'{nameof(destinationDirectory)}' cannot be null or empty.", nameof(destinationDirectory));
-        }
-
-        if (statistics is null)
-        {
-            throw new ArgumentNullException(nameof(statistics));
-        }
-
-        if (operationPerformer is null)
-        {
-            throw new ArgumentNullException(nameof(operationPerformer));
-        }
-
         var destinationSuffix = dateTime.ToString("yyyy/MM/dd");
-        var finalDestinationPath = Path.Combine(destinationDirectory, destinationSuffix);
+        var targetPath = Path.Combine(_destinationDirectory, destinationSuffix);
 
-        if (!_directory.Exists(finalDestinationPath))
-        {
-            _ = _directory.CreateDirectory(finalDestinationPath);
-        }
-
-        statistics.FoundImages++;
-        statistics.FoundXmps += fileVariations.SidecarFiles.Count;
-
-        foreach (var file in fileVariations.All)
-        {
-            var targetName = Path.Combine(finalDestinationPath, Path.GetFileName(file.OriginalFilename));
-
-            if (!File.Exists(targetName))
-            {
-                operationPerformer.ChangeFile(file.OriginalFilename, targetName);
-                file.NewFilename = targetName;
-            }
-            else
-            {
-                statistics.AddError(new FileAlreadyExistsError(targetName, file.OriginalFilename, $"File {file.OriginalFilename} already exists at {targetName}"));
-            }
-        }
+        _filesFoundStatistics.FoundImages++;
+        _filesFoundStatistics.FoundXmps += fileVariations.SidecarFiles.Count;
+        _operationPerformer.ChangeFiles(fileVariations.All, targetPath);
     }
 }
