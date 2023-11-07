@@ -8,10 +8,8 @@ public class FilesFoundStatistics : IStatistics, IModifiableErrorCollection, IFo
 {
     private readonly ILogger _logger;
     public IFileOperation FileOperation { get; }
-    public FilesFoundStatistics(ILogger logger, IFileOperation fileOperation)
-    {
-        (_logger, FileOperation, _errors) = (logger, fileOperation, new ErrorCollection.ErrorCollection(logger));
-    }
+    public FilesFoundStatistics(ILogger logger, IFileOperation fileOperation) 
+        => (_logger, FileOperation, _errors) = (logger, fileOperation, new ErrorCollection.ErrorCollection(logger));
 
     public int FoundXmps { get; set; }
     public int FoundImages { get; set; }
@@ -35,7 +33,7 @@ public class FilesFoundStatistics : IStatistics, IModifiableErrorCollection, IFo
         {
             switch (error)
             {
-                case MetaDataError me:
+                case MetaDataError:
                     _logger.LogTrace(error.ToString());
                     break;
                 case NoTimeFoundError:
@@ -48,7 +46,7 @@ public class FilesFoundStatistics : IStatistics, IModifiableErrorCollection, IFo
                     // nothing to do over here
                     break;
                 default:
-                    throw new NotImplementedException();
+                    throw new NotImplementedException($"{error}");
             }
         }
     }
