@@ -62,6 +62,8 @@ internal class CommandLine
 
     public async Task<int> InvokeAsync(string[] args)
     {
-        return await _rootCommand.InvokeAsync(args);
+        var t = _rootCommand.InvokeAsync(args);
+        _logger.LogInformation($"Application finished");
+        return await t;
     }
 }

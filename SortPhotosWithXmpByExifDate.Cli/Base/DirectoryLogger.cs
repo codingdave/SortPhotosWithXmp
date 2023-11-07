@@ -112,7 +112,7 @@ internal class DirectoryLogger : IDirectory
 
     public string[] GetFiles(string path, string searchPattern)
     {
-        throw new NotImplementedException();
+        return Directory.GetFiles(path, searchPattern);
     }
 
     public string[] GetFiles(string path, string searchPattern, SearchOption searchOption)
