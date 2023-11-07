@@ -5,6 +5,7 @@ using System.CommandLine;
 using SystemInterface.IO;
 using SortPhotosWithXmpByExifDate.Cli.Extensions;
 using SortPhotosWithXmpByExifDate.Cli.Operations;
+using Microsoft.VisualBasic;
 
 namespace SortPhotosWithXmpByExifDate.Cli.Commands;
 
@@ -46,18 +47,15 @@ internal abstract class CommandBase
             if (result is FilesFoundResult filesFoundResult)
             {
                 filesFoundResult.SuccessfulCollection.Successes.Do(success => success.Perform(Logger));
+                filesFoundResult.ErrorCollection.HandleErrorFiles(Logger, filesFoundResult, File, Directory, f.Force);
+                var deleteOperation = new DeleteFileOperation(Logger, File, Directory, f.Force);
+                Logger.LogInformation(deleteOperation.ToString());
+                Logger.LogInformation(deleteOperation.DirectoryStatistics.ToString());
+                filesFoundResult.CleanupResult.Perform(deleteOperation);
+                Logger.LogInformation(deleteOperation.ToString());
+                Logger.LogInformation(deleteOperation.DirectoryStatistics.ToString());
             }
-            if (result is IFoundStatistics filesFoundStatistics)
-            {
-                result.SuccessfulCollection.Successes.Do(s => s.Perform(Logger));
-                result.ErrorCollection.HandleErrorFiles(Logger, filesFoundStatistics, File, Directory, f.Force);
-                if (filesFoundStatistics is FilesFoundResult res)
-                {
-                    var deleteFileOperation = new DeleteFileOperation(Logger, File, Directory, f.Force);
-                    res.CleanupResult.Perform(deleteFileOperation);
-                }
-                // DirectoryStatistics
-            }
+            // if (result is IFoundStatistics filesFoundStatistics)
             result.Log();
 
             Logger.LogInformation($"Done processing statistics");

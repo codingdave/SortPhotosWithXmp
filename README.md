@@ -34,3 +34,6 @@ The default operation is copy, but move can be enforced.
 * Exception thrown: 'System.TypeLoadException' in SortPhotosWithXmpByExifDate.Cli.dll
 [22:56:37 ERR] Failed processing Photos-copy/images/20201206/_DTS0128.NEF:: Method 'CreateObjRef' in type 'SystemWrapper.IO.DirectoryInfoWrap' from assembly 'SystemWrapper, Version=0.26.0.0, Culture=neutral, PublicKeyToken=fbc3a63dd3cf8960' does not have an implementation.
 [22:59:36 ERR] Failed processing /home/david/projects/SortPhotosWithXmpByExifDate/resources/Photos-copy/MobileBackup/OnePlus 7 Pro/DCIM/Camera/2019/12/IMG_20191203_110350.jpg:: Method 'CreateObjRef' in type 'SystemWrapper.IO.DirectoryInfoWrap' from assembly 'SystemWrapper, Version=0.26.0.0, Culture=neutral, PublicKeyToken=fbc3a63dd3cf8960' does not have an implementation.
+
+
+METADATAError will be written somewhere ...

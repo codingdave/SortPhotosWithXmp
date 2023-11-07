@@ -1,6 +1,9 @@
+using Microsoft.Extensions.FileSystemGlobbing.Internal.Patterns;
 using Microsoft.Extensions.Logging;
+
 using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 using SortPhotosWithXmpByExifDate.Cli.Result;
+
 using SystemInterface.IO;
 
 namespace SortPhotosWithXmpByExifDate.Cli.Operations;
@@ -37,15 +40,29 @@ public class DeleteFileOperation : IOperation
         }
     }
 
-    public void RecursivelyDeleteEmptyDirectories(string path, bool isFirstRun = true)
+    public void RecursivelyDeleteEmptyDirectories(string? path, bool isFirstRun = true)
     {
+        if (path != null)
+        {
+            foreach (var subDirectory in _directory.GetDirectories(path))
+            {
+                RecursivelyDeleteEmptyDirectories(subDirectory);
+                DeleteDirectoryIfEmpty(subDirectory);
+            }
+
+            if (isFirstRun)
+            {
+                DeleteDirectoryIfEmpty(path);
+            }
+        }
+
         void DeleteDirectoryIfEmpty(string path)
         {
             try
             {
                 if (_directory.Exists(path))
                 {
-                    DirectoryStatistics.DirectoriesFound++;
+                    DirectoryStatistics.DirectoriesFound.Add(path);
                     // if no directories and no files are within this path
                     if (!_directory.GetDirectories(path).Any() && !_directory.GetFiles(path).Any())
                     {
@@ -57,17 +74,6 @@ public class DeleteFileOperation : IOperation
             {
                 _logger.LogExceptionError(e);
             }
-        }
-
-        foreach (var subDirectory in _directory.GetDirectories(path))
-        {
-            RecursivelyDeleteEmptyDirectories(subDirectory);
-            DeleteDirectoryIfEmpty(subDirectory);
-        }
-
-        if (isFirstRun)
-        {
-            DeleteDirectoryIfEmpty(path);
         }
     }
 
@@ -84,6 +90,6 @@ public class DeleteFileOperation : IOperation
         }
 
         // when we simulate, we still want to count
-        DirectoryStatistics.DirectoriesDeleted++;
+        DirectoryStatistics.DirectoriesDeleted.Add(path);
     }
 }

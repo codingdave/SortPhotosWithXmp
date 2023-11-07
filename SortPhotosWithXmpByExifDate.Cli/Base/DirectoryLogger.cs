@@ -93,7 +93,8 @@ internal class DirectoryLogger : IDirectory
     [DebuggerStepThrough]
     public string[] GetDirectories(string path)
     {
-        return Directory.GetDirectories(path);
+        var d = Directory.GetDirectories(path);
+        return d;
     }
 
     public string[] GetDirectories(string path, string searchPattern)
@@ -165,7 +166,7 @@ internal class DirectoryLogger : IDirectory
 
     public IDirectoryInfo GetParent(string path)
     {
-        throw new NotImplementedException();
+        return new DirectoryInfoWrap(Directory.GetParent(path));
     }
 
     [DebuggerStepThrough]

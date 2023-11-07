@@ -2,11 +2,11 @@ namespace SortPhotosWithXmpByExifDate.Cli.Result;
 
 public class DirectoryStatistics
 {
-    public int DirectoriesFound { get; set; }
-    public int DirectoriesDeleted { get; set; }
-    
+    public List<string> DirectoriesFound { get; } = new List<string>();
+    public List<string> DirectoriesDeleted { get; } = new List<string>();
+
     public override string ToString()
     {
-        return $"Found {DirectoriesFound}, deleted {DirectoriesDeleted} directories";
+        return $"Found {DirectoriesFound.Count}, deleted {DirectoriesDeleted.Count} directories";
     }
 }
