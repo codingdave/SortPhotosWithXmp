@@ -70,7 +70,7 @@ internal class RearrangeByExifRunner : IRun
                     var possibleDateTime = dateTimeResolver.GetDateTimeFromImage(logger, metaDataDirectories);
                     if (possibleDateTime is DateTime dateTime)
                     {
-                        logger.LogError("Extracted date {dateTime} from '{file}'", dateTime, file);
+                        logger.LogTrace("Extracted date {dateTime} from '{file}'", dateTime, file);
 
                         if (!errors.Any())
                         {
