@@ -14,7 +14,8 @@ namespace SortPhotosWithXmpByExifDate.Cli
         public static void HandleErrorFiles(this IReadOnlyErrorCollection errorCollection, 
             ILogger logger, 
             IFoundStatistics statistics,    
-            IFile file)
+            IFile file,
+            IDirectory directory)
         {
             var copyFileOperation = new CopyFileOperation(logger, file, statistics.FileOperation.IsChanging);
             var deleteFileOperation = new DeleteFileOperation(logger, file, statistics.FileOperation.IsChanging);

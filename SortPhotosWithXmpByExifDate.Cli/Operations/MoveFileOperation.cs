@@ -7,13 +7,13 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
     public class MoveFileOperation : IFileOperation
     {
         private readonly ILogger _logger;
-        private readonly IFile _fileWrapper;
+        private readonly IFile _file;
 
 
         internal MoveFileOperation(ILogger logger, IFile file, bool force)
         {
             _logger = logger;
-            _fileWrapper = file;
+            _file = file;
 
             IsChanging = force;
         }
@@ -25,7 +25,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
             _logger.LogTrace($"IFile.Move({sourceFileName}, {destFileName});");
             if (IsChanging)
             {
-                _fileWrapper.Move(sourceFileName, destFileName);
+                _file.Move(sourceFileName, destFileName);
             }
         }
 

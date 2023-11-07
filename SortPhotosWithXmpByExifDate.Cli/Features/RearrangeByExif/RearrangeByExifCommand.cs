@@ -49,8 +49,8 @@ internal class RearrangeByExifCommand : FileScannerCommandBase
                sourcePath,
                destinationPath,
                GetFileScanner(sourcePath),
-               FileWrapper,
-               DirectoryWrapper,
+               File,
+               Directory,
                move,
                force));
         }

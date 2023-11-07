@@ -30,8 +30,8 @@ internal abstract class FileScannerCommandBase : CommandBase
         if (fileScanner == null)
         {
             fileScanner = new FileScanner(Logger);
-            DirectoryWrapper.SetCurrentDirectory(sourcePath);
-            fileScanner.Crawl(DirectoryWrapper);
+            Directory.SetCurrentDirectory(sourcePath);
+            fileScanner.Crawl(Directory);
             _setFileScanner(fileScanner);
             Logger.LogInformation($"New FileScanner has been created for {sourcePath}");
         }

@@ -19,9 +19,9 @@ internal abstract class CommandBase
     internal Option<bool> MoveOption => _commandlineOptions.MoveOption;
     internal Option<int> SimilarityOption => _commandlineOptions.SimilarityOption;
 
-    public IFile FileWrapper { get; }
+    public IFile File { get; }
 
-    public IDirectory DirectoryWrapper { get; }
+    public IDirectory Directory { get; }
 
 
     protected CommandBase(
@@ -33,8 +33,8 @@ internal abstract class CommandBase
     {
         Logger = logger;
         _commandlineOptions = commandlineOptions;
-        FileWrapper = file;
-        DirectoryWrapper = directory;
+        File = file;
+        Directory = directory;
     }
 
     protected void Run(IRun f)
@@ -47,7 +47,7 @@ internal abstract class CommandBase
 
             if (statistics is IFoundStatistics filesFoundStatistics)
             {
-                statistics.FileErrors.HandleErrorFiles(Logger, filesFoundStatistics, new FileWrap());
+                statistics.FileErrors.HandleErrorFiles(Logger, filesFoundStatistics, File, Directory);
             }
             statistics.Log();
 

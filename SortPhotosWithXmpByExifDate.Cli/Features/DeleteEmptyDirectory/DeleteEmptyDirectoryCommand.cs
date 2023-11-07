@@ -40,7 +40,7 @@ internal class DeleteEmptyDirectoryCommand : CommandBase
     {
         try
         {
-            Run(new DeleteEmptyDirectoryRunner(DirectoryWrapper, directory, force));
+            Run(new DeleteEmptyDirectoryRunner(Directory, directory, force));
         }
         catch (Exception e)
         {

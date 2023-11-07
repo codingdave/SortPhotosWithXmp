@@ -67,7 +67,7 @@ internal class RearrangeByExifRunner : IRun
 
                         if (!errors.Any())
                         {
-                            MoveImageAndXmpToExifPath(_directory, _fileScanner.Map[file], dateTime, _destinationDirectory, _statistics, _operationPerformer);
+                            MoveImageAndXmpToExifPath(_fileScanner.Map[file], dateTime, _destinationDirectory, _statistics, _operationPerformer);
                         }
                         else
                         {

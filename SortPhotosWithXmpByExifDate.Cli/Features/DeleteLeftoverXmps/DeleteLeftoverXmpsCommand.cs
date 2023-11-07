@@ -42,7 +42,7 @@ internal class DeleteLeftoverXmpsCommand : FileScannerCommandBase
     {
         try
         {
-            Run(new DeleteLeftoverXmpsRunner(force, GetFileScanner(sourcePath), FileWrapper));
+            Run(new DeleteLeftoverXmpsRunner(force, GetFileScanner(sourcePath), File));
         }
         catch (Exception e)
         {
