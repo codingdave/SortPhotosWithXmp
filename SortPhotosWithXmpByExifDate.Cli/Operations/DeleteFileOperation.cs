@@ -7,13 +7,13 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
     public class DeleteFileOperation : IFileOperation
     {
         private readonly ILogger _logger;
-        private readonly IFile _fileWrapper;
+        private readonly IFile _file;
 
 
         internal DeleteFileOperation(ILogger logger, IFile file, bool force)
         {
             _logger = logger;
-            _fileWrapper = file;
+            _file = file;
 
             IsChanging = force;
         }
@@ -30,7 +30,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
             _logger.LogTrace($"IFile.Delete '{path}';");
             if (IsChanging)
             {
-                _fileWrapper.Delete(path);
+                _file.Delete(path);
             }
         }
 

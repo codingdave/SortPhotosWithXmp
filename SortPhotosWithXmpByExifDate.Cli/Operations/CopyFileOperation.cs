@@ -6,7 +6,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
     public class CopyFileOperation : IFileOperation
     {
         private readonly ILogger _logger;
-        private readonly IFile _fileWrapper;
+        private readonly IFile _file;
 
 
         internal CopyFileOperation(
@@ -15,7 +15,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
             bool force)
         {
             _logger = logger;
-            _fileWrapper = file;
+            _file = file;
             IsChanging = force;
         }
 
@@ -26,7 +26,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
             _logger.LogTrace($"IFile.Copy({sourceFileName}, {destFileName});");
             if (IsChanging)
             {
-                _fileWrapper.Copy(sourceFileName, destFileName);
+                _file.Copy(sourceFileName, destFileName);
             }
         }
 

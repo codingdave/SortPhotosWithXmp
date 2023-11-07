@@ -11,14 +11,14 @@ public class DeleteLeftoverXmpsRunner : IRun
 {
     private readonly bool _force;
     private readonly IFileScanner _fileScanner;
-    private readonly IFile _fileWrapper;
+    private readonly IFile _file;
 
 
     public DeleteLeftoverXmpsRunner(bool force, IFileScanner fileScanner, IFile file)
     {
         _force = force;
         _fileScanner = fileScanner;
-        _fileWrapper = file;
+        _file = file;
     }
 
     public IStatistics Run(ILogger logger)
@@ -31,7 +31,7 @@ public class DeleteLeftoverXmpsRunner : IRun
         {
             foreach (var lonely in lonelies)
             {
-                _fileWrapper.Delete(lonely.OriginalFilename);
+                _file.Delete(lonely.OriginalFilename);
                 throw new NotImplementedException();
             }
         }
