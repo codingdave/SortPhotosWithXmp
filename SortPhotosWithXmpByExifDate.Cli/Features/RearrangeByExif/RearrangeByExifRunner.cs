@@ -67,7 +67,7 @@ internal class RearrangeByExifRunner : IRun
 
                         if (!errors.Any())
                         {
-                            Helpers.MoveImageAndXmpToExifPath(_directory, _fileScanner.Map[file], dateTime, _destinationDirectory, _statistics, _operationPerformer);
+                            MoveImageAndXmpToExifPath(_directory, _fileScanner.Map[file], dateTime, _destinationDirectory, _statistics, _operationPerformer);
                         }
                         else
                         {
@@ -96,5 +96,62 @@ internal class RearrangeByExifRunner : IRun
         var statistics = new DirectoriesDeletedStatistics(logger, _deleteDirectoryOperation);
         Helpers.RecursivelyDeleteEmptyDirectories(logger, _sourceDirectory, _deleteDirectoryOperation);
         return new FilesAndDirectoriesStatistics(_statistics, statistics);
+    }
+
+    private void MoveImageAndXmpToExifPath(
+        FileVariations fileVariations,
+        DateTime dateTime,
+        string destinationDirectory,
+        FilesFoundStatistics statistics,
+        IFileOperation operationPerformer)
+    {
+        if (fileVariations.Data == null)
+        {
+            throw new InvalidOperationException($"The image that shall be moved was not found.");
+        }
+
+        if (string.IsNullOrEmpty(destinationDirectory))
+        {
+            throw new ArgumentException($"'{nameof(destinationDirectory)}' cannot be null or empty.", nameof(destinationDirectory));
+        }
+
+        if (statistics is null)
+        {
+            throw new ArgumentNullException(nameof(statistics));
+        }
+
+        if (operationPerformer is null)
+        {
+            throw new ArgumentNullException(nameof(operationPerformer));
+        }
+
+        var destinationSuffix = dateTime.ToString("yyyy/MM/dd");
+        var finalDestinationPath = Path.Combine(destinationDirectory, destinationSuffix);
+
+        if (!_directory.Exists(finalDestinationPath))
+        {
+            _ = _directory.CreateDirectory(finalDestinationPath);
+        }
+
+        statistics.FoundImages++;
+        statistics.FoundXmps += fileVariations.SidecarFiles.Count;
+
+        var allSourceFiles = fileVariations.SidecarFiles;
+        allSourceFiles.Add(fileVariations.Data);
+
+        foreach (var file in allSourceFiles)
+        {
+            var targetName = Path.Combine(finalDestinationPath, Path.GetFileName(file.OriginalFilename));
+
+            if (!File.Exists(targetName))
+            {
+                operationPerformer.ChangeFile(file.OriginalFilename, targetName);
+                file.NewFilename = targetName;
+            }
+            else
+            {
+                statistics.AddError(new FileAlreadyExistsError(targetName, file.OriginalFilename, $"File {file.OriginalFilename} already exists at {targetName}"));
+            }
+        }
     }
 }

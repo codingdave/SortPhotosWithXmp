@@ -65,69 +65,6 @@ public static class Helpers
         return ret;
     }
 
-    public static void MoveImageAndXmpToExifPath(
-        IDirectory directory,
-        FileVariations fileVariations,
-        DateTime dateTime,
-        string destinationDirectory,
-        FilesFoundStatistics statistics,
-        IFileOperation operationPerformer)
-    {
-        if (directory is null)
-        {
-            throw new ArgumentNullException(nameof(directory));
-        }
-
-        if (fileVariations.Data == null)
-        {
-            throw new InvalidOperationException($"The image that shall be moved was not found.");
-        }
-
-        if (string.IsNullOrEmpty(destinationDirectory))
-        {
-            throw new ArgumentException($"'{nameof(destinationDirectory)}' cannot be null or empty.", nameof(destinationDirectory));
-        }
-
-        if (statistics is null)
-        {
-            throw new ArgumentNullException(nameof(statistics));
-        }
-
-        if (operationPerformer is null)
-        {
-            throw new ArgumentNullException(nameof(operationPerformer));
-        }
-
-        var destinationSuffix = dateTime.ToString("yyyy/MM/dd");
-        var finalDestinationPath = Path.Combine(destinationDirectory, destinationSuffix);
-
-        if (!directory.Exists(finalDestinationPath))
-        {
-            _ = directory.CreateDirectory(finalDestinationPath);
-        }
-
-        statistics.FoundImages++;
-        statistics.FoundXmps += fileVariations.SidecarFiles.Count;
-
-        var allSourceFiles = fileVariations.SidecarFiles;
-        allSourceFiles.Add(fileVariations.Data);
-
-        foreach (var file in allSourceFiles)
-        {
-            var targetName = Path.Combine(finalDestinationPath, Path.GetFileName(file.OriginalFilename));
-
-            if (!File.Exists(targetName))
-            {
-                operationPerformer.ChangeFile(file.OriginalFilename, targetName);
-                file.NewFilename = targetName;
-            }
-            else
-            {
-                statistics.AddError(new FileAlreadyExistsError(targetName, file.OriginalFilename, $"File {file.OriginalFilename} already exists at {targetName}"));
-            }
-        }
-    }
-
     public static void RecursivelyDeleteEmptyDirectories(ILogger logger, string directory, DeleteDirectoryOperation deleteDirectoryPerformer, bool isFirstRun = true)
     {
         void DeleteDirectoryIfEmpty(string directory)
