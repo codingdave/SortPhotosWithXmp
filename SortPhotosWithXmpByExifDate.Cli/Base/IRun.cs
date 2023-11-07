@@ -7,5 +7,5 @@ namespace SortPhotosWithXmpByExifDate.Cli;
 
 public interface IRun
 {
-    public IStatistics Run(ILogger logger);
+    public IResult Run(ILogger logger);
 }

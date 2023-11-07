@@ -1,11 +1,11 @@
 namespace SortPhotosWithXmpByExifDate.Cli.ErrorCollection
 {
-    internal class MergedFileError : IReadOnlyErrorCollection
+    internal class MergedErrorCollection : IReadOnlyErrorCollection
     {
         private readonly IReadOnlyErrorCollection _errorCollection1;
         private readonly IReadOnlyErrorCollection _errorCollection2;
 
-        public MergedFileError(IReadOnlyErrorCollection errorCollection1, IReadOnlyErrorCollection errorCollection2)
+        public MergedErrorCollection(IReadOnlyErrorCollection errorCollection1, IReadOnlyErrorCollection errorCollection2)
         {
             _errorCollection1 = errorCollection1;
             _errorCollection2 = errorCollection2;

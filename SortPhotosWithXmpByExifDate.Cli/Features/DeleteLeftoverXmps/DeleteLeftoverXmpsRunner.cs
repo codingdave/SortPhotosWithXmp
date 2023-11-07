@@ -21,7 +21,7 @@ public class DeleteLeftoverXmpsRunner : IRun
         _file = file;
     }
 
-    public IStatistics Run(ILogger logger)
+    public IResult Run(ILogger logger)
     {
 
         // find all xmps that do not have an image
@@ -36,6 +36,6 @@ public class DeleteLeftoverXmpsRunner : IRun
             }
         }
 
-        return new DeleteFilesStatistics();
+        return new DeleteFilesResult();
     }
 }

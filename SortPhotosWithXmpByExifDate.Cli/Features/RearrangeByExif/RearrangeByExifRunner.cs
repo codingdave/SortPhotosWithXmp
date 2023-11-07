@@ -16,7 +16,7 @@ internal class RearrangeByExifRunner : IRun
 {
     private readonly string _destinationDirectory;
     private readonly string _sourceDirectory;
-    private readonly FilesFoundStatistics _filesFoundStatistics;
+    private readonly FilesFoundResult _filesFoundStatistics;
     private readonly IFileOperation _operationPerformer;
     private readonly IFileScanner _fileScanner;
     private readonly IDirectory _directory;
@@ -35,13 +35,13 @@ internal class RearrangeByExifRunner : IRun
         _sourceDirectory = sourceDirectory ?? throw new ArgumentNullException(nameof(sourceDirectory));
         _destinationDirectory = destinationDirectory ?? throw new ArgumentNullException(nameof(destinationDirectory));
         _operationPerformer = OperationPerformerFactory.GetCopyOrMovePerformer(logger, file, directory, move, force);
-        _filesFoundStatistics = new FilesFoundStatistics(logger, _operationPerformer);
+        _filesFoundStatistics = new FilesFoundResult(logger, _operationPerformer);
         _fileScanner = fileScanner;
         _directory = directory;
         _deleteDirectoryOperation = new DeleteDirectoryOperation(logger, directory, force);
     }
 
-    public IStatistics Run(ILogger logger)
+    public IResult Run(ILogger logger)
     {
         DateTimeResolver dateTimeResolver = new(logger);
         logger.LogInformation($"Starting {nameof(RearrangeByExifRunner)}.{nameof(Run)} with search path: '{_sourceDirectory}' and destination path '{_destinationDirectory}'. {_operationPerformer}");
@@ -60,30 +60,30 @@ internal class RearrangeByExifRunner : IRun
                 try
                 {
                     var metaDataDirectories = ImageMetadataReader.ReadMetadata(file);
-                    var errors = Helpers.GetErrorsFromMetadata(metaDataDirectories);
-                    if (errors.Any())
+                    var errors = metaDataDirectories.SelectMany(t => t.Errors);
+                    var hasErrors = errors.Any();
+                    if (hasErrors)
                     {
-                        logger.LogError("found errors while extracting metadata from '{file}'", file);
+                        logger.LogTrace("found errors while extracting metadata from '{file}': {errors}", file, string.Join(Environment.NewLine, errors));
                         _filesFoundStatistics.AddError(new MetaDataError(file, errors));
                     }
 
                     var possibleDateTime = dateTimeResolver.GetDateTimeFromImage(logger, metaDataDirectories);
-                    if (possibleDateTime is DateTime dateTime)
+                    if (possibleDateTime is not DateTime dateTime)
                     {
-                        logger.LogTrace("Extracted date {dateTime} from '{file}'", dateTime, file);
-
-                        if (!errors.Any())
-                        {
-                            MoveImageAndXmpToExifPath(_fileScanner.Map[file], dateTime);
-                        }
-                        else
-                        {
-                            logger.LogDebug("Keep '{file}' as errors have happened. We will copy it later when dealing about the error.", file);
-                        }
+                        hasErrors = true;
+                        _filesFoundStatistics.AddError(new NoTimeFoundError(file, Helpers.GetMetadata(metaDataDirectories)));
                     }
                     else
                     {
-                        _filesFoundStatistics.AddError(new NoTimeFoundError(file, Helpers.GetMetadata(metaDataDirectories)));
+                        _filesFoundStatistics.AddSuccessful(new ToExifPath(fileDatum, _destinationDirectory, dateTime, _operationPerformer));
+                        _filesFoundStatistics.FoundImages++;
+                        _filesFoundStatistics.FoundXmps += fileDatum.SidecarFiles.Count;
+                    }
+
+                    if (hasErrors)
+                    {
+                        logger.LogDebug("Keep '{file}' as errors have happened. We will copy it later when dealing about the error.", file);
                     }
                 }
                 catch (MetadataExtractor.ImageProcessingException e)
@@ -92,7 +92,6 @@ internal class RearrangeByExifRunner : IRun
                 }
                 catch (Exception e)
                 {
-                    logger.LogExceptionError($"Failed processing {file}:", e);
                     _filesFoundStatistics.AddError(new GeneralExceptionError(file, e));
                 }
             }
@@ -100,23 +99,8 @@ internal class RearrangeByExifRunner : IRun
 
         logger.LogInformation($"{nameof(RearrangeByExifRunner)}.{nameof(Run)} has finished");
 
-        var directoriesDeletedStatistics = new DirectoriesDeletedStatistics(logger, _deleteDirectoryOperation);
+        var directoriesDeletedStatistics = new DirectoriesDeletedResult(logger, _deleteDirectoryOperation);
         Helpers.RecursivelyDeleteEmptyDirectories(logger, _directory, _sourceDirectory, _deleteDirectoryOperation);
-        return new FilesAndDirectoriesStatistics(_filesFoundStatistics, directoriesDeletedStatistics);
-    }
-
-    private void MoveImageAndXmpToExifPath(FileVariations fileVariations, DateTime dateTime)
-    {
-        if (fileVariations.Data == null)
-        {
-            throw new InvalidOperationException($"The image that shall be moved was not found.");
-        }
-
-        var destinationSuffix = dateTime.ToString("yyyy/MM/dd");
-        var targetPath = Path.Combine(_destinationDirectory, destinationSuffix);
-
-        _filesFoundStatistics.FoundImages++;
-        _filesFoundStatistics.FoundXmps += fileVariations.SidecarFiles.Count;
-        _operationPerformer.ChangeFiles(fileVariations.All, targetPath);
+        return new FilesAndDirectoriesResult(_filesFoundStatistics, directoriesDeletedStatistics);
     }
 }

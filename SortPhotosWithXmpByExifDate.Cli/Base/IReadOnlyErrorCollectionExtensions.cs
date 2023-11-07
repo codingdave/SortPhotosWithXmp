@@ -9,7 +9,7 @@ using SystemInterface.IO;
 
 namespace SortPhotosWithXmpByExifDate.Cli
 {
-    public static class IReadOnlyErrorCollectionExtensions
+    public static class IReadOnlyListExtensions
     {
         public static void HandleErrorFiles(this IReadOnlyErrorCollection errorCollection,
             ILogger logger,

@@ -10,7 +10,7 @@ internal class RearrangeByCameraManufacturerRunner : IRun
         throw new NotImplementedException();
     }
 
-    public IStatistics Run(ILogger logger)
+    public IResult Run(ILogger logger)
     {
         throw new NotImplementedException();
     }

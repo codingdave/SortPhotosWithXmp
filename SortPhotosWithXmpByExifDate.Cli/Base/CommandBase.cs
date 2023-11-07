@@ -4,6 +4,7 @@ using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 using System.CommandLine;
 using SystemInterface.IO;
 using SystemWrapper.IO;
+using SortPhotosWithXmpByExifDate.Cli.Extensions;
 
 namespace SortPhotosWithXmpByExifDate.Cli.Commands;
 
@@ -41,15 +42,19 @@ internal abstract class CommandBase
     {
         try
         {
-            var statistics = f.Run(Logger);
+            var result = f.Run(Logger);
 
             Logger.LogInformation($"Processing statistics");
-
-            if (statistics is IFoundStatistics filesFoundStatistics)
+            if(result is FilesFoundResult filesFoundResult)
             {
-                statistics.FileErrors.HandleErrorFiles(Logger, filesFoundStatistics, File, Directory);
+                filesFoundResult.SuccessfulCollection.Successes.Do(success => success.Perform(Logger));
             }
-            statistics.Log();
+
+            if (result is IFoundStatistics filesFoundStatistics)
+            {
+                result.ErrorCollection.HandleErrorFiles(Logger, filesFoundStatistics, File, Directory);
+            }
+            result.Log();
 
             Logger.LogInformation($"Done processing statistics");
         }

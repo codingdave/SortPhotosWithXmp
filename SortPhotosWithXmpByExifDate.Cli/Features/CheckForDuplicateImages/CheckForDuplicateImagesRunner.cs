@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 using SortPhotosWithXmpByExifDate.Cli.Repository;
 using SortPhotosWithXmpByExifDate.Cli.Statistics;
-using IStatistics = SortPhotosWithXmpByExifDate.Cli.Statistics.IStatistics;
+using IResult = SortPhotosWithXmpByExifDate.Cli.Statistics.IResult;
 
 namespace SortPhotosWithXmpByExifDate.Cli.Features.CheckForDuplicateImages
 {
@@ -28,7 +28,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Features.CheckForDuplicateImages
             _force = force;
         }
 
-        public IStatistics Run(ILogger logger)
+        public IResult Run(ILogger logger)
         {
             try
             {
@@ -49,7 +49,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Features.CheckForDuplicateImages
                 _logger.LogExceptionError(e);
             }
 
-            return new DuplicatesDeletedStatistics(_logger);
+            return new DuplicatesDeletedResult(_logger);
         }
 
         private bool LonelyXmpsExist()

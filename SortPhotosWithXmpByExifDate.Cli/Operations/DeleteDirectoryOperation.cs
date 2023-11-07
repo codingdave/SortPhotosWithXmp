@@ -18,11 +18,11 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
             _directory = directory;
 
             IsChanging = force;
-            Statistics = new DirectoriesDeletedStatistics(logger, this);
+            Statistics = new DirectoriesDeletedResult(logger, this);
         }
 
         public bool IsChanging { get; }
-        public DirectoriesDeletedStatistics Statistics { get; }
+        public DirectoriesDeletedResult Statistics { get; }
 
         public void DeleteDirectory(string path)
         {

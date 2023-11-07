@@ -9,7 +9,7 @@ internal class CheckIfFileNameContainsDateDifferentToExifDatesRunner : IRun
 {
     public CheckIfFileNameContainsDateDifferentToExifDatesRunner(string source, bool force) => throw new NotImplementedException();
 
-    public IStatistics Run(ILogger logger)
+    public IResult Run(ILogger logger)
     {
         throw new NotImplementedException();
     }

@@ -42,11 +42,6 @@ public static class Helpers
         return propertyDescriptions;
     }
 
-    public static IEnumerable<string> GetErrorsFromMetadata(IReadOnlyList<MetadataExtractor.Directory> metaDataDirectories)
-    {
-        return metaDataDirectories.SelectMany(t => t.Errors);
-    }
-
     public static List<string> GetMetadata(IReadOnlyList<MetadataExtractor.Directory> metaDataDirectories)
     {
         var ret = new List<string>();
