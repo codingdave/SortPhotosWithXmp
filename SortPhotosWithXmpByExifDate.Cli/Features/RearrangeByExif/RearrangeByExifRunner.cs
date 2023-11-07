@@ -136,10 +136,7 @@ internal class RearrangeByExifRunner : IRun
         statistics.FoundImages++;
         statistics.FoundXmps += fileVariations.SidecarFiles.Count;
 
-        var allSourceFiles = fileVariations.SidecarFiles;
-        allSourceFiles.Add(fileVariations.Data);
-
-        foreach (var file in allSourceFiles)
+        foreach (var file in fileVariations.All)
         {
             var targetName = Path.Combine(finalDestinationPath, Path.GetFileName(file.OriginalFilename));
 
