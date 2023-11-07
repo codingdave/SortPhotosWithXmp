@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Security.AccessControl;
 
 using Microsoft.Extensions.Logging;
@@ -17,6 +18,7 @@ internal class DirectoryLogger : IDirectory
 
     public DirectoryLogger(ILogger<CommandLine> logger) => _logger = logger;
 
+    [DebuggerStepThrough]
     public IDirectoryInfo CreateDirectory(string path)
     {
         // TODO: Not yet implemented
@@ -50,11 +52,13 @@ internal class DirectoryLogger : IDirectory
         throw new NotImplementedException();
     }
 
+    [DebuggerStepThrough]
     public IEnumerable<string> EnumerateFiles(string path, string searchPattern, SearchOption searchOption)
     {
         return Directory.EnumerateFiles(path, searchPattern, searchOption);
     }
 
+    [DebuggerStepThrough]
     public bool Exists(string path)
     {
         return Directory.Exists(path);
@@ -80,11 +84,13 @@ internal class DirectoryLogger : IDirectory
         throw new NotImplementedException();
     }
 
+    [DebuggerStepThrough]
     public string GetCurrentDirectory()
     {
         return Directory.GetCurrentDirectory();
     }
 
+    [DebuggerStepThrough]
     public string[] GetDirectories(string path)
     {
         return Directory.GetDirectories(path);
@@ -105,11 +111,13 @@ internal class DirectoryLogger : IDirectory
         throw new NotImplementedException();
     }
 
+    [DebuggerStepThrough]
     public string[] GetFiles(string path)
     {
         return Directory.GetFiles(path);
     }
 
+    [DebuggerStepThrough]
     public string[] GetFiles(string path, string searchPattern)
     {
         return Directory.GetFiles(path, searchPattern);
@@ -160,6 +168,7 @@ internal class DirectoryLogger : IDirectory
         throw new NotImplementedException();
     }
 
+    [DebuggerStepThrough]
     public void Move(string sourceDirName, string destDirName)
     {
         Directory.Move(sourceDirName, destDirName);
@@ -180,6 +189,7 @@ internal class DirectoryLogger : IDirectory
         throw new NotImplementedException();
     }
 
+    [DebuggerStepThrough]
     public void SetCurrentDirectory(string path)
     {
         Directory.SetCurrentDirectory(path);
@@ -204,5 +214,4 @@ internal class DirectoryLogger : IDirectory
     {
         throw new NotImplementedException();
     }
-
 }
