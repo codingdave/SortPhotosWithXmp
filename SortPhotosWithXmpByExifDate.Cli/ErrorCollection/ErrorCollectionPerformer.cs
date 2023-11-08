@@ -35,7 +35,9 @@ public class ErrorCollectionPerformer : IPerformer
 
     public void Perform(ILogger logger)
     {
-        _copyFileOperation = new CopyFileOperation(logger, _file, _directory, _isForce);
+        // when we have an error, we want to copy
+        var isCopyingEnforced = true;
+        _copyFileOperation = new CopyFileOperation(logger, _file, _directory, isCopyingEnforced);
         _deleteFileOperation = new DeleteFileOperation(logger, _file, _directory, _isForce);
 
         CollectCollisions(logger, _errorCollection.Errors.OfType<FileAlreadyExistsError>(),
@@ -209,6 +211,7 @@ public class ErrorCollectionPerformer : IPerformer
 
     private void CreateDirectory(ILogger logger, string path)
     {
+        #warning Creaing directory 03-10-24_Opa_Lan_bis_03-10-26_032.JPG
         if (!_directory.Exists(path))
         {
             logger.LogTrace("Creating directory '{newDirectory}'", path);
