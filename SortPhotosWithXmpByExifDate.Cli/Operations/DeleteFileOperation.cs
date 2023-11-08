@@ -40,20 +40,20 @@ public class DeleteFileOperation : IOperation
         }
     }
 
-    public void RecursivelyDeleteEmptyDirectories(string? path, bool isFirstRun = true)
+    public void RecursivelyDeleteEmptyDirectories(string? path/*, bool isFirstRun = true*/)
     {
         if (path != null)
         {
             foreach (var subDirectory in _directory.GetDirectories(path))
             {
-                RecursivelyDeleteEmptyDirectories(subDirectory);
-                DeleteDirectoryIfEmpty(subDirectory);
+                RecursivelyDeleteEmptyDirectories(subDirectory/*, false*/);
+                // DeleteDirectoryIfEmpty(subDirectory);
             }
 
-            if (isFirstRun)
-            {
-                DeleteDirectoryIfEmpty(path);
-            }
+            // if (isFirstRun)
+            // {
+            DeleteDirectoryIfEmpty(path);
+            // }
         }
 
         void DeleteDirectoryIfEmpty(string path)
