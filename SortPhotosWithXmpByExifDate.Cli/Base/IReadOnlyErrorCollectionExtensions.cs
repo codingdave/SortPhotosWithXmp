@@ -13,7 +13,7 @@ namespace SortPhotosWithXmpByExifDate.Cli
     {
         public static void HandleErrorFiles(this IReadOnlyErrorCollection errorCollection,
             ILogger logger,
-            IFoundStatistics foundStatistics,
+            IFilesStatistics foundStatistics,
             IFile file,
             IDirectory directory,
             bool force)
@@ -74,7 +74,7 @@ namespace SortPhotosWithXmpByExifDate.Cli
         private static void HandleCollisionOrDuplicate(ILogger logger,
                                                        IFile file,
                                                        IDirectory directory,
-                                                       IFoundStatistics foundStatistics,
+                                                       IFilesStatistics foundStatistics,
                                                        CopyFileOperation copyFileOperation,
                                                        DeleteFileOperation deleteFileOperation,
                                                        FileAlreadyExistsError error,
@@ -98,7 +98,7 @@ namespace SortPhotosWithXmpByExifDate.Cli
 
         private static bool IsDuplicate(ILogger logger,
                                         FileAlreadyExistsError error,
-                                        IFoundStatistics foundStatistics,
+                                        IFilesStatistics foundStatistics,
                                         IFile file)
         {
             // when are 2 images identical?
@@ -121,7 +121,7 @@ namespace SortPhotosWithXmpByExifDate.Cli
         }
 
         private static bool AreXmpsDuplicates(FileAlreadyExistsError error,
-                                              IFoundStatistics foundStatistics,
+                                              IFilesStatistics foundStatistics,
                                               IFile file)
         {
             // xmps are identical, if their hash is identical
@@ -142,7 +142,7 @@ namespace SortPhotosWithXmpByExifDate.Cli
 
         private static bool AreImagesDuplicates(ILogger logger,
                                                 FileAlreadyExistsError error,
-                                                IFoundStatistics foundStatistics)
+                                                IFilesStatistics foundStatistics)
         {
             var isDuplicate = false;
 

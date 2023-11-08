@@ -9,7 +9,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Features.DeleteLonelyXmp;
 
 public class DeleteLeftoverXmpsRunner : IRun
 {
-    public bool Force {get;set;}
+    public bool Force { get; }
     private readonly IFileScanner _fileScanner;
     private readonly IFile _file;
 

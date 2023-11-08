@@ -11,7 +11,7 @@ internal class RearrangeByCameraManufacturerRunner : IRun
         throw new NotImplementedException();
     }
 
-    public bool Force { get; set; }
+    public bool Force { get; }
 
     public IResult Run(ILogger logger)
     {

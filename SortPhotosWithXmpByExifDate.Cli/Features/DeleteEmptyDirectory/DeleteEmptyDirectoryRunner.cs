@@ -15,7 +15,7 @@ public class DeleteEmptyDirectoryRunner : IRun
     public DeleteEmptyDirectoryRunner(IDirectory directory, string path, bool force) =>
         (_directory, _path, _force) = (directory, path, force);
 
-    public bool Force { get; set; }
+    public bool Force { get; }
 
     public IResult Run(ILogger logger)
     {

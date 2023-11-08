@@ -8,7 +8,7 @@ internal class RearrangeBySoftwareRunner : IRun
 {
     public RearrangeBySoftwareRunner(string source, string destination, bool force) => throw new NotImplementedException();
 
-    public bool Force { get; set; }
+    public bool Force { get; }
 
     public IResult Run(ILogger logger)
     {

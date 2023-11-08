@@ -1,24 +1,17 @@
 using Microsoft.Extensions.Logging;
 
 using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
-using SortPhotosWithXmpByExifDate.Cli.Operations;
 
 namespace SortPhotosWithXmpByExifDate.Cli.Result;
 
-
-
-public class FilesFoundResult : IResult, IModifiableErrorCollection, IFoundStatistics
+public class FilesFoundResult : IResult, IModifiableErrorCollection
 {
     private readonly ILogger _logger;
     public FilesFoundResult(ILogger logger)
-        => (_logger, _errorCollection, _successfulCollection)
-        = (logger, new ErrorCollection.ErrorCollection(logger), new SuccessCollection());
+        => (_logger, _errorCollection, _successfulCollection, FilesStatistics)
+        = (logger, new ErrorCollection.ErrorCollection(logger), new SuccessCollection(), new FilesStatistics(logger));
 
-    public int FoundXmps { get; set; }
-    public int FoundImages { get; set; }
-    public int SkippedXmps { get; set; }
-    public int SkippedImages { get; set; }
-
+    public IFilesStatistics FilesStatistics { get; }
     public IReadOnlyErrorCollection ErrorCollection => _errorCollection;
     private readonly IErrorCollection _errorCollection;
 
@@ -40,8 +33,7 @@ public class FilesFoundResult : IResult, IModifiableErrorCollection, IFoundStati
 
     public void Log()
     {
-        _logger.LogInformation("-> Found images: {FoundImages}, xmps: {FoundXmps} and duplicates {SkippedImages}/{SkippedXmps}.", FoundImages, FoundXmps, SkippedImages, SkippedXmps);
-
+        _logger.LogDebug("Logging FilesFoundResult");
         foreach (var error in ErrorCollection.Errors)
         {
             switch (error)

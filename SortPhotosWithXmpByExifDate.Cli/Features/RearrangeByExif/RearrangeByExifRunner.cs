@@ -36,10 +36,9 @@ internal class RearrangeByExifRunner : IRun
         _filesFoundResult = new FilesFoundResult(logger);
         _fileScanner = fileScanner;
         _directory = directory;
-        Force = force;
     }
 
-    public bool Force { get; set; }
+    public bool Force =>_operationPerformer.Force;
 
     public IResult Run(ILogger logger)
     {
@@ -77,8 +76,8 @@ internal class RearrangeByExifRunner : IRun
                     else
                     {
                         _filesFoundResult.AddSuccessful(new ToExifPath(fileDatum, _destinationDirectory, dateTime, _operationPerformer));
-                        _filesFoundResult.FoundImages++;
-                        _filesFoundResult.FoundXmps += fileDatum.SidecarFiles.Count;
+                        _filesFoundResult.FilesStatistics.FoundImages++;
+                        _filesFoundResult.FilesStatistics.FoundXmps += fileDatum.SidecarFiles.Count;
                     }
 
                     if (hasErrors)

@@ -47,7 +47,7 @@ internal abstract class CommandBase
             if (result is FilesFoundResult filesFoundResult)
             {
                 filesFoundResult.SuccessfulCollection.Successes.Do(success => success.Perform(Logger));
-                filesFoundResult.ErrorCollection.HandleErrorFiles(Logger, filesFoundResult, File, Directory, f.Force);
+                filesFoundResult.ErrorCollection.HandleErrorFiles(Logger, filesFoundResult.FilesStatistics, File, Directory, f.Force);
                 var deleteOperation = new DeleteFileOperation(Logger, File, Directory, f.Force);
                 Logger.LogInformation(deleteOperation.ToString());
                 Logger.LogInformation(deleteOperation.DirectoryStatistics.ToString());

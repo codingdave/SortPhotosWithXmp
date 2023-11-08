@@ -18,7 +18,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Features.CheckForDuplicateImages
         private readonly List<(double similarity, FileVariations first, FileVariations second)> _imageSimilarity = new();
         private readonly IImageHash _hashAlgorithm = new AverageHash();
 
-        public bool Force { get ; set; }
+        public bool Force { get ; }
 
         public CheckForDuplicateImagesRunner(ILogger<CommandLine> logger, FileScanner fileScanner, bool force, int similarity = 100)
         {

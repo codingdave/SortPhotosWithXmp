@@ -8,7 +8,7 @@ internal class FixExifDateByOffsetRunner : IRun
 {
     public FixExifDateByOffsetRunner(string dir, TimeSpan offset, bool force) => throw new NotImplementedException();
 
-    public bool Force { get; set; }
+    public bool Force { get; }
 
     public IResult Run(ILogger logger)
     {
