@@ -12,18 +12,13 @@ using SystemWrapper.IO;
 
 namespace SortPhotosWithXmpByExifDate.Cli;
 
-internal class DirectoryLogger : IDirectory
+internal class DirectoryWrapper : IDirectory
 {
-    private readonly ILogger<CommandLine> _logger;
-
-    public DirectoryLogger(ILogger<CommandLine> logger) => _logger = logger;
-
-    [DebuggerStepThrough]
+    // [DebuggerStepThrough]
     public IDirectoryInfo CreateDirectory(string path)
     {
         // TODO: Not yet implemented
         _ = Directory.CreateDirectory(path);
-        // return new DirectoryInfoWrap(path);
         return null;
     }
 
@@ -166,7 +161,8 @@ internal class DirectoryLogger : IDirectory
 
     public IDirectoryInfo GetParent(string path)
     {
-        return new DirectoryInfoWrap(Directory.GetParent(path));
+        // Method 'CreateObjRef' in type 'SystemWrapper.IO.DirectoryInfoWrap' from assembly 'SystemWrapper, Version=0.26.0.0, Culture=neutral, PublicKeyToken=fbc3a63dd3cf8960' does not have an implementation.
+        throw new NotImplementedException();
     }
 
     [DebuggerStepThrough]

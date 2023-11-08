@@ -31,9 +31,9 @@ public static class Configuration
             .ConfigureServices(serviceCollection =>
                 _ = serviceCollection
                     // .AddTransient<IFile, FileWrap>()
-                    .AddTransient<IFile, FileLogger>()
+                    .AddTransient<IFile, FileWrapper>()
                     // .AddTransient<IDirectory, DirectoryWrap>()
-                    .AddTransient<IDirectory, DirectoryLogger>()
+                    .AddTransient<IDirectory, DirectoryWrapper>()
                     )
             .ConfigureAppConfiguration((hostBuilderContext, configurationBuilder) =>
                 _ = configurationBuilder

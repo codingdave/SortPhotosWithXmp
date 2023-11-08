@@ -10,6 +10,8 @@ using SortPhotosWithXmpByExifDate.Cli.Result;
 
 using SystemInterface.IO;
 
+using SystemWrapper.IO;
+
 namespace SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 
 public class ErrorCollectionPerformer : IPerformer
@@ -21,6 +23,7 @@ public class ErrorCollectionPerformer : IPerformer
     private readonly string _baseDir;
     private readonly bool _isForce;
     private CopyFileOperation _copyFileOperation;
+    private MoveFileOperation _moveFileOperation;
     private DeleteFileOperation _deleteFileOperation;
 
     public ErrorCollectionPerformer(IReadOnlyErrorCollection errorCollection, IFilesStatistics foundStatistics, IFile file, IDirectory directory, string baseDir, bool isForce)
@@ -37,7 +40,9 @@ public class ErrorCollectionPerformer : IPerformer
     {
         // when we have an error, we want to copy
         var isCopyingEnforced = true;
+#warning copy and move should HAVE not are a directory operator
         _copyFileOperation = new CopyFileOperation(logger, _file, _directory, isCopyingEnforced);
+        _moveFileOperation = new MoveFileOperation(logger, _file, _directory, isCopyingEnforced);
         _deleteFileOperation = new DeleteFileOperation(logger, _file, _directory, _isForce);
 
         CollectCollisions(logger, _errorCollection.Errors.OfType<FileAlreadyExistsError>(),
@@ -51,10 +56,7 @@ public class ErrorCollectionPerformer : IPerformer
             => CreateDirectoryAndCopyFile(logger, error, targetFile));
     }
 
-    private void CollectCollisions<T>(
-        ILogger logger,
-        IEnumerable<T> errors,
-        Action<FileDecomposition, T> action) where T : ErrorBase
+    private void CollectCollisions<T>(ILogger logger, IEnumerable<T> errors, Action<FileDecomposition, T> action) where T : ErrorBase
     {
         if (errors.Any())
         {
@@ -64,13 +66,13 @@ public class ErrorCollectionPerformer : IPerformer
             logger.LogError($"{errors.Count()} {directoryName} issues will be located in the directory '{targetDirectory}'");
 
             RenamePossiblyExistingDirectory(logger, targetDirectory);
-            CreateDirectory(logger, targetDirectory);
+            _copyFileOperation.CreateDirectory(targetDirectory);
 
             foreach (var error in errors)
             {
                 try
                 {
-                    var file = CreateFileDecompositionAtCollisionDirectory(targetDirectory, error.File);
+                    var file = CreateFileDecompositionAtCollisionDirectory(logger, targetDirectory, error.File);
                     action(file, error);
                 }
                 catch (Exception e)
@@ -84,16 +86,13 @@ public class ErrorCollectionPerformer : IPerformer
     private void CreateDirectoryAndCopyFile(ILogger logger, ErrorBase error, FileDecomposition targetFile)
     {
         // 1: make sure directory exists
-        CreateDirectory(logger, targetFile.Directory);
+        _copyFileOperation.CreateDirectory(targetFile.Directory);
 
         // 2: copy the first file of the collision to the other duplicates s.t. we can investigate easily
         CopyFileWithAppendedNumber(logger, error.File, targetFile);
     }
 
-    private void HandleCollisionOrDuplicate(
-        ILogger logger,
-        FileAlreadyExistsError error,
-        FileDecomposition targetFile)
+    private void HandleCollisionOrDuplicate(ILogger logger, FileAlreadyExistsError error, FileDecomposition targetFile)
     {
         if (IsDuplicate(logger, error))
         {
@@ -111,9 +110,7 @@ public class ErrorCollectionPerformer : IPerformer
         _deleteFileOperation.DeleteFile(error.OtherFile);
     }
 
-    private bool IsDuplicate(
-        ILogger logger,
-        FileAlreadyExistsError error)
+    private bool IsDuplicate(ILogger logger, FileAlreadyExistsError error)
     {
         // when are 2 images identical?
         var isDuplicate = false;
@@ -209,16 +206,6 @@ public class ErrorCollectionPerformer : IPerformer
         CopyFileWithAppendedNumber(logger, error.OtherFile, targetFile);
     }
 
-    private void CreateDirectory(ILogger logger, string path)
-    {
-        #warning Creaing directory 03-10-24_Opa_Lan_bis_03-10-26_032.JPG
-        if (!_directory.Exists(path))
-        {
-            logger.LogTrace("Creating directory '{newDirectory}'", path);
-            _ = _directory.CreateDirectory(path);
-        }
-    }
-
     private void RenamePossiblyExistingDirectory(ILogger logger, string path)
     {
         // rename possibly existing ErrorFiles directory (add lastWriteTime to the end)
@@ -226,15 +213,15 @@ public class ErrorCollectionPerformer : IPerformer
         {
             var time = File.GetLastWriteTime(path).ToString("yyyyMMddTHHmmss");
             var d = new DirectoryInfo(path);
-            var parentDirectory = d.Parent ?? throw new InvalidOperationException("Path does not exist");
+            var parentDirectory = d.Parent ?? throw new InvalidOperationException("Parent of path does not exist");
             var directoryName = d.Name;
-            var newName = Path.Combine(parentDirectory.FullName, directoryName + "_" + time);
-            logger.LogTrace("Renaming '{oldDirectory}' to '{newDirectory}'", path, newName);
-            _directory.Move(path, newName);
+            var targetPath = Path.Combine(parentDirectory.FullName, directoryName + "_" + time);
+            logger.LogTrace("Renaming '{oldDirectory}' to '{newDirectory}'", path, targetPath);
+            _moveFileOperation.ChangeFiles(new List<IImageFile>() { new ImageFile(path) }, targetPath);
         }
     }
 
-    private FileDecomposition CreateFileDecompositionAtCollisionDirectory(string targetDirectory, string errorFile)
+    private FileDecomposition CreateFileDecompositionAtCollisionDirectory(ILogger logger, string targetDirectory, string errorFile)
     {
         static (string filename, string extension) SplitFileNameAndExtension(string name)
         {
@@ -254,15 +241,12 @@ public class ErrorCollectionPerformer : IPerformer
         var completeFilepath = Path.Combine(directory, filenameWithExtension);
 
         var targetFile = new FileDecomposition(completeFilepath, directory, filename, extension);
-        Serilog.Log.Verbose($"{nameof(targetDirectory)}: {targetDirectory}, errorFile: {errorFile} => {nameof(targetFile)}: {targetFile}");
+        logger.LogDebug($"{nameof(targetDirectory)}: {targetDirectory}, errorFile: {errorFile} => {nameof(targetFile)}: {targetFile}");
 
         return targetFile;
     }
 
-    private void CopyFileWithAppendedNumber(
-        ILogger logger,
-        string errorFile,
-        FileDecomposition targetFile)
+    private void CopyFileWithAppendedNumber(ILogger logger, string errorFile, FileDecomposition targetFile)
     {
         // copy this file into subdirectory with appended _number
         var path = targetFile.Directory;

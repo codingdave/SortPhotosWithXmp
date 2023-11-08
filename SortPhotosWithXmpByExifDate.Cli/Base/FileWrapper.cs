@@ -11,13 +11,8 @@ using SystemInterface.Security.AccessControl;
 
 namespace SortPhotosWithXmpByExifDate.Cli;
 
-internal class FileLogger : IFile
+internal class FileWrapper : IFile
 {
-    private readonly ILogger<CommandLine> _ilogger;
-
-    public FileLogger(ILogger<CommandLine> ilogger) => _ilogger = ilogger;
-
-
     public void AppendAllLines(string path, IEnumerable<string> contents)
     {
         throw new NotImplementedException();

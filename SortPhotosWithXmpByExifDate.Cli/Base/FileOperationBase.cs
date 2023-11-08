@@ -17,8 +17,11 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
 
         public bool Force { get; private set; }
 
-        protected void CreateDirectory(string targetPath)
+        public void CreateDirectory(string targetPath)
         {
+            // make sure we are not working on a file
+            targetPath = Path.GetDirectoryName(targetPath) ?? throw new InvalidOperationException($"Path.GetDirectoryName({targetPath})");
+
             if (Force && !_directory.Exists(targetPath))
             {
                 _ = _directory.CreateDirectory(targetPath);

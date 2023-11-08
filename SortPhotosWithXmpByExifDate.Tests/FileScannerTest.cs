@@ -157,7 +157,7 @@ public class FileScannerTest
     {
         // arrange
         // var act
-        var result = _fileScanner.ExtractFilenameWithoutExtentionAndVersion(filepath);
+        var result = _fileScanner.ExtractFilenameWithoutExtensionAndVersion(filepath);
 
         // assert
         Assert.Equal(baseFilename, result);
@@ -177,8 +177,8 @@ public class FileScannerTest
         var xmpFilename = "some/other/path/050826_foo_03.JPG.xmp";
 
         // var act
-        var cleanedXmp = _fileScanner.ExtractFilenameWithoutExtentionAndVersion(xmpFilename);
-        var cleanedImage = _fileScanner.ExtractFilenameWithoutExtentionAndVersion(imageFilename);
+        var cleanedXmp = _fileScanner.ExtractFilenameWithoutExtensionAndVersion(xmpFilename);
+        var cleanedImage = _fileScanner.ExtractFilenameWithoutExtensionAndVersion(imageFilename);
 
         // assert
         Assert.NotEqual(baseFilename, cleanedImage);

@@ -58,7 +58,7 @@ public class FileScanner : IFileScanner
         images.Do(image => Map.Add(image, new(new ImageFile(image), new())));
         xmps.Do(file =>
         {
-            var filenameWithoutExtensionAndVersion = ExtractFilenameWithoutExtentionAndVersion(file);
+            var filenameWithoutExtensionAndVersion = ExtractFilenameWithoutExtensionAndVersion(file);
 
             if (Map.TryGetValue(filenameWithoutExtensionAndVersion, out var value))
             {
@@ -118,7 +118,7 @@ public class FileScanner : IFileScanner
     }
 
 
-    public string ExtractFilenameWithoutExtentionAndVersion(string file)
+    public string ExtractFilenameWithoutExtensionAndVersion(string file)
     {
         // DSC_9287.NEF        <-- file, could be mov, jpg, ...
         // DSC_9287.NEF.xmp    <-- 1.st development file, version 0. No versioning for first version.

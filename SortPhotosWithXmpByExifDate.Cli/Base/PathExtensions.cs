@@ -6,10 +6,11 @@ public static class PathExtensions
     {
         var fixedPath = filePath.FixPath();
         var fullPath = Path.GetFullPath(fixedPath);
+        var directory = new DirectoryWrapper();
 
-        if (!Directory.Exists(fullPath))
+        if (!directory.Exists(fullPath))
         {
-            _ = Directory.CreateDirectory(fullPath);
+            _ = directory.CreateDirectory(fullPath);
         }
         return filePath;
     }
