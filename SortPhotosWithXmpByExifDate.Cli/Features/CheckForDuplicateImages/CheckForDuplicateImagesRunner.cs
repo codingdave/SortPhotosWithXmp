@@ -18,7 +18,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Features.CheckForDuplicateImages
         private readonly List<(double similarity, FileVariations first, FileVariations second)> _imageSimilarity = new();
         private readonly IImageHash _hashAlgorithm = new AverageHash();
 
-        public bool Force { get ; }
+        public bool Force { get; }
 
         public CheckForDuplicateImagesRunner(ILogger<CommandLine> logger, FileScanner fileScanner, bool force, int similarity = 100)
         {
@@ -33,7 +33,8 @@ namespace SortPhotosWithXmpByExifDate.Cli.Features.CheckForDuplicateImages
         {
             try
             {
-#warning CheckForDuplicateImagesRunner.Run
+                throw new NotImplementedException();
+
                 // 0. Work only on non-lonely xmps
                 // REM - 1. before we search for duplicate images and xmps we check for lonely xmps
                 // REM - 2. now we are sure to find pairs <img,xmp> or <img, null>
@@ -50,7 +51,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Features.CheckForDuplicateImages
                 _logger.LogExceptionError(e);
             }
 
-            return new DuplicatesDeletedResult(_logger);
+            return new DuplicatesDeletedResult();
         }
 
         private bool LonelyXmpsExist()
@@ -149,7 +150,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Features.CheckForDuplicateImages
             using var saveStorageTimer = new Timer(SaveStorageTick, null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
 
             var result = Parallel.ForEach(_fileScanner.Map.Values, CreateHashes);
-            if(!result.IsCompleted)
+            if (!result.IsCompleted)
             {
                 _logger.LogError($"Parallel.ForEach failed: LowestBreakIteration: {result.LowestBreakIteration}, {result}");
             }

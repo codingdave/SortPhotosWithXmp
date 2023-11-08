@@ -16,31 +16,34 @@ namespace SortPhotosWithXmpByExifDate.Cli
             IFilesStatistics foundStatistics,
             IFile file,
             IDirectory directory,
+            string baseDir,
             bool force)
         {
             var copyFileOperation = new CopyFileOperation(logger, file, directory, force);
             var deleteFileOperation = new DeleteFileOperation(logger, file, directory, force);
 
-            CollectCollisions(logger, directory, errorCollection.Errors.OfType<FileAlreadyExistsError>(), 
-                (FileDecomposition targetFile, FileAlreadyExistsError error) 
-                => HandleCollisionOrDuplicate(logger,file, directory, foundStatistics, copyFileOperation, deleteFileOperation, error, targetFile));
-            CollectCollisions(logger, directory, errorCollection.Errors.OfType<NoTimeFoundError>(), 
-                (FileDecomposition targetFile, NoTimeFoundError error) 
+            CollectCollisions(logger, directory, baseDir, errorCollection.Errors.OfType<FileAlreadyExistsError>(), 
+                (FileDecomposition targetFile, FileAlreadyExistsError error)
+                => HandleCollisionOrDuplicate(logger, file, directory, foundStatistics, copyFileOperation, deleteFileOperation, error, targetFile));
+            CollectCollisions(logger, directory, baseDir, errorCollection.Errors.OfType<NoTimeFoundError>(),
+                (FileDecomposition targetFile, NoTimeFoundError error)
                 => CreateDirectoryAndCopyFile(logger, directory, error, targetFile, copyFileOperation));
-            CollectCollisions(logger, directory, errorCollection.Errors.OfType<MetaDataError>(), 
-                (FileDecomposition targetFile, MetaDataError error) 
+            CollectCollisions(logger, directory, baseDir, errorCollection.Errors.OfType<MetaDataError>(),
+                (FileDecomposition targetFile, MetaDataError error)
                 => CreateDirectoryAndCopyFile(logger, directory, error, targetFile, copyFileOperation));
         }
 
-        private static void CollectCollisions<T>(ILogger logger,
-                                              IDirectory directory,
-                                              IEnumerable<T> errors,
-                                              Action<FileDecomposition, T> action) where T : ErrorBase
+        private static void CollectCollisions<T>(
+            ILogger logger,
+            IDirectory directory,
+            string baseDir,
+            IEnumerable<T> errors,
+            Action<FileDecomposition, T> action) where T : ErrorBase
         {
             if (errors.Any())
             {
                 var directoryName = errors.First().Name;
-                var targetDirectory = new DirectoryInfo(directoryName).FullName;
+                var targetDirectory = Path.Join(baseDir, directoryName);
 
                 logger.LogError($"{errors.Count()} {directoryName} issues will be located in the directory '{targetDirectory}'");
 

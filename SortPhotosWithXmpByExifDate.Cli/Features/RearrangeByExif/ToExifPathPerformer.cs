@@ -6,19 +6,19 @@ using SortPhotosWithXmpByExifDate.Cli.Result;
 
 namespace SortPhotosWithXmpByExifDate.Cli.Features.RearrangeByExif;
 
-internal class ToExifPath : ISuccess
+internal class ToExifPathPerformer : IPerformer
 {
     private readonly FileVariations _file;
     private readonly string _destinationDirectory;
     private readonly DateTime _dateTime;
-    private readonly FileOperationBase _operationPerformer;
+    private readonly FileOperationBase _operation;
 
-    public ToExifPath(FileVariations file, string destinationDirectory, DateTime dateTime, FileOperationBase operationPerformer)
+    public ToExifPathPerformer(FileVariations file, string destinationDirectory, DateTime dateTime, FileOperationBase operation)
     {
         _file = file;
         _destinationDirectory = destinationDirectory;
         _dateTime = dateTime;
-        _operationPerformer = operationPerformer;
+        _operation = operation;
 
         if (_file.Data == null)
         {
@@ -32,6 +32,6 @@ internal class ToExifPath : ISuccess
 
         var destinationSuffix = _dateTime.ToString("yyyy/MM/dd");
         var targetPath = Path.Combine(_destinationDirectory, destinationSuffix);
-        _operationPerformer.ChangeFiles(_file.All, targetPath);
+        _operation.ChangeFiles(_file.All, targetPath);
     }
 }

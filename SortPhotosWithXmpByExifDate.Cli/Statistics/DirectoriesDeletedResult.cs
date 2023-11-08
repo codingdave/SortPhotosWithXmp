@@ -11,17 +11,15 @@ namespace SortPhotosWithXmpByExifDate.Cli.Result;
 
 public class DirectoriesDeletedResult : IResult
 {
-    private readonly ILogger _logger;
     private readonly IDirectory _directory;
     private readonly string _sourceDirectory;
 
-    public DirectoriesDeletedResult(ILogger logger, IDirectory directory, string sourceDirectory)
+    public DirectoriesDeletedResult(IDirectory directory, string sourceDirectory)
     {
-        _logger = logger;
         _directory = directory;
         _sourceDirectory = sourceDirectory;
-        ErrorCollection = new ErrorCollection.ErrorCollection(logger);
-        SuccessfulCollection = new SuccessCollection();
+        ErrorCollection = new ErrorCollection.ErrorCollection();
+        PerformerCollection = new PerformerCollection();
     }
 
     public void Perform(DeleteFileOperation operation)
@@ -31,13 +29,13 @@ public class DirectoriesDeletedResult : IResult
 
     public IReadOnlyErrorCollection ErrorCollection { get; }
 
-    public IReadOnlySuccessCollection SuccessfulCollection { get; }
+    public IReadOnlyPerformerCollection PerformerCollection { get; }
 
-    public void Log()
+    public void Log(ILogger logger)
     {
         foreach (var error in ErrorCollection.Errors)
         {
-            _logger.LogError(error.ErrorMessage);
+            logger.LogError(error.ErrorMessage);
         }
     }
 }

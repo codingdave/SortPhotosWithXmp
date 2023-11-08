@@ -5,15 +5,11 @@ namespace SortPhotosWithXmpByExifDate.Cli.Result
 {
     internal class DuplicatesDeletedResult : IResult
     {
-        private readonly ILogger _logger;
-
-        public DuplicatesDeletedResult(ILogger logger) => _logger = logger;
-
         public IReadOnlyErrorCollection ErrorCollection => throw new NotImplementedException();
 
-        public IReadOnlySuccessCollection SuccessfulCollection => throw new NotImplementedException();
+        public IReadOnlyPerformerCollection PerformerCollection => throw new NotImplementedException();
 
-        public void Log()
+        public void Log(ILogger logger)
         {
             throw new NotImplementedException();
         }

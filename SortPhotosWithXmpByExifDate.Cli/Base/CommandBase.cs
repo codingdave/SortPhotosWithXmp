@@ -46,8 +46,8 @@ internal abstract class CommandBase
             Logger.LogInformation($"Processing statistics");
             if (result is FilesFoundResult filesFoundResult)
             {
-                filesFoundResult.SuccessfulCollection.Successes.Do(success => success.Perform(Logger));
-                filesFoundResult.ErrorCollection.HandleErrorFiles(Logger, filesFoundResult.FilesStatistics, File, Directory, f.Force);
+                filesFoundResult.PerformerCollection.Performers.Do(performer => performer.Perform(Logger));
+                filesFoundResult.ErrorCollection.HandleErrorFiles(Logger, filesFoundResult.FilesStatistics, File, Directory, filesFoundResult.Directory, f.Force);
                 var deleteOperation = new DeleteFileOperation(Logger, File, Directory, f.Force);
                 Logger.LogInformation(deleteOperation.ToString());
                 Logger.LogInformation(deleteOperation.DirectoryStatistics.ToString());
@@ -56,7 +56,7 @@ internal abstract class CommandBase
                 Logger.LogInformation(deleteOperation.DirectoryStatistics.ToString());
             }
             // if (result is IFoundStatistics filesFoundStatistics)
-            result.Log();
+            result.Log(Logger);
 
             Logger.LogInformation($"Done processing statistics");
         }

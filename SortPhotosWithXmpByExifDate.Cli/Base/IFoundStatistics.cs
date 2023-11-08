@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging;
+
 namespace SortPhotosWithXmpByExifDate.Cli.Result;
 
 public interface IFilesStatistics
@@ -7,5 +9,5 @@ public interface IFilesStatistics
     int SkippedXmps { get; set; }
     int SkippedImages { get; set; }
 
-    void Log();
+    void Log(ILogger logger);
 }

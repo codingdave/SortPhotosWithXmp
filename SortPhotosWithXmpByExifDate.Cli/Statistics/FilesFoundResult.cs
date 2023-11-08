@@ -4,36 +4,37 @@ using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 
 namespace SortPhotosWithXmpByExifDate.Cli.Result;
 
-public class FilesFoundResult : IResult, IModifiableErrorCollection
+public class FilesFoundResult : IDirectoryResult, IModifiableErrorCollection
 {
-    private readonly ILogger _logger;
-    public FilesFoundResult(ILogger logger)
-        => (_logger, _errorCollection, _successfulCollection, FilesStatistics)
-        = (logger, new ErrorCollection.ErrorCollection(logger), new SuccessCollection(), new FilesStatistics(logger));
+    public FilesFoundResult(string directory)
+        => (Directory, _errorCollection)
+        = (directory, new ErrorCollection.ErrorCollection());
 
-    public IFilesStatistics FilesStatistics { get; }
+    public IFilesStatistics FilesStatistics { get; } = new FilesStatistics();
     public IReadOnlyErrorCollection ErrorCollection => _errorCollection;
     private readonly IErrorCollection _errorCollection;
 
-    public IReadOnlySuccessCollection SuccessfulCollection => _successfulCollection;
+    public IReadOnlyPerformerCollection PerformerCollection => _performerCollection;
 
     public DirectoriesDeletedResult CleanupResult { get; internal set; }
 
-    private readonly ISuccessCollection _successfulCollection;
+    public string Directory { get; init; }
+
+    private readonly IPerformerCollection _performerCollection = new PerformerCollection();
 
     public void AddError(IError error)
     {
         _errorCollection.Add(error);
     }
 
-    public void AddSuccessful(ISuccess successful)
+    public void AddPerformer(IPerformer performer)
     {
-        _successfulCollection.Add(successful);
+        _performerCollection.Add(performer);
     }
 
-    public void Log()
+    public void Log(ILogger logger)
     {
-        _logger.LogDebug("Logging FilesFoundResult");
+        logger.LogDebug("Logging FilesFoundResult");
         foreach (var error in ErrorCollection.Errors)
         {
             switch (error)
@@ -42,12 +43,12 @@ public class FilesFoundResult : IResult, IModifiableErrorCollection
                     // nothing to do over here
                     break;
                 case ImageProcessingExceptionError ipe:
-                    _logger.LogExceptionError(error.File, ipe.Exception);
+                    logger.LogExceptionError(error.File, ipe.Exception);
                     break;
                 case GeneralExceptionError:
                 case MetaDataError:
                 case NoTimeFoundError:
-                    _logger.LogError(error.ToString());
+                    logger.LogError(error.ToString());
                     break;
                 default:
                     throw new NotImplementedException($"{error}");

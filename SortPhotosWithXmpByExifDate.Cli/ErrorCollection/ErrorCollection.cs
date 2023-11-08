@@ -6,9 +6,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 
 public class ErrorCollection : IErrorCollection, IReadOnlyErrorCollection
 {
-    private readonly ILogger _logger;
-
-    public ErrorCollection(ILogger logger) => _logger = logger;
+    public ErrorCollection() { }
 
     public IReadOnlyList<IError> Errors => _errors.ToList();
     private readonly ConcurrentBag<IError> _errors = new();

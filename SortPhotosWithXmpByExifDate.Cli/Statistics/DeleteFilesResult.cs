@@ -1,16 +1,16 @@
+using Microsoft.Extensions.Logging;
+
 using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 
 namespace SortPhotosWithXmpByExifDate.Cli.Result;
 
 public class DeleteFilesResult : IResult
 {
-    public DeleteFilesResult() => throw new NotImplementedException();
-
     public IReadOnlyErrorCollection ErrorCollection => throw new NotImplementedException();
 
-    public IReadOnlySuccessCollection SuccessfulCollection => throw new NotImplementedException();
+    public IReadOnlyPerformerCollection PerformerCollection => throw new NotImplementedException();
 
-    public void Log()
+    public void Log(ILogger logger)
     {
         throw new NotImplementedException();
     }

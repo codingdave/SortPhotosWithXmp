@@ -23,7 +23,7 @@ public class DeleteFileOperation : IOperation
         _file = file;
         _directory = directory;
         Force = force;
-        Result = new DirectoriesDeletedResult(logger, directory, _directory.GetCurrentDirectory());
+        Result = new DirectoriesDeletedResult(directory, _directory.GetCurrentDirectory());
         DirectoryStatistics = new DirectoryStatistics();
     }
 

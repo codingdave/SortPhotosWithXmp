@@ -33,12 +33,12 @@ internal class RearrangeByExifRunner : IRun
         _sourceDirectory = sourceDirectory ?? throw new ArgumentNullException(nameof(sourceDirectory));
         _destinationDirectory = destinationDirectory ?? throw new ArgumentNullException(nameof(destinationDirectory));
         _operationPerformer = OperationPerformerFactory.GetCopyOrMovePerformer(logger, file, directory, move, force);
-        _filesFoundResult = new FilesFoundResult(logger);
+        _filesFoundResult = new FilesFoundResult(destinationDirectory);
         _fileScanner = fileScanner;
         _directory = directory;
     }
 
-    public bool Force =>_operationPerformer.Force;
+    public bool Force => _operationPerformer.Force;
 
     public IResult Run(ILogger logger)
     {
@@ -75,7 +75,7 @@ internal class RearrangeByExifRunner : IRun
                     }
                     else
                     {
-                        _filesFoundResult.AddSuccessful(new ToExifPath(fileDatum, _destinationDirectory, dateTime, _operationPerformer));
+                        _filesFoundResult.AddPerformer(new ToExifPathPerformer(fileDatum, _destinationDirectory, dateTime, _operationPerformer));
                         _filesFoundResult.FilesStatistics.FoundImages++;
                         _filesFoundResult.FilesStatistics.FoundXmps += fileDatum.SidecarFiles.Count;
                     }
@@ -97,7 +97,7 @@ internal class RearrangeByExifRunner : IRun
         });
 
 #warning Result or Task List?
-        _filesFoundResult.CleanupResult = new DirectoriesDeletedResult(logger, _directory, _sourceDirectory);
+        _filesFoundResult.CleanupResult = new DirectoriesDeletedResult(_directory, _sourceDirectory);
         logger.LogInformation($"{nameof(RearrangeByExifRunner)}.{nameof(Run)} has finished");
 
         return _filesFoundResult;

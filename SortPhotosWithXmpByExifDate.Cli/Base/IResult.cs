@@ -1,10 +1,12 @@
+using Microsoft.Extensions.Logging;
+
 using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 
 namespace SortPhotosWithXmpByExifDate.Cli.Result;
 
 public interface IResult
 {
-    void Log();
+    void Log(ILogger logger);
     IReadOnlyErrorCollection ErrorCollection { get; }
-    IReadOnlySuccessCollection SuccessfulCollection { get; }
+    IReadOnlyPerformerCollection PerformerCollection { get; }
 }
