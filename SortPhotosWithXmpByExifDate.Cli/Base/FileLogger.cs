@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Security.AccessControl;
 using System.Text;
 
@@ -92,9 +93,10 @@ internal class FileLogger : IFile
         throw new NotImplementedException();
     }
 
+    [DebuggerStepThrough]
     public bool Exists(string path)
     {
-        throw new NotImplementedException();
+        return File.Exists(path);
     }
 
     public IFileSecurity GetAccessControl(string path)

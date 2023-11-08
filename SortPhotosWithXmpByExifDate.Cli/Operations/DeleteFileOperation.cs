@@ -63,8 +63,13 @@ public class DeleteFileOperation : IOperation
                 if (_directory.Exists(path))
                 {
                     DirectoryStatistics.DirectoriesFound.Add(path);
-                    // if no directories and no files are within this path
-                    if (!_directory.GetDirectories(path).Any() && !_directory.GetFiles(path).Any())
+                    if (
+                        // if no directories are within this path
+                        !_directory.GetDirectories(path).Any() 
+                        // if no files are within this path
+                        && !_directory.GetFiles(path).Any() 
+                        // if path is not a file
+                        && !_file.Exists(path))
                     {
                         DeleteDirectory(path);
                     }
