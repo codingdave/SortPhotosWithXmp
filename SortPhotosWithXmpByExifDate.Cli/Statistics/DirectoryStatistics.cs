@@ -7,6 +7,13 @@ public class DirectoryStatistics
 
     public override string ToString()
     {
-        return $"Found {DirectoriesFound.Count}, deleted {DirectoriesDeleted.Count} directories";
+        var prefix = Environment.NewLine + " * ";
+
+        var msg = $"Directories found {DirectoriesFound.Count}, deleted {DirectoriesDeleted.Count}";
+        msg += Environment.NewLine;
+        msg += $"Found: {prefix}{string.Join(prefix, DirectoriesFound)}";
+        msg += Environment.NewLine;
+        msg += $"Deleted: {prefix}{string.Join(prefix, DirectoriesDeleted)}";
+        return msg;
     }
 }
