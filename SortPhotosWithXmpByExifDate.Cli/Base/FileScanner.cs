@@ -79,7 +79,7 @@ public class FileScanner : IFileScanner
                     if (!string.Equals(filenameWithoutExtensionAndVersion, file))
                     {
                         // We did not find the image, so we assume it does not exist
-                        _logger.LogDebug($"Expected base image '{filenameWithoutExtensionAndVersion}' not found for '{file}'");
+                        _logger.LogTrace($"Expected base image '{filenameWithoutExtensionAndVersion}' not found for '{file}'");
                     }
                     value = new FileVariations(null, new List<IImageFile>() { new ImageFile(file) });
                     Map.Add(filenameWithoutExtensionAndVersion, value);
