@@ -16,7 +16,7 @@ public class FilesFoundResult : IDirectoryResult, IModifiableErrorCollection
 
     public IReadOnlyPerformerCollection PerformerCollection => _performerCollection;
 
-    public DirectoriesDeletedResult CleanupResult { get; internal set; }
+    public IPerformer CleanupPerformer { get; internal set; }
 
     public string Directory { get; init; }
 

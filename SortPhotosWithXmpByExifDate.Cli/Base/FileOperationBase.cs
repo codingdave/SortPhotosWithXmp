@@ -11,7 +11,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
 
         protected FileOperationBase(IDirectory directory, bool force)
         {
-            _directory = directory;
+            _directory = directory ?? throw new ArgumentNullException(nameof(directory));
             Force = force;
         }
 

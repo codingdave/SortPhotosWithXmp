@@ -13,7 +13,6 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
     {
         private readonly ILogger _logger;
         private readonly IFile _file;
-        private readonly IDirectory _directory;
 
         internal CopyFileOperation(
             ILogger logger,
@@ -22,9 +21,8 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
             bool force)
             : base(directory, force)
         {
-            _logger = logger;
-            _file = file;
-            _directory = directory;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _file = file ?? throw new ArgumentNullException(nameof(file));
         }
 
         private void ChangeFile(string sourceFileName, string destFileName)

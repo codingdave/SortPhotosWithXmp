@@ -1,35 +1,35 @@
-using ImageMagick;
-
 using Microsoft.Extensions.Logging;
 
 using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 using SortPhotosWithXmpByExifDate.Cli.Operations;
 
-using SystemInterface.IO;
-
 namespace SortPhotosWithXmpByExifDate.Cli.Result;
 
-public class DirectoriesDeletedResult : IResult
+public class DeleteDirectoriesPerformer : IResult, IPerformer
 {
-    private readonly IDirectory _directory;
-    private readonly string _sourceDirectory;
+    private readonly string _path;
 
-    public DirectoriesDeletedResult(IDirectory directory, string sourceDirectory)
+    public DeleteDirectoriesPerformer(string path, DeleteFileOperation operation)
     {
-        _directory = directory;
-        _sourceDirectory = sourceDirectory;
+        _path = path;
         ErrorCollection = new ErrorCollection.ErrorCollection();
         PerformerCollection = new PerformerCollection();
+        _operation = operation;
     }
 
-    public void Perform(DeleteFileOperation operation)
+    public void Perform(ILogger logger)
     {
-        operation.RecursivelyDeleteEmptyDirectories(_sourceDirectory);
+        logger.LogInformation(_operation.DirectoryStatistics.ToString());
+        logger.LogDebug($"performing {_operation.GetType().FullName}, Force: {_operation.Force}");
+        _operation.RecursivelyDeleteEmptyDirectories(_path);
+        logger.LogInformation(_operation.DirectoryStatistics.ToString());
     }
 
     public IReadOnlyErrorCollection ErrorCollection { get; }
 
     public IReadOnlyPerformerCollection PerformerCollection { get; }
+
+    private readonly DeleteFileOperation _operation;
 
     public void Log(ILogger logger)
     {

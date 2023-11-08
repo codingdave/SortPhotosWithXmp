@@ -47,17 +47,11 @@ internal abstract class CommandBase
             if (result is FilesFoundResult filesFoundResult)
             {
                 filesFoundResult.PerformerCollection.Performers.Do(performer => performer.Perform(Logger));
-                filesFoundResult.ErrorCollection.HandleErrorFiles(Logger, filesFoundResult.FilesStatistics, File, Directory, filesFoundResult.Directory, f.Force);
-                var deleteOperation = new DeleteFileOperation(Logger, File, Directory, f.Force);
-                Logger.LogInformation(deleteOperation.ToString());
-                Logger.LogInformation(deleteOperation.DirectoryStatistics.ToString());
-                filesFoundResult.CleanupResult.Perform(deleteOperation);
-                Logger.LogInformation(deleteOperation.ToString());
-                Logger.LogInformation(deleteOperation.DirectoryStatistics.ToString());
+                var ep = new ErrorCollectionPerformer(filesFoundResult.ErrorCollection, filesFoundResult.FilesStatistics, File, Directory, filesFoundResult.Directory, f.Force);
+                ep.Perform(Logger);
+                filesFoundResult.CleanupPerformer.Perform(Logger);
             }
-            // if (result is IFoundStatistics filesFoundStatistics)
             result.Log(Logger);
-
             Logger.LogInformation($"Done processing statistics");
         }
         catch (Exception e)

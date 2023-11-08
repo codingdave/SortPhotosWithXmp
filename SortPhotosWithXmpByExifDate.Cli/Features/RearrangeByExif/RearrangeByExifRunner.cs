@@ -17,7 +17,8 @@ internal class RearrangeByExifRunner : IRun
     private readonly string _destinationDirectory;
     private readonly string _sourceDirectory;
     private readonly FilesFoundResult _filesFoundResult;
-    private readonly FileOperationBase _operationPerformer;
+    private readonly FileOperationBase _fileOperation;
+    private readonly DeleteFileOperation _deleteOperation;
     private readonly IFileScanner _fileScanner;
     private readonly IDirectory _directory;
 
@@ -27,23 +28,24 @@ internal class RearrangeByExifRunner : IRun
                              IFileScanner fileScanner,
                              IFile file,
                              IDirectory directory,
-                             bool move,
+                             bool isMove,
                              bool force)
     {
         _sourceDirectory = sourceDirectory ?? throw new ArgumentNullException(nameof(sourceDirectory));
         _destinationDirectory = destinationDirectory ?? throw new ArgumentNullException(nameof(destinationDirectory));
-        _operationPerformer = OperationPerformerFactory.GetCopyOrMovePerformer(logger, file, directory, move, force);
+        _fileOperation = OperationFactory.GetCopyOrMoveOperation(logger, file, directory, isMove, force);
+        _deleteOperation = new DeleteFileOperation(logger, file, directory, force);
         _filesFoundResult = new FilesFoundResult(destinationDirectory);
         _fileScanner = fileScanner;
         _directory = directory;
     }
 
-    public bool Force => _operationPerformer.Force;
+    public bool Force => _fileOperation.Force;
 
     public IResult Run(ILogger logger)
     {
         DateTimeResolver dateTimeResolver = new(logger);
-        logger.LogInformation($"Starting {nameof(RearrangeByExifRunner)}.{nameof(Run)} with search path: '{_sourceDirectory}' and destination path '{_destinationDirectory}'. {_operationPerformer}");
+        logger.LogInformation($"Starting {nameof(RearrangeByExifRunner)}.{nameof(Run)} with search path: '{_sourceDirectory}' and destination path '{_destinationDirectory}'. {_fileOperation}");
 
         _fileScanner.Map.Values
 #if RELEASE
@@ -75,7 +77,7 @@ internal class RearrangeByExifRunner : IRun
                     }
                     else
                     {
-                        _filesFoundResult.AddPerformer(new ToExifPathPerformer(fileDatum, _destinationDirectory, dateTime, _operationPerformer));
+                        _filesFoundResult.AddPerformer(new ToExifPathPerformer(fileDatum, _destinationDirectory, dateTime, _fileOperation));
                         _filesFoundResult.FilesStatistics.FoundImages++;
                         _filesFoundResult.FilesStatistics.FoundXmps += fileDatum.SidecarFiles.Count;
                     }
@@ -96,8 +98,7 @@ internal class RearrangeByExifRunner : IRun
             }
         });
 
-#warning Result or Task List?
-        _filesFoundResult.CleanupResult = new DirectoriesDeletedResult(_directory, _sourceDirectory);
+        _filesFoundResult.CleanupPerformer = new DeleteDirectoriesPerformer(_sourceDirectory, _deleteOperation);
         logger.LogInformation($"{nameof(RearrangeByExifRunner)}.{nameof(Run)} has finished");
 
         return _filesFoundResult;

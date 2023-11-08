@@ -14,14 +14,12 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
     {
         private readonly ILogger _logger;
         private readonly IFile _file;
-        private readonly IDirectory _directory;
 
         internal MoveFileOperation(ILogger logger, IFile file, IDirectory directory, bool force)
         : base(directory, force)
         {
             _logger = logger;
             _file = file;
-            _directory = directory;
         }
 
         public override void ChangeFiles(IEnumerable<IImageFile> files, string targetPath)

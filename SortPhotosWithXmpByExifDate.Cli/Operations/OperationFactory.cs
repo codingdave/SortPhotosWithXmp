@@ -4,11 +4,11 @@ using SystemInterface.IO;
 
 namespace SortPhotosWithXmpByExifDate.Cli.Operations
 {
-    internal class OperationPerformerFactory
+    internal class OperationFactory
     {
-        internal static FileOperationBase GetCopyOrMovePerformer(ILogger logger, IFile file, IDirectory directory, bool move, bool force)
+        internal static FileOperationBase GetCopyOrMoveOperation(ILogger logger, IFile file, IDirectory directory, bool isMove, bool force)
         {
-            return move 
+            return isMove 
                 ? new MoveFileOperation(logger, file, directory, force) 
                 : new CopyFileOperation(logger, file, directory, force);
         }
