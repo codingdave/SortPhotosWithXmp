@@ -270,6 +270,6 @@ public class ErrorCollectionPerformer : IPerformer
         var numberString = fileCount > 0 ? "_" + fileCount : string.Empty;
         var fullname = Path.Combine(path, targetFile.Name + numberString + targetFile.Extension);
         logger.LogDebug("Collision for '{errorFile}'. Arrange next to others as '{fullname}'", errorFile, fullname);
-        _copyFileOperation.ChangeFiles(new List<IImageFile>() { new ImageFile("errorFile") }, fullname);
+        _copyFileOperation.ChangeFiles(new List<IImageFile>() { new ImageFile(errorFile) }, fullname);
     }
 }
