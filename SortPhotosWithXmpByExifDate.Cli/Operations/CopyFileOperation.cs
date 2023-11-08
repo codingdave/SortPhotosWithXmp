@@ -47,12 +47,5 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
                 ChangeFile(file.CurrentFilename, targetPath);
             }
         }
-
-        public override string ToString()
-        {
-            var message = Force ? "performing" : "simulating";
-            message += " copy";
-            return message;
-        }
     }
 }

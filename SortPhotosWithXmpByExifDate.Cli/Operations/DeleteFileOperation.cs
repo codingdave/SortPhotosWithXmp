@@ -36,6 +36,7 @@ public class DeleteFileOperation : IOperation
             _logger.LogTrace($"Ignoring IFile.Delete '{file}';");
         }
     }
+
     public void DeleteDirectory(string directory)
     {
         if (Force)
@@ -51,6 +52,7 @@ public class DeleteFileOperation : IOperation
         // when we simulate, we still want to count
         DirectoryStatistics.DirectoriesDeleted.Add(directory);
     }
+
     public void RecursivelyDeleteEmptyDirectories(string? path)
     {
         if (path != null)
