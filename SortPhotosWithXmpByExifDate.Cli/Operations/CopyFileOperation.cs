@@ -40,7 +40,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
 
         public override void ChangeFiles(IEnumerable<IImageFile> files, string targetPath)
         {
-            CreateDirectory(targetPath);
+            CreateDirectory(GetDirectory(targetPath));
 
             foreach (var file in files)
             {

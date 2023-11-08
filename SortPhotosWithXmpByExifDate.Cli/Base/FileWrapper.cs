@@ -140,9 +140,10 @@ internal class FileWrapper : IFile
         throw new NotImplementedException();
     }
 
+    [DebuggerStepThrough]
     public void Move(string sourceFileName, string destFileName)
     {
-        throw new NotImplementedException();
+        File.Move(sourceFileName, destFileName);
     }
 
     public IFileStream Open(string path, FileMode mode)

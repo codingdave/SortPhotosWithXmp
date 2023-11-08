@@ -28,7 +28,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
 
             foreach (var file in files)
             {
-                var targetName = Path.Combine(targetPath, Path.GetFileName(file.CurrentFilename));
+                var targetName = JoinFile(targetPath, Path.GetFileName(file.CurrentFilename));
 
                 if (File.Exists(targetName))
                 {
@@ -39,8 +39,15 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
                 {
                     if (Force)
                     {
-                        _logger.LogTrace($"IFile.Move({file.CurrentFilename}, {targetName});");
-                        _file.Move(file.CurrentFilename, targetName);
+                        try
+                        {
+                            _logger.LogTrace($"IFile.Move({file.CurrentFilename}, {targetName});");
+                            _file.Move(file.CurrentFilename, targetName);
+                        }
+                        catch (Exception e)
+                        {
+                            _logger.LogExceptionError(e);
+                        }
                     }
                     else
                     {
@@ -51,11 +58,10 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
             }
         }
 
-        public override string ToString()
+
+        public void RenameDirectory(string sourceDirName, string destDirName)
         {
-            var message = Force ? "performing" : "simulating";
-            message += " move";
-            return message;
+            _directory.Move(sourceDirName, destDirName);
         }
     }
 }

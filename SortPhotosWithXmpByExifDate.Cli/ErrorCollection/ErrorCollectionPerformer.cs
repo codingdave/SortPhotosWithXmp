@@ -61,7 +61,7 @@ public class ErrorCollectionPerformer : IPerformer
         if (errors.Any())
         {
             var directoryName = errors.First().Name;
-            var targetDirectory = Path.Join(_baseDir, directoryName);
+            var targetDirectory = _moveFileOperation.JoinDirectory(_baseDir, directoryName);
 
             logger.LogError($"{errors.Count()} {directoryName} issues will be located in the directory '{targetDirectory}'");
 
@@ -72,7 +72,7 @@ public class ErrorCollectionPerformer : IPerformer
             {
                 try
                 {
-                    var file = CreateFileDecompositionAtCollisionDirectory(logger, targetDirectory, error.File);
+                    var file = CreateFileDecompositionAtCollisionDirectory(targetDirectory, error.File);
                     action(file, error);
                 }
                 catch (Exception e)
@@ -206,22 +206,22 @@ public class ErrorCollectionPerformer : IPerformer
         CopyFileWithAppendedNumber(logger, error.OtherFile, targetFile);
     }
 
-    private void RenamePossiblyExistingDirectory(ILogger logger, string path)
+    private void RenamePossiblyExistingDirectory(ILogger logger, string sourceDirName)
     {
         // rename possibly existing ErrorFiles directory (add lastWriteTime to the end)
-        if (_directory.Exists(path))
+        if (_directory.Exists(sourceDirName))
         {
-            var time = File.GetLastWriteTime(path).ToString("yyyyMMddTHHmmss");
-            var d = new DirectoryInfo(path);
+            var time = File.GetLastWriteTime(sourceDirName).ToString("yyyyMMddTHHmmss");
+            var d = new DirectoryInfo(sourceDirName);
             var parentDirectory = d.Parent ?? throw new InvalidOperationException("Parent of path does not exist");
             var directoryName = d.Name;
-            var targetPath = Path.Combine(parentDirectory.FullName, directoryName + "_" + time);
-            logger.LogTrace("Renaming '{oldDirectory}' to '{newDirectory}'", path, targetPath);
-            _moveFileOperation.ChangeFiles(new List<IImageFile>() { new ImageFile(path) }, targetPath);
+            var destDirName = _moveFileOperation.JoinDirectory(parentDirectory.FullName, directoryName + "_" + time);
+            logger.LogTrace("Renaming '{oldDirectory}' to '{newDirectory}'", sourceDirName, destDirName);
+            _moveFileOperation.RenameDirectory(sourceDirName, destDirName);
         }
     }
 
-    private FileDecomposition CreateFileDecompositionAtCollisionDirectory(ILogger logger, string targetDirectory, string errorFile)
+    private FileDecomposition CreateFileDecompositionAtCollisionDirectory(string targetDirectory, string errorFile)
     {
         static (string filename, string extension) SplitFileNameAndExtension(string name)
         {
@@ -237,12 +237,10 @@ public class ErrorCollectionPerformer : IPerformer
 
         var filenameWithExtension = Path.GetFileName(errorFile);
         var (filename, extension) = SplitFileNameAndExtension(filenameWithExtension);
-        var directory = Path.Combine(targetDirectory, filename);
-        var completeFilepath = Path.Combine(directory, filenameWithExtension);
+        var directory = _moveFileOperation.JoinDirectory(targetDirectory, filename);
+        var completeFilepath = _moveFileOperation.JoinFile(directory, filenameWithExtension);
 
         var targetFile = new FileDecomposition(completeFilepath, directory, filename, extension);
-        logger.LogDebug($"{nameof(targetDirectory)}: {targetDirectory}, errorFile: {errorFile} => {nameof(targetFile)}: {targetFile}");
-
         return targetFile;
     }
 
@@ -252,8 +250,9 @@ public class ErrorCollectionPerformer : IPerformer
         var path = targetFile.Directory;
         var fileCount = _directory.GetFiles(path, "*" + targetFile.Extension).Length;
         var numberString = fileCount > 0 ? "_" + fileCount : string.Empty;
-        var fullname = Path.Combine(path, targetFile.Name + numberString + targetFile.Extension);
-        logger.LogDebug("Collision for '{errorFile}'. Arrange next to others as '{fullname}'", errorFile, fullname);
+        var filenameWithExtension = targetFile.Name + numberString + targetFile.Extension;
+        var fullname = _moveFileOperation.JoinFile(path, filenameWithExtension);
+        logger.LogTrace("Collision for '{errorFile}'. Arrange next to others as '{fullname}'", errorFile, fullname);
         _copyFileOperation.ChangeFiles(new List<IImageFile>() { new ImageFile(errorFile) }, fullname);
     }
 }

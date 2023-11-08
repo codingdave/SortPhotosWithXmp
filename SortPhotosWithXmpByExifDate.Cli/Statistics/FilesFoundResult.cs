@@ -34,7 +34,6 @@ public class FilesFoundResult : IDirectoryResult, IModifiableErrorCollection
 
     public void Log(ILogger logger)
     {
-        logger.LogDebug("Logging FilesFoundResult");
         foreach (var error in ErrorCollection.Errors)
         {
             switch (error)
@@ -51,7 +50,7 @@ public class FilesFoundResult : IDirectoryResult, IModifiableErrorCollection
                     logger.LogError(error.ToString());
                     break;
                 default:
-                    throw new NotImplementedException($"{error}");
+                    throw new NotImplementedException($"{nameof(error)}: {error}");
             }
         }
     }
