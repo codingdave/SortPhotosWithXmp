@@ -41,10 +41,10 @@ internal class CommandlineOptions
 
     internal Option<int> GetSimilarityOption()
     {
-        return new Option<int>
-        (name: "--similarity",
-        description: "Number to indicate similarity to detect an image as a duplicate of anothe. Defaults to 100%.",
-        getDefaultValue: () => 100);
+        return new Option<int>(
+            name: "--similarity",
+            description: "Number to indicate similarity to detect an image as a duplicate of anothe. Defaults to 100%.",
+            getDefaultValue: () => 100);
     }
 
     internal Option<object?> GetOffsetOption()
@@ -95,13 +95,6 @@ internal class CommandlineOptions
                 }
                 else
                 {
-                    filePath = Path.GetFullPath(Helpers.FixPath(filePath));
-
-                    if (!Directory.Exists(filePath))
-                    {
-                        _ = Directory.CreateDirectory(filePath);
-                    }
-
                     ret = filePath;
                 }
 
@@ -126,7 +119,7 @@ internal class CommandlineOptions
                 }
                 else
                 {
-                    filePath = Path.GetFullPath(Helpers.FixPath(filePath));
+                    filePath = Path.GetFullPath(filePath.FixPath());
 
                     if (!Directory.Exists(filePath))
                     {

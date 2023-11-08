@@ -13,18 +13,6 @@ namespace SortPhotosWithXmpByExifDate.Cli;
 
 public static class Helpers
 {
-    public static string FixPath(string path)
-    {
-        if (path.Contains('~'))
-        {
-            path = path.Replace("~",
-                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile,
-                    Environment.SpecialFolderOption.DoNotVerify));
-        }
-
-        return path;
-    }
-
     private static IList<string> GetPropertyDescriptions(XmpDirectory xmpDirectory)
     {
         List<string> propertyDescriptions = new();
