@@ -8,8 +8,8 @@ namespace SortPhotosWithXmpByExifDate.Cli.Result;
 public class FilesFoundResult : IResult, IModifiableErrorCollection, IFoundStatistics, IFileOperationStatistics
 {
     private readonly ILogger _logger;
-    public ICopyOrMoveFileOperation FileOperation { get; }
-    public FilesFoundResult(ILogger logger, ICopyOrMoveFileOperation fileOperation)
+    public FileOperationBase FileOperation { get; }
+    public FilesFoundResult(ILogger logger, FileOperationBase fileOperation)
         => (_logger, FileOperation, _errorCollection, _successfulCollection) = (logger, fileOperation, new ErrorCollection.ErrorCollection(logger), new SuccessCollection());
 
     public int FoundXmps { get; set; }

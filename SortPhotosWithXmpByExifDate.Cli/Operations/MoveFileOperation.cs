@@ -10,28 +10,23 @@ using SystemInterface.IO;
 
 namespace SortPhotosWithXmpByExifDate.Cli.Operations
 {
-    public class MoveFileOperation : ICopyOrMoveFileOperation
+    public class MoveFileOperation : FileOperationBase
     {
         private readonly ILogger _logger;
         private readonly IFile _file;
         private readonly IDirectory _directory;
 
         internal MoveFileOperation(ILogger logger, IFile file, IDirectory directory, bool force)
+        : base(directory, force)
         {
             _logger = logger;
             _file = file;
             _directory = directory;
-            Force = force;
         }
 
-        public bool Force { get; }
-
-        public void ChangeFiles(IEnumerable<IImageFile> files, string targetPath)
+        public override void ChangeFiles(IEnumerable<IImageFile> files, string targetPath)
         {
-            if (Force && !_directory.Exists(targetPath))
-            {
-                _ = _directory.CreateDirectory(targetPath);
-            }
+            CreateDirectory(targetPath);
 
             foreach (var file in files)
             {

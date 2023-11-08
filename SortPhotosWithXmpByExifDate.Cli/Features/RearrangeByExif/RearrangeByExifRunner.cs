@@ -17,7 +17,7 @@ internal class RearrangeByExifRunner : IRun
     private readonly string _destinationDirectory;
     private readonly string _sourceDirectory;
     private readonly FilesFoundResult _filesFoundResult;
-    private readonly ICopyOrMoveFileOperation _operationPerformer;
+    private readonly FileOperationBase _operationPerformer;
     private readonly IFileScanner _fileScanner;
     private readonly IDirectory _directory;
 

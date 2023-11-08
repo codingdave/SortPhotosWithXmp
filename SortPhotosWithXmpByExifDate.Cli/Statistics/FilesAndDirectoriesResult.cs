@@ -25,7 +25,7 @@ public class FilesAndDirectoriesResult : IResult, IFoundStatistics
     public int SkippedXmps { get => _imagesStatistics.SkippedXmps; set => _imagesStatistics.SkippedXmps = value; }
     public int SkippedImages { get => _imagesStatistics.SkippedImages; set => _imagesStatistics.SkippedImages = value; }
 
-    public ICopyOrMoveFileOperation FileOperation => _imagesStatistics.FileOperation;
+    public FileOperationBase FileOperation => _imagesStatistics.FileOperation;
 
     public void Log()
     {

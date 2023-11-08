@@ -9,7 +9,7 @@ using SystemInterface.IO;
 
 namespace SortPhotosWithXmpByExifDate.Cli.Operations
 {
-    public class CopyFileOperation : ICopyOrMoveFileOperation
+    public class CopyFileOperation : FileOperationBase
     {
         private readonly ILogger _logger;
         private readonly IFile _file;
@@ -20,14 +20,12 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
             IFile file,
             IDirectory directory,
             bool force)
+            : base(directory, force)
         {
             _logger = logger;
             _file = file;
             _directory = directory;
-            Force = force;
         }
-
-        public bool Force { get; }
 
         private void ChangeFile(string sourceFileName, string destFileName)
         {
@@ -42,12 +40,9 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
             }
         }
 
-        public void ChangeFiles(IEnumerable<IImageFile> files, string targetPath)
+        public override void ChangeFiles(IEnumerable<IImageFile> files, string targetPath)
         {
-            if (!_directory.Exists(targetPath))
-            {
-                _ = _directory.CreateDirectory(targetPath);
-            }
+            CreateDirectory(targetPath);
 
             foreach (var file in files)
             {

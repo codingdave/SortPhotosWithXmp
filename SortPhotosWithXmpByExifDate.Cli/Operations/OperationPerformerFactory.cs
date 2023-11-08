@@ -6,7 +6,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
 {
     internal class OperationPerformerFactory
     {
-        internal static ICopyOrMoveFileOperation GetCopyOrMovePerformer(ILogger logger, IFile file, IDirectory directory, bool move, bool force)
+        internal static FileOperationBase GetCopyOrMovePerformer(ILogger logger, IFile file, IDirectory directory, bool move, bool force)
         {
             return move 
                 ? new MoveFileOperation(logger, file, directory, force) 

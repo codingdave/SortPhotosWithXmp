@@ -11,9 +11,9 @@ internal class ToExifPath : ISuccess
     private readonly FileVariations _file;
     private readonly string _destinationDirectory;
     private readonly DateTime _dateTime;
-    private readonly ICopyOrMoveFileOperation _operationPerformer;
+    private readonly FileOperationBase _operationPerformer;
 
-    public ToExifPath(FileVariations file, string destinationDirectory, DateTime dateTime, ICopyOrMoveFileOperation operationPerformer)
+    public ToExifPath(FileVariations file, string destinationDirectory, DateTime dateTime, FileOperationBase operationPerformer)
     {
         _file = file;
         _destinationDirectory = destinationDirectory;
