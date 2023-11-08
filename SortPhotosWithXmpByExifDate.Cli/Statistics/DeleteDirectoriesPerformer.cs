@@ -20,7 +20,7 @@ public class DeleteDirectoriesPerformer : IResult, IPerformer
     public void Perform(ILogger logger)
     {
         logger.LogInformation(_operation.DirectoryStatistics.ToString());
-        logger.LogDebug($"performing {_operation.GetType().FullName}, Force: {_operation.Force}");
+        logger.LogDebug($"performing {_operation.GetType().FullName}, Force: {_operation.IsForce}");
         _operation.RecursivelyDeleteEmptyDirectories(_path);
         logger.LogInformation(_operation.DirectoryStatistics.ToString());
     }

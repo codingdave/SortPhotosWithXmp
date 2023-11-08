@@ -40,7 +40,7 @@ internal class RearrangeByExifCommand : FileScannerCommandBase
         return command;
     }
 
-    private void RearrangeByExif(string sourcePath, string destinationPath, bool force, bool isMove)
+    private void RearrangeByExif(string sourcePath, string destinationPath, bool isForce, bool isMove)
     {
         try
         {
@@ -52,7 +52,7 @@ internal class RearrangeByExifCommand : FileScannerCommandBase
                File,
                Directory,
                isMove,
-               force));
+               isForce));
         }
         catch (Exception e)
         {

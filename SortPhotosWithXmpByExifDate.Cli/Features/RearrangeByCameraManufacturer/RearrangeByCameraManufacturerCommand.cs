@@ -39,11 +39,11 @@ internal class RearrangeByCameraManufacturerCommand : CommandBase
         return command;
     }
 
-    private void RearrangeByCameraManufacturer(string source, string destination, bool force)
+    private void RearrangeByCameraManufacturer(string source, string destination, bool isForce)
     {
         try
         {
-            Run(new RearrangeByCameraManufacturerRunner(source, destination, force));
+            Run(new RearrangeByCameraManufacturerRunner(source, destination, isForce));
         }
         catch (Exception e)
         {

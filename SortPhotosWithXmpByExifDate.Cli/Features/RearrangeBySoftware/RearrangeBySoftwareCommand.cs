@@ -39,11 +39,11 @@ internal class RearrangeBySoftwareCommand : CommandBase
         return command;
     }
 
-    private void RearrangeBySoftware(string source, string destination, bool force)
+    private void RearrangeBySoftware(string source, string destination, bool isForce)
     {
         try
         {
-            Run(new RearrangeBySoftwareRunner(source, destination, force));
+            Run(new RearrangeBySoftwareRunner(source, destination, isForce));
         }
         catch (Exception e)
         {

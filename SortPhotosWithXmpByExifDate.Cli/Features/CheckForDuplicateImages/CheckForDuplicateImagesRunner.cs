@@ -18,15 +18,15 @@ namespace SortPhotosWithXmpByExifDate.Cli.Features.CheckForDuplicateImages
         private readonly List<(double similarity, FileVariations first, FileVariations second)> _imageSimilarity = new();
         private readonly IImageHash _hashAlgorithm = new AverageHash();
 
-        public bool Force { get; }
+        public bool IsForce { get; }
 
-        public CheckForDuplicateImagesRunner(ILogger<CommandLine> logger, FileScanner fileScanner, bool force, int similarity = 100)
+        public CheckForDuplicateImagesRunner(ILogger<CommandLine> logger, FileScanner fileScanner, bool isForce, int similarity = 100)
         {
             _logger = logger;
             _similarity = similarity;
             _hashRepository = new HashRepository(logger, Configuration.GetBasePath());
             _fileScanner = fileScanner;
-            Force = force;
+            IsForce = isForce;
         }
 
         public IResult Run(ILogger logger)
@@ -92,7 +92,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Features.CheckForDuplicateImages
                 second,
                 similarity);
 
-            if (Force)
+            if (IsForce)
             {
             }
         }
@@ -109,7 +109,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Features.CheckForDuplicateImages
             _logger.LogInformation("Found {amount} xmp files that are duplicates: {images}",
                                    list.Count,
                                    list);
-            if (Force)
+            if (IsForce)
             {
             }
         }

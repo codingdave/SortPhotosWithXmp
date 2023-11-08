@@ -18,8 +18,8 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
             ILogger logger,
             IFile file,
             IDirectory directory,
-            bool force)
-            : base(directory, force)
+            bool isForce)
+            : base(directory, isForce)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _file = file ?? throw new ArgumentNullException(nameof(file));
@@ -27,7 +27,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
 
         private void ChangeFile(string sourceFileName, string destFileName)
         {
-            if (Force)
+            if (IsForce)
             {
                 _logger.LogTrace($"IFile.Copy({sourceFileName}, {destFileName});");
                 _file.Copy(sourceFileName, destFileName);

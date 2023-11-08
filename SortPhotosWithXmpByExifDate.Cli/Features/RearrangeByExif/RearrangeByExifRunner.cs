@@ -29,18 +29,18 @@ internal class RearrangeByExifRunner : IRun
                              IFile file,
                              IDirectory directory,
                              bool isMove,
-                             bool force)
+                             bool isForce)
     {
         _sourceDirectory = sourceDirectory ?? throw new ArgumentNullException(nameof(sourceDirectory));
         _destinationDirectory = destinationDirectory ?? throw new ArgumentNullException(nameof(destinationDirectory));
-        _fileOperation = OperationFactory.GetCopyOrMoveOperation(logger, file, directory, isMove, force);
-        _deleteOperation = new DeleteFileOperation(logger, file, directory, force);
+        _fileOperation = OperationFactory.GetCopyOrMoveOperation(logger, file, directory, isMove, isForce);
+        _deleteOperation = new DeleteFileOperation(logger, file, directory, isForce);
         _filesFoundResult = new FilesFoundResult(destinationDirectory);
         _fileScanner = fileScanner;
         _directory = directory;
     }
 
-    public bool Force => _fileOperation.Force;
+    public bool IsForce => _fileOperation.IsForce;
 
     public IResult Run(ILogger logger)
     {

@@ -38,11 +38,11 @@ internal class DeleteLeftoverXmpsCommand : FileScannerCommandBase
         return command;
     }
 
-    private void DeleteLeftoverXmps(string sourcePath, bool force)
+    private void DeleteLeftoverXmps(string sourcePath, bool isForce)
     {
         try
         {
-            Run(new DeleteLeftoverXmpsRunner(force, GetFileScanner(sourcePath), File));
+            Run(new DeleteLeftoverXmpsRunner(isForce, GetFileScanner(sourcePath), File));
         }
         catch (Exception e)
         {

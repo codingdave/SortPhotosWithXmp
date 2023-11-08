@@ -13,20 +13,20 @@ public class DeleteFileOperation : IOperation
     private readonly ILogger _logger;
     private readonly IFile _file;
     private readonly IDirectory _directory;
-    public bool Force { get; }
+    public bool IsForce { get; }
     public DirectoryStatistics DirectoryStatistics { get; }
-    internal DeleteFileOperation(ILogger logger, IFile file, IDirectory directory, bool force)
+    internal DeleteFileOperation(ILogger logger, IFile file, IDirectory directory, bool isForce)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _file = file ?? throw new ArgumentNullException(nameof(file));
         _directory = directory ?? throw new ArgumentNullException(nameof(directory));
-        Force = force;
+        IsForce = isForce;
         DirectoryStatistics = new DirectoryStatistics();
     }
 
     public void DeleteFile(string file)
     {
-        if (Force)
+        if (IsForce)
         {
             _logger.LogTrace($"IFile.Delete '{file}';");
             _file.Delete(file);
@@ -39,7 +39,7 @@ public class DeleteFileOperation : IOperation
 
     public void DeleteDirectory(string directory)
     {
-        if (Force)
+        if (IsForce)
         {
             _logger.LogTrace("IDirectory.Delete({path});", directory);
             _directory.Delete(directory, false);

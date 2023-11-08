@@ -11,11 +11,10 @@ public class DeleteEmptyDirectoryRunner : IRun
     private readonly IDirectory _directory;
 
     private readonly string _path;
-    private readonly bool _force;
-    public DeleteEmptyDirectoryRunner(IDirectory directory, string path, bool force) =>
-        (_directory, _path, _force) = (directory, path, force);
+    public DeleteEmptyDirectoryRunner(IDirectory directory, string path, bool isForce) =>
+        (_directory, _path, IsForce) = (directory, path, isForce);
 
-    public bool Force { get; }
+    public bool IsForce { get; }
 
     public IResult Run(ILogger logger)
     {

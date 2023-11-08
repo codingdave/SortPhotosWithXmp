@@ -7,9 +7,9 @@ namespace SortPhotosWithXmpByExifDate.Cli.Features.CheckIfFileNameContainsDateDi
 
 internal class CheckIfFileNameContainsDateDifferentToExifDatesRunner : IRun
 {
-    public CheckIfFileNameContainsDateDifferentToExifDatesRunner(string source, bool force) => throw new NotImplementedException();
+    public CheckIfFileNameContainsDateDifferentToExifDatesRunner(string source, bool isForce) => throw new NotImplementedException();
 
-    public bool Force { get; }
+    public bool IsForce { get; }
 
     public IResult Run(ILogger logger)
     {

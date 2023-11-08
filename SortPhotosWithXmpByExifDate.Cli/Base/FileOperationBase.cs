@@ -9,14 +9,14 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
     {
         protected readonly IDirectory _directory;
 
-        protected FileOperationBase(IDirectory directory, bool force)
+        protected FileOperationBase(IDirectory directory, bool isForce)
         {
             _directory = directory ?? throw new ArgumentNullException(nameof(directory));
-            Force = force;
+            IsForce = isForce;
             _directorySeparator = Path.DirectorySeparatorChar.ToString();
         }
 
-        public bool Force { get; private set; }
+        public bool IsForce { get; private set; }
         private readonly string _directorySeparator;
 
         public void CreateDirectory(string targetPath)
@@ -30,7 +30,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
 
             var directoryPath = Path.GetDirectoryName(targetPath) ?? throw new InvalidOperationException($"Path.GetFullPath({targetPath})");
 
-            if (Force && !_directory.Exists(directoryPath))
+            if (IsForce && !_directory.Exists(directoryPath))
             {
                 _ = _directory.CreateDirectory(directoryPath);
             }
@@ -56,6 +56,12 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
         public string GetDirectory(string path)
         {
             return Path.Join(Path.GetDirectoryName(path), _directorySeparator);
+        }
+
+
+        public override string ToString()
+        {
+            return this.GetType().Name + ", IsForce: " + IsForce;
         }
     }
 }

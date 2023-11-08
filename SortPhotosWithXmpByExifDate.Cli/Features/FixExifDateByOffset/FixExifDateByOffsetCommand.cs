@@ -39,12 +39,12 @@ internal class FixExifDateByOffsetCommand : CommandBase
         return command;
     }
 
-    private void FixExifDateByOffset(string directory, object offset, bool force)
+    private void FixExifDateByOffset(string directory, object offset, bool isForce)
     {
         try
         {
             // https://github.com/dotnet/command-line-api/issues/2086
-            Run(new FixExifDateByOffsetRunner(directory, (TimeSpan)offset, force));
+            Run(new FixExifDateByOffsetRunner(directory, (TimeSpan)offset, isForce));
         }
         catch (Exception e)
         {

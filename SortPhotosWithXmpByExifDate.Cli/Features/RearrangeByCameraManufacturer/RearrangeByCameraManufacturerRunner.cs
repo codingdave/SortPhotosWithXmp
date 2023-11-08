@@ -6,12 +6,12 @@ namespace SortPhotosWithXmpByExifDate.Cli.Features.RearrangeByCameraManufacturer
 
 internal class RearrangeByCameraManufacturerRunner : IRun
 {
-    public RearrangeByCameraManufacturerRunner(string source, string destination, bool force)
+    public RearrangeByCameraManufacturerRunner(string source, string destination, bool isForce)
     {
         throw new NotImplementedException();
     }
 
-    public bool Force { get; }
+    public bool IsForce { get; }
 
     public IResult Run(ILogger logger)
     {

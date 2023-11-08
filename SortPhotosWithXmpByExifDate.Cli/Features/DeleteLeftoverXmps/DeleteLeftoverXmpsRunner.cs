@@ -9,13 +9,13 @@ namespace SortPhotosWithXmpByExifDate.Cli.Features.DeleteLonelyXmp;
 
 public class DeleteLeftoverXmpsRunner : IRun
 {
-    public bool Force { get; }
+    public bool IsForce { get; }
     private readonly IFileScanner _fileScanner;
     private readonly IFile _file;
 
-    public DeleteLeftoverXmpsRunner(bool force, IFileScanner fileScanner, IFile file)
+    public DeleteLeftoverXmpsRunner(bool isForce, IFileScanner fileScanner, IFile file)
     {
-        Force = force;
+        IsForce = isForce;
         _fileScanner = fileScanner;
         _file = file;
     }
@@ -25,7 +25,7 @@ public class DeleteLeftoverXmpsRunner : IRun
         // find all xmps that do not have an image
         var lonelies = _fileScanner.LonelySidecarFiles;
         logger.LogInformation($"Found lonely xmps: {string.Join(", ", lonelies)}");
-        if (Force)
+        if (IsForce)
         {
             foreach (var lonely in lonelies)
             {

@@ -47,7 +47,7 @@ internal abstract class CommandBase
             if (result is FilesFoundResult filesFoundResult)
             {
                 filesFoundResult.PerformerCollection.Performers.Do(performer => performer.Perform(Logger));
-                var ep = new ErrorCollectionPerformer(filesFoundResult.ErrorCollection, filesFoundResult.FilesStatistics, File, Directory, filesFoundResult.Directory, f.Force);
+                var ep = new ErrorCollectionPerformer(filesFoundResult.ErrorCollection, filesFoundResult.FilesStatistics, File, Directory, filesFoundResult.Directory, f.IsForce);
                 ep.Perform(Logger);
                 filesFoundResult.CleanupPerformer.Perform(Logger);
             }

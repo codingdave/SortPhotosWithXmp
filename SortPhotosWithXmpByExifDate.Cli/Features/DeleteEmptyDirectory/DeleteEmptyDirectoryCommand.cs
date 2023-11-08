@@ -36,11 +36,11 @@ internal class DeleteEmptyDirectoryCommand : CommandBase
         return command;
     }
 
-    private void DeleteEmptyDirectory(string directory, bool force)
+    private void DeleteEmptyDirectory(string directory, bool isForce)
     {
         try
         {
-            Run(new DeleteEmptyDirectoryRunner(Directory, directory, force));
+            Run(new DeleteEmptyDirectoryRunner(Directory, directory, isForce));
         }
         catch (Exception e)
         {

@@ -37,11 +37,11 @@ internal class CheckIfFileNameContainsDateDifferentToExifDatesCommand : CommandB
         return command;
     }
 
-    private void DeleteEmptyDirectory(string directory, bool force)
+    private void DeleteEmptyDirectory(string directory, bool isForce)
     {
         try
         {
-            Run(new CheckIfFileNameContainsDateDifferentToExifDatesRunner(directory, force));
+            Run(new CheckIfFileNameContainsDateDifferentToExifDatesRunner(directory, isForce));
         }
         catch (Exception e)
         {

@@ -8,5 +8,5 @@ namespace SortPhotosWithXmpByExifDate.Cli;
 public interface IRun
 {
     public IResult Run(ILogger logger);
-    public bool Force { get; }
+    public bool IsForce { get; }
 }

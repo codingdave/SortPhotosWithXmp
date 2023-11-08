@@ -15,8 +15,8 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
         private readonly ILogger _logger;
         private readonly IFile _file;
 
-        internal MoveFileOperation(ILogger logger, IFile file, IDirectory directory, bool force)
-        : base(directory, force)
+        internal MoveFileOperation(ILogger logger, IFile file, IDirectory directory, bool isForce)
+        : base(directory, isForce)
         {
             _logger = logger;
             _file = file;
@@ -37,7 +37,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
                 }
                 else
                 {
-                    if (Force)
+                    if (IsForce)
                     {
                         try
                         {

@@ -43,14 +43,14 @@ internal class CheckForDuplicateImagesCommand : FileScannerCommandBase
         return command;
     }
 
-    private void CheckForDuplicateImages(string directory, bool force, int similarity, bool move)
+    private void CheckForDuplicateImages(string directory, bool isForce, int similarity, bool move)
     {
         try
         {
             Run(new CheckForDuplicateImagesRunner(
              Logger,
              GetFileScanner(directory),
-             force,
+             isForce,
              similarity));
         }
         catch (Exception e)
