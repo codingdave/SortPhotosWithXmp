@@ -43,9 +43,10 @@ internal class FileLogger : IFile
         throw new NotImplementedException();
     }
 
+    [DebuggerStepThrough]
     public void Copy(string sourceFileName, string destFileName)
     {
-        throw new NotImplementedException();
+        File.Copy(sourceFileName, destFileName);
     }
 
     public void Copy(string sourceFileName, string destFileName, bool overwrite)
