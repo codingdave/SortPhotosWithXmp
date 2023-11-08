@@ -5,12 +5,14 @@ using SortPhotosWithXmpByExifDate.Cli.Operations;
 
 namespace SortPhotosWithXmpByExifDate.Cli.Result;
 
-public class FilesFoundResult : IResult, IModifiableErrorCollection, IFoundStatistics, IFileOperationStatistics
+
+
+public class FilesFoundResult : IResult, IModifiableErrorCollection, IFoundStatistics
 {
     private readonly ILogger _logger;
-    public FileOperationBase FileOperation { get; }
-    public FilesFoundResult(ILogger logger, FileOperationBase fileOperation)
-        => (_logger, FileOperation, _errorCollection, _successfulCollection) = (logger, fileOperation, new ErrorCollection.ErrorCollection(logger), new SuccessCollection());
+    public FilesFoundResult(ILogger logger)
+        => (_logger, _errorCollection, _successfulCollection)
+        = (logger, new ErrorCollection.ErrorCollection(logger), new SuccessCollection());
 
     public int FoundXmps { get; set; }
     public int FoundImages { get; set; }
@@ -38,8 +40,7 @@ public class FilesFoundResult : IResult, IModifiableErrorCollection, IFoundStati
 
     public void Log()
     {
-        var operation = FileOperation.ToString(); // performing/simulating move/copy
-        _logger.LogInformation("-> {operation}. Found {FoundImages} individual images and {FoundXmps} xmps ({SkippedImages}/{SkippedXmps} duplicates).", operation, FoundImages, FoundXmps, SkippedImages, SkippedXmps);
+        _logger.LogInformation("-> Found images: {FoundImages}, xmps: {FoundXmps} and duplicates {SkippedImages}/{SkippedXmps}.", FoundImages, FoundXmps, SkippedImages, SkippedXmps);
 
         foreach (var error in ErrorCollection.Errors)
         {

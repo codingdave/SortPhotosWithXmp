@@ -204,7 +204,7 @@ namespace SortPhotosWithXmpByExifDate.Cli
         {
             if (!directory.Exists(path))
             {
-                logger.LogDebug("Creating directory '{newDirectory}'", path);
+                logger.LogTrace("Creating directory '{newDirectory}'", path);
                 _ = directory.CreateDirectory(path);
             }
         }
