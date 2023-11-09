@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging;
+
 using SortPhotosWithXmpByExifDate.Cli.Result;
 
 namespace SortPhotosWithXmpByExifDate.Cli
@@ -6,5 +8,6 @@ namespace SortPhotosWithXmpByExifDate.Cli
     {
         public IReadOnlyList<IPerformer> Performers { get; }
         void Add(IPerformer performer);
+        void Perform(ILogger logger);
     }
 }

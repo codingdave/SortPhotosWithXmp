@@ -46,7 +46,7 @@ internal abstract class CommandBase
             Logger.LogInformation($"Processing statistics");
             if (result is FilesFoundResult filesFoundResult)
             {
-                filesFoundResult.PerformerCollection.Performers.Do(performer => performer.Perform(Logger));
+                filesFoundResult.PerformerCollection.Perform(Logger);
                 filesFoundResult.MetaDataErrorPerformer.Perform(Logger);
                 filesFoundResult.FileAlreadyExistsErrorPerformer.Perform(Logger);
                 filesFoundResult.NoTimeFoundErrorPerformer.Perform(Logger);

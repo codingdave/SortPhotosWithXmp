@@ -43,10 +43,17 @@ public abstract class ErrorPerformerBase<T> : IPerformer where T : IError
 
     public abstract void Perform(ILogger logger);
 
-    protected void CollectCollisions<T>(ILogger logger, IEnumerable<T> errors, Action<FileDecomposition, T> action) where T : ErrorBase
+    protected void CollectCollisions(ILogger logger, IEnumerable<T> errors, Action<FileDecomposition, T> action)
     {
         if (errors.Any())
         {
+            // when we have an error, we want to copy
+            var isCopyingEnforced = true;
+#warning copy and move should HAVE not are a directory operator
+            _copyFileOperation = new CopyFileOperation(logger, _file, _directory, isCopyingEnforced);
+            _moveFileOperation = new MoveFileOperation(logger, _file, _directory, isCopyingEnforced);
+            _deleteFileOperation = new DeleteFileOperation(logger, _file, _directory, _isForce);
+
             var directoryName = errors.First().Name;
             var targetDirectory = _moveFileOperation.JoinDirectory(_baseDir, directoryName);
 

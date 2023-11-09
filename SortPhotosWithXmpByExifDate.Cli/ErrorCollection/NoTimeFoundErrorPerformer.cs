@@ -16,22 +16,19 @@ public class NoTimeFoundErrorPerformer : ErrorPerformerBase<NoTimeFoundError>
         IFile file,
         IDirectory directory,
         string baseDir,
-        bool isForce) 
+        bool isForce)
     : base(errorCollection, foundStatistics, file, directory, baseDir, isForce)
     {
     }
 
     public override void Perform(ILogger logger)
     {
-        // when we have an error, we want to copy
-        var isCopyingEnforced = true;
-#warning copy and move should HAVE not are a directory operator
-        _copyFileOperation = new CopyFileOperation(logger, _file, _directory, isCopyingEnforced);
-        _moveFileOperation = new MoveFileOperation(logger, _file, _directory, isCopyingEnforced);
-        _deleteFileOperation = new DeleteFileOperation(logger, _file, _directory, _isForce);
-
-        CollectCollisions(logger, _errorCollection.Errors,
-            (FileDecomposition targetFile, NoTimeFoundError error)
-            => CreateDirectoryAndCopyFile(logger, error, targetFile));
+        if (_errorCollection.Errors.Any())
+        {
+            logger.LogInformation("Performing NoTimeFoundErrors");
+            CollectCollisions(logger, _errorCollection.Errors,
+                (FileDecomposition targetFile, NoTimeFoundError error)
+                => CreateDirectoryAndCopyFile(logger, error, targetFile));
+        }
     }
 }
