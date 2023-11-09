@@ -94,7 +94,7 @@ internal class RearrangeByExifRunner : IRun
             }
         });
 
-        _filesFoundResult.CleanupPerformer = new DeleteDirectoriesPerformer(_sourceDirectory, _deleteOperation);
+        _filesFoundResult.CleanupPerformer.Performer = new DeleteDirectoriesPerformer(_sourceDirectory, _deleteOperation);
         logger.LogInformation($"{nameof(RearrangeByExifRunner)}.{nameof(Run)} has finished");
 
         return _filesFoundResult;

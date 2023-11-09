@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 using Microsoft.Extensions.Logging;
 
 using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
@@ -45,13 +43,13 @@ public class FilesFoundResult : IResult
 
     public IFilesStatistics FilesStatistics { get; } = new FilesStatistics();
 
-    public IPerformer CleanupPerformer { get; internal set; }
+    public CleanupPerformer CleanupPerformer { get; internal set; } = new CleanupPerformer();
 
     public IErrorCollection<NoTimeFoundError> NoTimeFoundErrorCollection { get; } = new ErrorCollection<NoTimeFoundError>();
 
-    public IErrorCollection<MetaDataError> MetaDataErrorCollection { get; }= new ErrorCollection<MetaDataError>();
+    public IErrorCollection<MetaDataError> MetaDataErrorCollection { get; } = new ErrorCollection<MetaDataError>();
 
-    public IErrorCollection<FileAlreadyExistsError> FileAlreadyExistsErrorCollection { get; }= new ErrorCollection<FileAlreadyExistsError>();
+    public IErrorCollection<FileAlreadyExistsError> FileAlreadyExistsErrorCollection { get; } = new ErrorCollection<FileAlreadyExistsError>();
     public IErrorCollection<ImageProcessingExceptionError> ImageProcessingExceptionErrorCollection { get; }
     public IErrorCollection<ImageProcessingExceptionError> GeneralExceptionErrorCollection { get; }
     public IErrorCollection<ExceptionErrorBase> ExceptionCollection { get; } = new ErrorCollection<ExceptionErrorBase>();
