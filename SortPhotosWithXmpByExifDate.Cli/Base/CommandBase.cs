@@ -43,9 +43,9 @@ internal abstract class CommandBase
         {
             var result = f.Run(Logger);
 
-            Logger.LogInformation($"Processing statistics");
             if (result is FilesFoundResult filesFoundResult)
             {
+                Logger.LogInformation($"Processing FilesFoundResult");
                 filesFoundResult.PerformerCollection.Perform(Logger);
                 filesFoundResult.MetaDataErrorPerformer.Perform(Logger);
                 filesFoundResult.FileAlreadyExistsErrorPerformer.Perform(Logger);
@@ -53,7 +53,7 @@ internal abstract class CommandBase
                 filesFoundResult.CleanupPerformer.Perform(Logger);
             }
             result.Log(Logger);
-            Logger.LogInformation($"Done processing statistics");
+            Logger.LogInformation($"Done processing result");
         }
         catch (Exception e)
         {
