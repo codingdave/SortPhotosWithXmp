@@ -1,7 +1,7 @@
 namespace SortPhotosWithXmpByExifDate.Cli.ErrorCollection
 {
-    public interface IModifiableErrorCollection
+    public interface IModifiableErrorCollection<T> where T : IError
     {
-        public void AddError(IError error);
+        public void AddError(T error);
     }
 }

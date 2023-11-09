@@ -10,23 +10,28 @@ using SortPhotosWithXmpByExifDate.Cli.Result;
 
 using SystemInterface.IO;
 
-using SystemWrapper.IO;
 
 namespace SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 
-public class ErrorCollectionPerformer : IPerformer
+public abstract class ErrorPerformerBase<T> : IPerformer where T : IError
 {
-    private readonly IReadOnlyErrorCollection _errorCollection;
+    protected readonly IErrorCollection<T> _errorCollection;
     private readonly IFilesStatistics _foundStatistics;
-    private readonly IFile _file;
-    private readonly IDirectory _directory;
+    protected readonly IFile _file;
+    protected readonly IDirectory _directory;
     private readonly string _baseDir;
-    private readonly bool _isForce;
-    private CopyFileOperation _copyFileOperation;
-    private MoveFileOperation _moveFileOperation;
-    private DeleteFileOperation _deleteFileOperation;
+    protected readonly bool _isForce;
+    protected CopyFileOperation _copyFileOperation;
+    protected MoveFileOperation _moveFileOperation;
+    protected DeleteFileOperation _deleteFileOperation;
 
-    public ErrorCollectionPerformer(IReadOnlyErrorCollection errorCollection, IFilesStatistics foundStatistics, IFile file, IDirectory directory, string baseDir, bool isForce)
+    public ErrorPerformerBase(
+        IErrorCollection<T> errorCollection,
+        IFilesStatistics foundStatistics,
+        IFile file,
+        IDirectory directory,
+        string baseDir,
+        bool isForce)
     {
         _errorCollection = errorCollection;
         _foundStatistics = foundStatistics;
@@ -36,27 +41,9 @@ public class ErrorCollectionPerformer : IPerformer
         _isForce = isForce;
     }
 
-    public void Perform(ILogger logger)
-    {
-        // when we have an error, we want to copy
-        var isCopyingEnforced = true;
-#warning copy and move should HAVE not are a directory operator
-        _copyFileOperation = new CopyFileOperation(logger, _file, _directory, isCopyingEnforced);
-        _moveFileOperation = new MoveFileOperation(logger, _file, _directory, isCopyingEnforced);
-        _deleteFileOperation = new DeleteFileOperation(logger, _file, _directory, _isForce);
+    public abstract void Perform(ILogger logger);
 
-        CollectCollisions(logger, _errorCollection.Errors.OfType<FileAlreadyExistsError>(),
-            (FileDecomposition targetFile, FileAlreadyExistsError error)
-            => HandleCollisionOrDuplicate(logger, error, targetFile));
-        CollectCollisions(logger, _errorCollection.Errors.OfType<NoTimeFoundError>(),
-            (FileDecomposition targetFile, NoTimeFoundError error)
-            => CreateDirectoryAndCopyFile(logger, error, targetFile));
-        CollectCollisions(logger, _errorCollection.Errors.OfType<MetaDataError>(),
-            (FileDecomposition targetFile, MetaDataError error)
-            => CreateDirectoryAndCopyFile(logger, error, targetFile));
-    }
-
-    private void CollectCollisions<T>(ILogger logger, IEnumerable<T> errors, Action<FileDecomposition, T> action) where T : ErrorBase
+    protected void CollectCollisions<T>(ILogger logger, IEnumerable<T> errors, Action<FileDecomposition, T> action) where T : ErrorBase
     {
         if (errors.Any())
         {
@@ -83,7 +70,7 @@ public class ErrorCollectionPerformer : IPerformer
         }
     }
 
-    private void CreateDirectoryAndCopyFile(ILogger logger, ErrorBase error, FileDecomposition targetFile)
+    protected void CreateDirectoryAndCopyFile(ILogger logger, ErrorBase error, FileDecomposition targetFile)
     {
         // 1: make sure directory exists
         _copyFileOperation.CreateDirectory(targetFile.Directory);
@@ -92,7 +79,7 @@ public class ErrorCollectionPerformer : IPerformer
         CopyFileWithAppendedNumber(logger, error.File, targetFile);
     }
 
-    private void HandleCollisionOrDuplicate(ILogger logger, FileAlreadyExistsError error, FileDecomposition targetFile)
+    protected void HandleCollisionOrDuplicate(ILogger logger, FileAlreadyExistsError error, FileDecomposition targetFile)
     {
         if (IsDuplicate(logger, error))
         {

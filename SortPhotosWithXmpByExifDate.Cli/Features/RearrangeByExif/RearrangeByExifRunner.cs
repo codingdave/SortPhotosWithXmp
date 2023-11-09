@@ -35,7 +35,7 @@ internal class RearrangeByExifRunner : IRun
         _destinationDirectory = destinationDirectory ?? throw new ArgumentNullException(nameof(destinationDirectory));
         _fileOperation = OperationFactory.GetCopyOrMoveOperation(logger, file, directory, isMove, isForce);
         _deleteOperation = new DeleteFileOperation(logger, file, directory, isForce);
-        _filesFoundResult = new FilesFoundResult(destinationDirectory);
+        _filesFoundResult = new FilesFoundResult(file, directory, destinationDirectory, isForce);
         _fileScanner = fileScanner;
         _directory = directory;
     }
@@ -61,39 +61,35 @@ internal class RearrangeByExifRunner : IRun
                 try
                 {
                     var metaDataDirectories = ImageMetadataReader.ReadMetadata(file);
-                    var errors = metaDataDirectories.SelectMany(t => t.Errors);
-                    var hasErrors = errors.Any();
-                    if (hasErrors)
-                    {
-                        logger.LogTrace("found errors while extracting metadata from '{file}': {errors}", file, string.Join(Environment.NewLine, errors));
-                        _filesFoundResult.AddError(new MetaDataError(file, errors));
-                    }
 
                     var possibleDateTime = dateTimeResolver.GetDateTimeFromImage(logger, metaDataDirectories);
-                    if (possibleDateTime is not DateTime dateTime)
+                    if (possibleDateTime is DateTime dateTime)
                     {
-                        hasErrors = true;
-                        _filesFoundResult.AddError(new NoTimeFoundError(file, Helpers.GetMetadata(metaDataDirectories)));
-                    }
-                    else
-                    {
-                        _filesFoundResult.AddPerformer(new ToExifPathPerformer(fileDatum, _destinationDirectory, dateTime, _fileOperation));
+                        // when we can extract a date, there is no error for our usecase
+                        _filesFoundResult.PerformerCollection.Add(new ToExifPathPerformer(fileDatum, _destinationDirectory, dateTime, _fileOperation));
                         _filesFoundResult.FilesStatistics.FoundImages++;
                         _filesFoundResult.FilesStatistics.FoundXmps += fileDatum.SidecarFiles.Count;
                     }
-
-                    if (hasErrors)
+                    else
                     {
-                        logger.LogTrace("Keep '{file}' as errors have happened. We will copy it later when dealing about the error.", file);
+                        // error: we need the date for rearranging
+                        _filesFoundResult.NoTimeFoundErrorCollection.Add(new NoTimeFoundError(file, Helpers.GetMetadata(metaDataDirectories)));
+                    }
+
+                    var metaDataErrors = metaDataDirectories.SelectMany(t => t.Errors);
+                    if (metaDataErrors.Any())
+                    {
+                        logger.LogTrace("found errors in the metadata while extracting metadata from '{file}': {errors}", file, string.Join(Environment.NewLine, metaDataErrors));
+                        _filesFoundResult.MetaDataErrorCollection.Add(new MetaDataError(file, metaDataErrors));
                     }
                 }
                 catch (MetadataExtractor.ImageProcessingException e)
                 {
-                    _filesFoundResult.AddError(new ImageProcessingExceptionError(file, e));
+                    _filesFoundResult.ExceptionCollection.Add(new ImageProcessingExceptionError(file, e));
                 }
                 catch (Exception e)
                 {
-                    _filesFoundResult.AddError(new GeneralExceptionError(file, e));
+                    _filesFoundResult.ExceptionCollection.Add(new GeneralExceptionError(file, e));
                 }
             }
         });

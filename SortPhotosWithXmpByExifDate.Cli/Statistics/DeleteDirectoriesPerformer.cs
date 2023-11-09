@@ -5,14 +5,13 @@ using SortPhotosWithXmpByExifDate.Cli.Operations;
 
 namespace SortPhotosWithXmpByExifDate.Cli.Result;
 
-public class DeleteDirectoriesPerformer : IResult, IPerformer
+public class DeleteDirectoriesPerformer : IPerformer
 {
     private readonly string _path;
 
     public DeleteDirectoriesPerformer(string path, DeleteFileOperation operation)
     {
         _path = path;
-        ErrorCollection = new ErrorCollection.ErrorCollection();
         PerformerCollection = new PerformerCollection();
         _operation = operation;
     }
@@ -25,17 +24,7 @@ public class DeleteDirectoriesPerformer : IResult, IPerformer
         logger.LogInformation(_operation.DirectoryStatistics.ToString());
     }
 
-    public IReadOnlyErrorCollection ErrorCollection { get; }
-
-    public IReadOnlyPerformerCollection PerformerCollection { get; }
+    public IPerformerCollection PerformerCollection { get; }
 
     private readonly DeleteFileOperation _operation;
-
-    public void Log(ILogger logger)
-    {
-        foreach (var error in ErrorCollection.Errors)
-        {
-            logger.LogError(error.ErrorMessage);
-        }
-    }
 }
