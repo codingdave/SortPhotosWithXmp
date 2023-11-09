@@ -30,6 +30,8 @@ Challenges it can deal with:
 
 * Duplicate command needs to move duplicates into directory structure if force is given. Currently it only logs to console that it calculates hashes.
 
+* MoveFileOperation just logs FileAlreadyExistsErrors. They are not handled well, yet. Not stored for further processing, logging
+
 ## Issues
 
 * Hashing dies, thats why we save the hashes
