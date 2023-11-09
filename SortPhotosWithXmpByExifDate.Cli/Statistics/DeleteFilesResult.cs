@@ -1,7 +1,5 @@
 using Microsoft.Extensions.Logging;
 
-using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
-
 namespace SortPhotosWithXmpByExifDate.Cli.Result;
 
 public class DeleteFilesResult : IResult

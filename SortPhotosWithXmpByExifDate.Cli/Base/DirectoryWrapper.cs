@@ -1,14 +1,10 @@
 using System.Diagnostics;
 using System.Security.AccessControl;
 
-using Microsoft.Extensions.Logging;
-
 using SystemInterface;
 
 using SystemInterface.IO;
 using SystemInterface.Security.AccessControl;
-
-using SystemWrapper.IO;
 
 namespace SortPhotosWithXmpByExifDate.Cli;
 

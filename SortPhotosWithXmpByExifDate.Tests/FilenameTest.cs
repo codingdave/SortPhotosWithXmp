@@ -1,16 +1,4 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
-
-using Microsoft.Extensions.Logging;
-
-using Moq;
-
-using SixLabors.ImageSharp;
-
 using SortPhotosWithXmpByExifDate.Cli.Repository;
-
-using SystemInterface.IO;
 
 using Xunit;
 

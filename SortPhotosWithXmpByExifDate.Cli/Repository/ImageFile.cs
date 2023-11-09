@@ -1,5 +1,3 @@
-using AutoMapper.Internal.Mappers;
-
 namespace SortPhotosWithXmpByExifDate.Cli.Repository;
 
 public record struct ImageFile(string OriginalFilename, DateTime LastWriteTimeUtc) : IImageFile

@@ -1,4 +1,3 @@
-using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 using SortPhotosWithXmpByExifDate.Cli.Repository;
 
 using SystemInterface.IO;
@@ -61,7 +60,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
 
         public override string ToString()
         {
-            return this.GetType().Name + ", IsForce: " + IsForce;
+            return GetType().Name + ", IsForce: " + IsForce;
         }
     }
 }

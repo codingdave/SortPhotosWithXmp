@@ -1,10 +1,8 @@
-using System.Collections.Immutable;
+using System.Configuration.Assemblies;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 
 using Microsoft.Extensions.Logging;
-
-using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 
 using SortPhotosWithXmpByExifDate.Cli.Extensions;
 
@@ -27,13 +25,10 @@ public class FileScanner : IFileScanner
         "mov"
     };
 
+    private readonly IFile _file;
     private readonly ILogger _logger;
 
-    public FileScanner(ILogger logger)
-    {
-        _logger = logger;
-        Map = new Dictionary<string, FileVariations>();
-    }
+    public FileScanner(ILogger logger, IFile file) => (_logger, _file) = (logger, file);
 
     public void Crawl(IDirectory directory)
     {
@@ -55,12 +50,14 @@ public class FileScanner : IFileScanner
         // find all images
         var (images, xmps) = GetAllImageDataInCurrentDirectory(directory);
 
-        images.Do(image => Map.Add(image, new(new ImageFile(image), new())));
+        // first add all images
+        images.Do(image => FilenameMap.Add(image, new(new ImageFile(image), new())));
+        // then add the corresponding sidecar files
         xmps.Do(file =>
         {
             var filenameWithoutExtensionAndVersion = ExtractFilenameWithoutExtensionAndVersion(file);
 
-            if (Map.TryGetValue(filenameWithoutExtensionAndVersion, out var value))
+            if (FilenameMap.TryGetValue(filenameWithoutExtensionAndVersion, out var value))
             {
                 value.SidecarFiles.Add(new ImageFile(file));
             }
@@ -70,7 +67,7 @@ public class FileScanner : IFileScanner
                 // some/other/path/050826_foo_03.JPG.xmp could be Version0 for some/other/path/050826_foo_03.JPG but detected as Version3
                 if (
                     string.Equals(file[^XmpExtension.Length..], XmpExtension, StringComparison.OrdinalIgnoreCase)
-                    && Map.TryGetValue(file[..^XmpExtension.Length], out var fileVariation))
+                    && FilenameMap.TryGetValue(file[..^XmpExtension.Length], out var fileVariation))
                 {
                     fileVariation.SidecarFiles.Add(new ImageFile(file));
                 }
@@ -82,7 +79,7 @@ public class FileScanner : IFileScanner
                         _logger.LogTrace($"Expected base image '{filenameWithoutExtensionAndVersion}' not found for '{file}'");
                     }
                     value = new FileVariations(null, new List<IImageFile>() { new ImageFile(file) });
-                    Map.Add(filenameWithoutExtensionAndVersion, value);
+                    FilenameMap.Add(filenameWithoutExtensionAndVersion, value);
                 }
             }
         });
@@ -173,6 +170,27 @@ public class FileScanner : IFileScanner
         return result;
     }
 
+    public void CreateDuplicateImageHashMap()
+    {
+        var md5 = System.Security.Cryptography.MD5.Create();
+        foreach (var fileVariation in FilenameMap.Values)
+        {
+            if (fileVariation.Data != null)
+            {
+                var stream = _file.OpenRead(fileVariation.Data.CurrentFilename);
+                var hash = md5.ComputeHash(stream.FileStreamInstance);
+                if (HashMap.TryGetValue(hash, out var value))
+                {
+                    _ = value.Append(fileVariation);
+                }
+                else
+                {
+                    HashMap.Add(hash, new List<FileVariations>() { fileVariation });
+                }
+            }
+        }
+    }
+
     private bool IsDigit(char c)
     {
         return c is '0' or '1' or '2' or '3' or '4' or '5' or '6' or '7' or '8' or '9';
@@ -184,11 +202,12 @@ public class FileScanner : IFileScanner
     private const string Extension = @"(?<extension>\.\w+)";
     public Regex XmpFileWithOptionalRevision = new($"{BaseNumber}?{Extension}{XmpExtension}");
 
-    public IEnumerable<FileVariations> MultipleEdits => Map.Values.Where(x => x.SidecarFiles.Count > 1);
-    public IEnumerable<IImageFile> LonelySidecarFiles => Map.Values.Where(x => x.Data == null).SelectMany(x => x.SidecarFiles);
-    public IEnumerable<FileVariations> HealtyFileVariations => Map.Values.Where(x => x.Data != null);
+    public IEnumerable<FileVariations> MultipleEdits => FilenameMap.Values.Where(x => x.SidecarFiles.Count > 1);
+    public IEnumerable<IImageFile> LonelySidecarFiles => FilenameMap.Values.Where(x => x.Data == null).SelectMany(x => x.SidecarFiles);
+    public IEnumerable<FileVariations> HealtyFileVariations => FilenameMap.Values.Where(x => x.Data != null);
 
     public string? ScanDirectory { get; private set; }
 
-    public IDictionary<string, FileVariations> Map { get; }
+    public IDictionary<string, FileVariations> FilenameMap { get; } = new Dictionary<string, FileVariations>();
+    public IDictionary<byte[], IEnumerable<FileVariations>> HashMap { get; } = new Dictionary<byte[], IEnumerable<FileVariations>>();
 }

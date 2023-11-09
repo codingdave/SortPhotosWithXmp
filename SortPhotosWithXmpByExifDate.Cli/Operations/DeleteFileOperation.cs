@@ -1,4 +1,3 @@
-using Microsoft.Extensions.FileSystemGlobbing.Internal.Patterns;
 using Microsoft.Extensions.Logging;
 
 using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;

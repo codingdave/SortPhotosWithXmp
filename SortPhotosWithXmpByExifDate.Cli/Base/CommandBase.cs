@@ -3,9 +3,6 @@ using SortPhotosWithXmpByExifDate.Cli.Result;
 using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 using System.CommandLine;
 using SystemInterface.IO;
-using SortPhotosWithXmpByExifDate.Cli.Extensions;
-using SortPhotosWithXmpByExifDate.Cli.Operations;
-using Microsoft.VisualBasic;
 
 namespace SortPhotosWithXmpByExifDate.Cli.Commands;
 

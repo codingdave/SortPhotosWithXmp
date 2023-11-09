@@ -1,14 +1,5 @@
 using MetadataExtractor.Formats.Xmp;
 
-using Microsoft.Extensions.Logging;
-
-using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
-using SortPhotosWithXmpByExifDate.Cli.Operations;
-using SortPhotosWithXmpByExifDate.Cli.Repository;
-using SortPhotosWithXmpByExifDate.Cli.Result;
-
-using SystemInterface.IO;
-
 namespace SortPhotosWithXmpByExifDate.Cli;
 
 public static class Helpers

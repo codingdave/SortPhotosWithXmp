@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Concurrent;
 
 namespace SortPhotosWithXmpByExifDate.Cli.ErrorCollection;

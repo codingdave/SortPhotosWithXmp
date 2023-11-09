@@ -2,8 +2,6 @@ using System.Diagnostics;
 using System.Security.AccessControl;
 using System.Text;
 
-using Microsoft.Extensions.Logging;
-
 using SystemInterface;
 
 using SystemInterface.IO;

@@ -4,7 +4,6 @@ using ImageMagick;
 
 using Microsoft.Extensions.Logging;
 
-using SortPhotosWithXmpByExifDate.Cli.Operations;
 using SortPhotosWithXmpByExifDate.Cli.Repository;
 using SortPhotosWithXmpByExifDate.Cli.Result;
 
@@ -78,6 +77,7 @@ public class FileAlreadyExistsErrorPerformer : ErrorPerformerBase<FileAlreadyExi
 
     private bool AreXmpsDuplicates(FileAlreadyExistsError error)
     {
+        #warning use the FileScanner
         // xmps are identical, if their hash is identical
 
         using var md5 = System.Security.Cryptography.MD5.Create();

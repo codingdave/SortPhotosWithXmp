@@ -1,5 +1,3 @@
-using ImageMagick;
-
 using Microsoft.Extensions.Logging;
 
 using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;

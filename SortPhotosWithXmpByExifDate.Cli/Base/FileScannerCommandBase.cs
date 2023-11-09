@@ -29,7 +29,7 @@ internal abstract class FileScannerCommandBase : CommandBase
         var fileScanner = _getFileScanner();
         if (fileScanner == null)
         {
-            fileScanner = new FileScanner(Logger);
+            fileScanner = new FileScanner(Logger, File);
             Directory.SetCurrentDirectory(sourcePath);
             fileScanner.Crawl(Directory);
             _setFileScanner(fileScanner);
