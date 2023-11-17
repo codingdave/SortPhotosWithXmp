@@ -14,13 +14,13 @@ namespace SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 
 public class FileAlreadyExistsErrorPerformer : ErrorPerformerBase<FileAlreadyExistsError>
 {
+    #warning Needs to be part of copy or move operation
     public FileAlreadyExistsErrorPerformer(
-        IErrorCollection<FileAlreadyExistsError> errorCollection,
         IFilesStatistics foundStatistics,
         IFile file,
         IDirectory directory,
         string baseDir,
-        bool isForce) : base(errorCollection, foundStatistics, file, directory, baseDir, isForce)
+        bool isForce) : base(foundStatistics, file, directory, baseDir, isForce)
     {
     }
 
@@ -34,7 +34,6 @@ public class FileAlreadyExistsErrorPerformer : ErrorPerformerBase<FileAlreadyExi
                 => HandleCollisionOrDuplicate(logger, error, targetFile));
         }
     }
-
 
     protected void HandleCollisionOrDuplicate(ILogger logger, FileAlreadyExistsError error, FileDecomposition targetFile)
     {

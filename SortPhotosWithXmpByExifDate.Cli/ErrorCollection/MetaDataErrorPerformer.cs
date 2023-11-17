@@ -10,12 +10,11 @@ namespace SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 public class MetaDataErrorPerformer : ErrorPerformerBase<MetaDataError>
 {
     public MetaDataErrorPerformer(
-        IErrorCollection<MetaDataError> errorCollection,
         IFilesStatistics foundStatistics,
         IFile file,
         IDirectory directory,
         string baseDir,
-        bool isForce) : base(errorCollection, foundStatistics, file, directory, baseDir, isForce)
+        bool isForce) : base(foundStatistics, file, directory, baseDir, isForce)
     {
     }
 

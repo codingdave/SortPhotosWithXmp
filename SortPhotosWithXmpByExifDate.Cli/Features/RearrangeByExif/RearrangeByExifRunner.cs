@@ -73,14 +73,14 @@ internal class RearrangeByExifRunner : IRun
                     else
                     {
                         // error: we need the date for rearranging
-                        _filesFoundResult.NoTimeFoundErrors.Add(new NoTimeFoundError(file, Helpers.GetMetadata(metaDataDirectories)));
+                        _filesFoundResult.NoTimeFoundErrorPerformer.Errors.Add(new NoTimeFoundError(file, Helpers.GetMetadata(metaDataDirectories)));
                     }
 
                     var metaDataErrors = metaDataDirectories.SelectMany(t => t.Errors);
                     if (metaDataErrors.Any())
                     {
                         logger.LogTrace("found errors in the metadata while extracting metadata from '{file}': {errors}", file, string.Join(Environment.NewLine, metaDataErrors));
-                        _filesFoundResult.MetaDataErrors.Add(new MetaDataError(file, metaDataErrors));
+                        _filesFoundResult.MetaDataErrorPerformer.Errors.Add(new MetaDataError(file, metaDataErrors));
                     }
                 }
                 catch (MetadataExtractor.ImageProcessingException e)

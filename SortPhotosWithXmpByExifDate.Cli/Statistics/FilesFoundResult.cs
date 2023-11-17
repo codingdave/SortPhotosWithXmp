@@ -17,7 +17,6 @@ public class FilesFoundResult : IResult
         _directory = directory;
 
         FileAlreadyExistsErrorPerformer = new FileAlreadyExistsErrorPerformer(
-            FileAlreadyExistsErrors,
             FilesStatistics,
             _file,
             _directory,
@@ -25,7 +24,6 @@ public class FilesFoundResult : IResult
             isForce);
 
         NoTimeFoundErrorPerformer = new NoTimeFoundErrorPerformer(
-            NoTimeFoundErrors,
             FilesStatistics,
             _file,
             _directory,
@@ -33,7 +31,6 @@ public class FilesFoundResult : IResult
             isForce);
 
         MetaDataErrorPerformer = new MetaDataErrorPerformer(
-            MetaDataErrors,
             FilesStatistics,
             _file,
             _directory,
@@ -41,24 +38,14 @@ public class FilesFoundResult : IResult
             isForce);
     }
 
-    public IFilesStatistics FilesStatistics { get; } = new FilesStatistics();
-
     public CleanupPerformer CleanupPerformer { get; internal set; } = new CleanupPerformer();
-
-    public IErrorCollection<FileAlreadyExistsError> FileAlreadyExistsErrors { get; } = new ErrorCollection<FileAlreadyExistsError>();
+    public FileAlreadyExistsErrorPerformer FileAlreadyExistsErrorPerformer { get; }
     public IErrorCollection<GeneralExceptionError> GeneralExceptionErrors { get; } = new ErrorCollection<GeneralExceptionError>();
     public IErrorCollection<ImageProcessingExceptionError> ImageProcessingExceptionErrors { get; } = new ErrorCollection<ImageProcessingExceptionError>();
-    public IErrorCollection<MetaDataError> MetaDataErrors { get; } = new ErrorCollection<MetaDataError>();
-    public IErrorCollection<NoTimeFoundError> NoTimeFoundErrors { get; } = new ErrorCollection<NoTimeFoundError>();
-
-    public NoTimeFoundErrorPerformer NoTimeFoundErrorPerformer { get; }
-
-    public MetaDataErrorPerformer MetaDataErrorPerformer { get; }
-
-    public FileAlreadyExistsErrorPerformer FileAlreadyExistsErrorPerformer { get; }
-
+    public IFilesStatistics FilesStatistics { get; } = new FilesStatistics();
     public IPerformerCollection Performers { get; } = new PerformerCollection();
-
+    public MetaDataErrorPerformer MetaDataErrorPerformer { get; }
+    public NoTimeFoundErrorPerformer NoTimeFoundErrorPerformer { get; }
     public void Log(ILogger logger)
     {
         foreach (var error in GeneralExceptionErrors.Errors)

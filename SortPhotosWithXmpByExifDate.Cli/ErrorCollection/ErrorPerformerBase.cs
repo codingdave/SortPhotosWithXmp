@@ -11,7 +11,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 
 public abstract class ErrorPerformerBase<T> : IPerformer where T : IError
 {
-    protected readonly IErrorCollection<T> _errorCollection;
+    protected readonly IErrorCollection<T> _errorCollection = new ErrorCollection<T>();
     protected readonly IFilesStatistics _foundStatistics;
     protected readonly IFile _file;
     protected readonly IDirectory _directory;
@@ -21,23 +21,21 @@ public abstract class ErrorPerformerBase<T> : IPerformer where T : IError
     protected MoveFileOperation _moveFileOperation;
     protected DeleteFileOperation _deleteFileOperation;
 
-    #WARNING Add(T), remove Collections from FilesFoundResult
-
     public ErrorPerformerBase(
-        IErrorCollection<T> errorCollection,
         IFilesStatistics foundStatistics,
         IFile file,
         IDirectory directory,
         string baseDir,
         bool isForce)
     {
-        _errorCollection = errorCollection;
         _foundStatistics = foundStatistics;
         _file = file;
         _directory = directory;
         _baseDir = baseDir;
         _isForce = isForce;
     }
+
+    public IErrorCollection<T> Errors => _errorCollection;
 
     public abstract void Perform(ILogger logger);
 
