@@ -1,26 +1,48 @@
 # SortPhotosWithXmpByExifDate
 
-Sort your Photos and Videos by exif time. If you have .xmp files, this tool will place them accordingly, preserving the Image<->Xmp relation.
+Sort your Photos and Videos by exif time. If you have .xmp files, this tool will preserve the Image<->Xmp relation by keeping them adjoint.
 
-For all desctructive (possibly dangerous) commands the safe (dry run) mode is the default. Performing the operation (move, copy) needs to be requested.
+For all desctructive (possibly dangerous) actions the safe (dry run) mode is the default. Performing the destructive operation (move, copy, delete) needs to be requested (--force).
 
-The default operation is copy, but move can be enforced.
+The default operation is copy, but move can be used insted (--move).
 
-Challenges it can deal with:
+## Operations
 
-* No timestamp found: We try different fields of metadata (exif, iptc, ...). Still a datetime might be missing. Images for which we do not find the datetime will be placed in NoTimeFound/image/image.jpg
-* In the future we can try to extract the date from the filename. Maybe with a pattern.
-* duplicates: This might happen if you have the same image (so also same metadata) at 2 different directories, as they will be copied next to each other. Since this might be a duplicate that you want to resolve first, they are placed in FileAlreadyExistsError/image/image.jpg and FileAlreadyExistsError/image/image_1.jpg, FileAlreadyExistsError/image/image_2.jpg ...
-* Metadata issues: If reading the metadata fails or there is an unknown medatata entry the image is placed at MetaDataError/image/image.jpg
+This application can perform an operation on a set of images with optional sidecar files
+
+### Rearrange images by exif information
+
+This operation will recursively browse through a directory and scan for images and movies. Their EXIF/IPTC information will be extracted and based on the date and time the image was shot a directory structure is created and the image with its optional sidecard files copied (default) or moved (--move) if enforced (--force). If you do not perform the operation it will notify you about the changes that will be performed when enforced.
+
+Possible future updates: 
+
+* Allow to specify the date format that describes how the files are structured like "yyyy/MM/dd".
+* move videos out of image directory? Currently it will be sorted like the images
+  
+### Extract the date from a pattern in the filename
+
+Not yet implemented
+
+### Find images where the filenames date mismatches the metadata
+
+Not yet implemented
+
+## We can solve the following issues
+
+### duplicates by filename
+
+This might happen if you have the same image (so also same metadata) at 2 different directories, as they will be copied next to each other. Since this might be a duplicate that you want to resolve first, they are placed in FileAlreadyExistsError/image/image.jpg and FileAlreadyExistsError/image/image_1.jpg, FileAlreadyExistsError/image/image_2.jpg ...
+
+### No timestamp found
+
+We try different fields of EXIF/IPTC metadata. Still a datetime might be missing. Images for which we do not find the datetime will be copied in NoTimeFound/image/image.jpg for further investigation.
+
+### Metadata issues
+
+If reading the metadata fails or there is an unknown medatata entry the image is copied at MetaDataError/image/image.jpg for further investigation.
 
 ## TODO-Application wise
 
-* Add Tests
-  * Fix finding xmps
-* Implement the other commands-stubs
-* Add command to print files whose filenames contain a timestamp and for which the xmp time information differs. Also allow to specify the format for the time, like yyyy/MM/dd
-* Allow to specify the date format that describes how the files are structured yyyy/MM/dd
-* move videos out of image directory? Currently it will be sorted like the images
 * Duplicates: 2015/01/06/dsc_1491.JPG and 2015/06/01/dsc_1491.JPG are the same image but exif got broken:
   * First scan all images with ImageMagick to get image hash
   * with a HashSet look up for duplicates?
@@ -32,6 +54,4 @@ Challenges it can deal with:
 
 * MoveFileOperation just logs FileAlreadyExistsErrors. They are not handled well, yet. Not stored for further processing, logging
 
-## Issues
-
-* Hashing dies, thats why we save the hashes
+* Does Hashing still die? (thats why we were saving the hashes)
