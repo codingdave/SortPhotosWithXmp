@@ -10,52 +10,24 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
 {
     public class MoveFileOperation : FileOperationBase
     {
-        private readonly ILogger _logger;
         private readonly IFile _file;
 
-        internal MoveFileOperation(ILogger logger, IFile file, IDirectory directory, bool isForce)
-        : base(directory, isForce)
+        internal MoveFileOperation(ILogger logger, IFile file, IDirectory directory, Action<FileAlreadyExistsError> handleError, bool isForce)
+        : base(logger, directory, handleError, isForce)
         {
-            _logger = logger;
-            _file = file;
+            _file = file ?? throw new ArgumentNullException(nameof(file));
         }
 
         public override void ChangeFiles(IEnumerable<IImageFile> files, string targetPath)
         {
-            CreateDirectory(targetPath);
-
-            foreach (var file in files)
+            void Errorhandler(string sourceFileName, string destFileName)
             {
-                var targetName = JoinFile(targetPath, Path.GetFileName(file.CurrentFilename));
+                _logger.LogTrace($"MoveFileOperation({sourceFileName}, {destFileName});");
+                _file.Move(sourceFileName, destFileName);
+            };
 
-                if (File.Exists(targetName))
-                {
-                    var error = new FileAlreadyExistsError(targetName, file.CurrentFilename, $"File {file.CurrentFilename} already exists at {targetName}");
-                    _logger.LogError(error.ToString());
-                }
-                else
-                {
-                    if (IsForce)
-                    {
-                        try
-                        {
-                            _logger.LogTrace($"IFile.Move({file.CurrentFilename}, {targetName});");
-                            _file.Move(file.CurrentFilename, targetName);
-                        }
-                        catch (Exception e)
-                        {
-                            _logger.LogExceptionError(e);
-                        }
-                    }
-                    else
-                    {
-                        _logger.LogTrace($"Ignoring IFile.Move({file.CurrentFilename}, {targetName});");
-                    }
-                    file.NewFilename = targetName;
-                }
-            }
+            ChangeFiles(files, targetPath, Errorhandler);
         }
-
 
         public void RenameDirectory(string sourceDirName, string destDirName)
         {

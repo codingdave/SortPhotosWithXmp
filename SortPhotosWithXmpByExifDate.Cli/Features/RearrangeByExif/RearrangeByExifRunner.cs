@@ -33,9 +33,10 @@ internal class RearrangeByExifRunner : IRun
     {
         _sourceDirectory = sourceDirectory ?? throw new ArgumentNullException(nameof(sourceDirectory));
         _destinationDirectory = destinationDirectory ?? throw new ArgumentNullException(nameof(destinationDirectory));
-        _fileOperation = OperationFactory.GetCopyOrMoveOperation(logger, file, directory, isMove, isForce);
         _deleteOperation = new DeleteFileOperation(logger, file, directory, isForce);
         _filesFoundResult = new FilesFoundResult(file, directory, destinationDirectory, isForce);
+        var errorhandler = (FileAlreadyExistsError e) => _filesFoundResult.FileAlreadyExistsErrorPerformer.Errors.Add(e);
+        _fileOperation = OperationFactory.GetCopyOrMoveOperation(logger, file, directory, errorhandler, isMove, isForce);
         _fileScanner = fileScanner;
         _directory = directory;
     }

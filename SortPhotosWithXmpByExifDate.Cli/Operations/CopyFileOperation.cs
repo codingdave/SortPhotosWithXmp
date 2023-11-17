@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 
+using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 using SortPhotosWithXmpByExifDate.Cli.Repository;
 
 
@@ -9,41 +10,29 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
 {
     public class CopyFileOperation : FileOperationBase
     {
-        private readonly ILogger _logger;
         private readonly IFile _file;
 
         internal CopyFileOperation(
             ILogger logger,
             IFile file,
             IDirectory directory,
+            Action<FileAlreadyExistsError> handleError,
             bool isForce)
-            : base(directory, isForce)
+            : base(logger, directory, handleError, isForce)
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _file = file ?? throw new ArgumentNullException(nameof(file));
         }
 
-        private void ChangeFile(string sourceFileName, string destFileName)
-        {
-            if (IsForce)
-            {
-                _logger.LogTrace($"IFile.Copy({sourceFileName}, {destFileName});");
-                _file.Copy(sourceFileName, destFileName);
-            }
-            else
-            {
-                _logger.LogTrace($"Ignoring IFile.Copy({sourceFileName}, {destFileName});");
-            }
-        }
 
         public override void ChangeFiles(IEnumerable<IImageFile> files, string targetPath)
         {
-            CreateDirectory(GetDirectory(targetPath));
-
-            foreach (var file in files)
+            void Errorhandler(string sourceFileName, string destFileName)
             {
-                ChangeFile(file.CurrentFilename, targetPath);
-            }
+                _logger.LogTrace($"CopyFileOperation({sourceFileName}, {destFileName});");
+                _file.Move(sourceFileName, destFileName);
+            };
+
+            ChangeFiles(files, targetPath, Errorhandler);
         }
     }
 }

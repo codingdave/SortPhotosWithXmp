@@ -45,9 +45,15 @@ public abstract class ErrorPerformerBase<T> : IPerformer where T : IError
         {
             // when we have an error, we want to copy
             var isCopyingEnforced = true;
-#warning copy and move should HAVE not are a directory operator
-            _copyFileOperation = new CopyFileOperation(logger, _file, _directory, isCopyingEnforced);
-            _moveFileOperation = new MoveFileOperation(logger, _file, _directory, isCopyingEnforced);
+#warning copy and move should HAVE not ARE a directory operator
+
+            void errorhandler(FileAlreadyExistsError e)
+            {
+                throw new NotFiniteNumberException();
+            };
+
+            _copyFileOperation = new CopyFileOperation(logger, _file, _directory, errorhandler, isCopyingEnforced);
+            _moveFileOperation = new MoveFileOperation(logger, _file, _directory, errorhandler, isCopyingEnforced);
             _deleteFileOperation = new DeleteFileOperation(logger, _file, _directory, _isForce);
 
             var directoryName = errors.First().Name;

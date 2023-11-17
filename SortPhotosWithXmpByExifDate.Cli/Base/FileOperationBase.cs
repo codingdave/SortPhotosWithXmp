@@ -1,3 +1,6 @@
+using Microsoft.Extensions.Logging;
+
+using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 using SortPhotosWithXmpByExifDate.Cli.Repository;
 
 using SystemInterface.IO;
@@ -6,11 +9,15 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
 {
     public abstract class FileOperationBase : IOperation
     {
+        protected readonly ILogger _logger;
         protected readonly IDirectory _directory;
+        protected readonly Action<FileAlreadyExistsError> _handleError;
 
-        protected FileOperationBase(IDirectory directory, bool isForce)
+        protected FileOperationBase(ILogger logger, IDirectory directory, Action<FileAlreadyExistsError> handleError, bool isForce)
         {
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _directory = directory ?? throw new ArgumentNullException(nameof(directory));
+            _handleError = handleError ?? throw new ArgumentNullException(nameof(handleError));
             IsForce = isForce;
             _directorySeparator = Path.DirectorySeparatorChar.ToString();
         }
@@ -36,6 +43,41 @@ namespace SortPhotosWithXmpByExifDate.Cli.Operations
         }
 
         public abstract void ChangeFiles(IEnumerable<IImageFile> files, string targetPath);
+
+        protected void ChangeFiles(IEnumerable<IImageFile> files, string targetPath, Action<string, string> action)
+        {
+            CreateDirectory(targetPath);
+            
+            foreach (var file in files)
+            {
+                var targetName = JoinFile(targetPath, Path.GetFileName(file.CurrentFilename));
+
+                if (File.Exists(targetName))
+                {
+                    var error = new FileAlreadyExistsError(targetName, file.CurrentFilename, $"File {file.CurrentFilename} already exists at {targetName}");
+                    _handleError(error);
+                }
+                else
+                {
+                    if (IsForce)
+                    {
+                        try
+                        {
+                            action(file.CurrentFilename, targetName);
+                        }
+                        catch (Exception e)
+                        {
+                            _logger.LogExceptionError(e);
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogTrace($"Ignoring IFile.Move({file.CurrentFilename}, {targetName});");
+                    }
+                    file.NewFilename = targetName;
+                }
+            }
+        }
 
         internal string JoinDirectory(string dir1, string dir2)
         {
