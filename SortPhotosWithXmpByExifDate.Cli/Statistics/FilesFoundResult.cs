@@ -17,7 +17,7 @@ public class FilesFoundResult : IResult
         _directory = directory;
 
         FileAlreadyExistsErrorPerformer = new FileAlreadyExistsErrorPerformer(
-            FileAlreadyExistsErrorCollection,
+            FileAlreadyExistsErrors,
             FilesStatistics,
             _file,
             _directory,
@@ -25,7 +25,7 @@ public class FilesFoundResult : IResult
             isForce);
 
         NoTimeFoundErrorPerformer = new NoTimeFoundErrorPerformer(
-            NoTimeFoundErrorCollection,
+            NoTimeFoundErrors,
             FilesStatistics,
             _file,
             _directory,
@@ -33,7 +33,7 @@ public class FilesFoundResult : IResult
             isForce);
 
         MetaDataErrorPerformer = new MetaDataErrorPerformer(
-            MetaDataErrorCollection,
+            MetaDataErrors,
             FilesStatistics,
             _file,
             _directory,
@@ -45,14 +45,11 @@ public class FilesFoundResult : IResult
 
     public CleanupPerformer CleanupPerformer { get; internal set; } = new CleanupPerformer();
 
-    public IErrorCollection<NoTimeFoundError> NoTimeFoundErrorCollection { get; } = new ErrorCollection<NoTimeFoundError>();
-
-    public IErrorCollection<MetaDataError> MetaDataErrorCollection { get; } = new ErrorCollection<MetaDataError>();
-
-    public IErrorCollection<FileAlreadyExistsError> FileAlreadyExistsErrorCollection { get; } = new ErrorCollection<FileAlreadyExistsError>();
-    public IErrorCollection<ImageProcessingExceptionError> ImageProcessingExceptionErrorCollection { get; }
-    public IErrorCollection<ImageProcessingExceptionError> GeneralExceptionErrorCollection { get; }
-    public IErrorCollection<ExceptionErrorBase> ExceptionCollection { get; } = new ErrorCollection<ExceptionErrorBase>();
+    public IErrorCollection<FileAlreadyExistsError> FileAlreadyExistsErrors { get; } = new ErrorCollection<FileAlreadyExistsError>();
+    public IErrorCollection<GeneralExceptionError> GeneralExceptionErrors { get; } = new ErrorCollection<GeneralExceptionError>();
+    public IErrorCollection<ImageProcessingExceptionError> ImageProcessingExceptionErrors { get; } = new ErrorCollection<ImageProcessingExceptionError>();
+    public IErrorCollection<MetaDataError> MetaDataErrors { get; } = new ErrorCollection<MetaDataError>();
+    public IErrorCollection<NoTimeFoundError> NoTimeFoundErrors { get; } = new ErrorCollection<NoTimeFoundError>();
 
     public NoTimeFoundErrorPerformer NoTimeFoundErrorPerformer { get; }
 
@@ -60,22 +57,18 @@ public class FilesFoundResult : IResult
 
     public FileAlreadyExistsErrorPerformer FileAlreadyExistsErrorPerformer { get; }
 
-    public IPerformerCollection PerformerCollection { get; } = new PerformerCollection();
+    public IPerformerCollection Performers { get; } = new PerformerCollection();
 
     public void Log(ILogger logger)
     {
-        foreach (var error in ExceptionCollection.Errors)
+        foreach (var error in GeneralExceptionErrors.Errors)
         {
-            switch (error)
-            {
-                case GeneralExceptionError:
-                case ImageProcessingExceptionError:
-                    logger.LogExceptionError(error.File, error.Exception);
-                    break;
-                default:
-                    throw new NotImplementedException($"{nameof(error)}: {error}");
-            }
+            logger.LogExceptionError(error.File, error.Exception);
+        }
 
+        foreach (var error in ImageProcessingExceptionErrors.Errors)
+        {
+            logger.LogExceptionError(error.File, error.Exception);
         }
     }
 }

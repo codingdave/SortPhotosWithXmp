@@ -43,7 +43,7 @@ internal abstract class CommandBase
             if (result is FilesFoundResult filesFoundResult)
             {
                 Logger.LogInformation($"Processing FilesFoundResult");
-                filesFoundResult.PerformerCollection.Perform(Logger);
+                filesFoundResult.Performers.Perform(Logger);
                 filesFoundResult.MetaDataErrorPerformer.Perform(Logger);
                 filesFoundResult.FileAlreadyExistsErrorPerformer.Perform(Logger);
                 filesFoundResult.NoTimeFoundErrorPerformer.Perform(Logger);

@@ -4,7 +4,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Result
 {
     internal class DuplicatesDeletedResult : IResult
     {
-        public IPerformerCollection PerformerCollection => throw new NotImplementedException();
+        public IPerformerCollection Performers => throw new NotImplementedException();
 
         public void Log(ILogger logger)
         {

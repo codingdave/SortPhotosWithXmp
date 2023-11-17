@@ -21,6 +21,8 @@ public abstract class ErrorPerformerBase<T> : IPerformer where T : IError
     protected MoveFileOperation _moveFileOperation;
     protected DeleteFileOperation _deleteFileOperation;
 
+    #WARNING Add(T), remove Collections from FilesFoundResult
+
     public ErrorPerformerBase(
         IErrorCollection<T> errorCollection,
         IFilesStatistics foundStatistics,

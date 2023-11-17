@@ -66,30 +66,30 @@ internal class RearrangeByExifRunner : IRun
                     if (possibleDateTime is DateTime dateTime)
                     {
                         // when we can extract a date, there is no error for our usecase
-                        _filesFoundResult.PerformerCollection.Add(new ToExifPathPerformer(fileDatum, _destinationDirectory, dateTime, _fileOperation));
+                        _filesFoundResult.Performers.Add(new ToExifPathPerformer(fileDatum, _destinationDirectory, dateTime, _fileOperation));
                         _filesFoundResult.FilesStatistics.FoundImages++;
                         _filesFoundResult.FilesStatistics.FoundXmps += fileDatum.SidecarFiles.Count;
                     }
                     else
                     {
                         // error: we need the date for rearranging
-                        _filesFoundResult.NoTimeFoundErrorCollection.Add(new NoTimeFoundError(file, Helpers.GetMetadata(metaDataDirectories)));
+                        _filesFoundResult.NoTimeFoundErrors.Add(new NoTimeFoundError(file, Helpers.GetMetadata(metaDataDirectories)));
                     }
 
                     var metaDataErrors = metaDataDirectories.SelectMany(t => t.Errors);
                     if (metaDataErrors.Any())
                     {
                         logger.LogTrace("found errors in the metadata while extracting metadata from '{file}': {errors}", file, string.Join(Environment.NewLine, metaDataErrors));
-                        _filesFoundResult.MetaDataErrorCollection.Add(new MetaDataError(file, metaDataErrors));
+                        _filesFoundResult.MetaDataErrors.Add(new MetaDataError(file, metaDataErrors));
                     }
                 }
                 catch (MetadataExtractor.ImageProcessingException e)
                 {
-                    _filesFoundResult.ExceptionCollection.Add(new ImageProcessingExceptionError(file, e));
+                    _filesFoundResult.ImageProcessingExceptionErrors.Add(new ImageProcessingExceptionError(file, e));
                 }
                 catch (Exception e)
                 {
-                    _filesFoundResult.ExceptionCollection.Add(new GeneralExceptionError(file, e));
+                    _filesFoundResult.GeneralExceptionErrors.Add(new GeneralExceptionError(file, e));
                 }
             }
         });

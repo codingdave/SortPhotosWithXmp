@@ -5,5 +5,5 @@ namespace SortPhotosWithXmpByExifDate.Cli.Result;
 public interface IResult
 {
     void Log(ILogger logger);
-    IPerformerCollection PerformerCollection { get; }
+    IPerformerCollection Performers { get; }
 }
