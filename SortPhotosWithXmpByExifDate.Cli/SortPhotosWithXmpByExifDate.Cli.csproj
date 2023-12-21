@@ -37,6 +37,11 @@
     <ItemGroup>
       <None Include="appsettings.json" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always" />
       <None Include="appsettings.Development.json" CopyToOutputDirectory="Never" CopyToPublishDirectory="Never" />
+      <!-- Make internals available for Unit Testing -->
+      <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>SortPhotosWithXmpByExifDate.Tests</_Parameter1>
+      </AssemblyAttribute>
+      <!-- End Unit test Internals -->
     </ItemGroup>
     
 </Project>

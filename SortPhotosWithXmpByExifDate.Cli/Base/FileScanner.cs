@@ -85,7 +85,7 @@ public class FileScanner : IFileScanner
         });
     }
 
-    public (IList<string> images, IList<string> xmps) GetAllImageDataInCurrentDirectory(IDirectory directory)
+    internal (IList<string> images, IList<string> xmps) GetAllImageDataInCurrentDirectory(IDirectory directory)
     {
         var xmpRegexString = @".*\" + XmpExtension + "$";
         var xmpRegex = new Regex(xmpRegexString, RegexOptions.IgnoreCase);
