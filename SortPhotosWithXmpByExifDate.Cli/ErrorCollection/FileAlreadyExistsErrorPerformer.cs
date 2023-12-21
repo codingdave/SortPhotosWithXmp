@@ -16,11 +16,11 @@ public class FileAlreadyExistsErrorPerformer : ErrorPerformerBase<FileAlreadyExi
 {
 #warning Needs to be part of copy or move operation
     public FileAlreadyExistsErrorPerformer(
-        IFilesStatistics foundStatistics,
+        IFilesStatistics filesStatistics,
         IFile file,
         IDirectory directory,
         string baseDir,
-        bool isForce) : base(foundStatistics, file, directory, baseDir, isForce)
+        bool isForce) : base(filesStatistics, file, directory, baseDir, isForce)
     {
     }
 
@@ -87,7 +87,7 @@ public class FileAlreadyExistsErrorPerformer : ErrorPerformerBase<FileAlreadyExi
         var isHashIdentical = hash1 == hash2;
         if (isHashIdentical)
         {
-            _foundStatistics.SkippedXmps++;
+            _filesStatistics.SkippedXmps++;
         }
 
         return isHashIdentical;
@@ -109,7 +109,7 @@ public class FileAlreadyExistsErrorPerformer : ErrorPerformerBase<FileAlreadyExi
 
             if (isDuplicate)
             {
-                _foundStatistics.SkippedImages++;
+                _filesStatistics.SkippedImages++;
             }
         }
         catch (Exception e)

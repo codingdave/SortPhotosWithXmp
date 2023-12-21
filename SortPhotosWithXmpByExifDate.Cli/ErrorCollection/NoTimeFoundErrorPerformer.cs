@@ -10,12 +10,12 @@ namespace SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 public class NoTimeFoundErrorPerformer : ErrorPerformerBase<NoTimeFoundError>
 {
     public NoTimeFoundErrorPerformer(
-        IFilesStatistics foundStatistics,
+        IFilesStatistics filesStatistics,
         IFile file,
         IDirectory directory,
         string baseDir,
         bool isForce)
-    : base(foundStatistics, file, directory, baseDir, isForce)
+    : base(filesStatistics, file, directory, baseDir, isForce)
     {
     }
 

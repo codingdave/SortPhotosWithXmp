@@ -12,23 +12,23 @@ namespace SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 public abstract class ErrorPerformerBase<T> : IPerformer where T : IError
 {
     protected readonly IErrorCollection<T> _errorCollection = new ErrorCollection<T>();
-    protected readonly IFilesStatistics _foundStatistics;
+    protected readonly IFilesStatistics _filesStatistics;
     protected readonly IFile _file;
     protected readonly IDirectory _directory;
     private readonly string _baseDir;
     protected readonly bool _isForce;
-    protected CopyFileOperation _copyFileOperation;
-    protected MoveFileOperation _moveFileOperation;
-    protected DeleteFileOperation _deleteFileOperation;
+    protected CopyFileOperation? _copyFileOperation;
+    protected MoveFileOperation? _moveFileOperation;
+    protected DeleteFileOperation? _deleteFileOperation;
 
     public ErrorPerformerBase(
-        IFilesStatistics foundStatistics,
+        IFilesStatistics filesStatistics,
         IFile file,
         IDirectory directory,
         string baseDir,
         bool isForce)
     {
-        _foundStatistics = foundStatistics;
+        _filesStatistics = filesStatistics;
         _file = file;
         _directory = directory;
         _baseDir = baseDir;

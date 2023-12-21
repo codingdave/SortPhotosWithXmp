@@ -10,6 +10,8 @@ using SystemInterface.IO;
 
 namespace SortPhotosWithXmpByExifDate.Cli.Features.DeleteLonelyXmp;
 
+#warning Rename Xmp to SidecarFiles or the other way around
+
 internal class DeleteLeftoverXmpsCommand : FileScannerCommandBase
 {
     public DeleteLeftoverXmpsCommand(
