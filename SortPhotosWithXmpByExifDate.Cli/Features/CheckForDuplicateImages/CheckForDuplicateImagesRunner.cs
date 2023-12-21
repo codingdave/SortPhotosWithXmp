@@ -176,6 +176,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Features.CheckForDuplicateImages
                         }
                         else
                         {
+#warning use the FileScanner
                             using var md5 = MD5.Create();
                             sidecarFiles.Add(CreateXmpHash(md5, sidecarFile.OriginalFilename));
                         }

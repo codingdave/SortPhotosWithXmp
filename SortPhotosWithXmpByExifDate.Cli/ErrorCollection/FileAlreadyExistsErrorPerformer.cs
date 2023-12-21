@@ -14,7 +14,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 
 public class FileAlreadyExistsErrorPerformer : ErrorPerformerBase<FileAlreadyExistsError>
 {
-    #warning Needs to be part of copy or move operation
+#warning Needs to be part of copy or move operation
     public FileAlreadyExistsErrorPerformer(
         IFilesStatistics foundStatistics,
         IFile file,
@@ -76,7 +76,7 @@ public class FileAlreadyExistsErrorPerformer : ErrorPerformerBase<FileAlreadyExi
 
     private bool AreXmpsDuplicates(FileAlreadyExistsError error)
     {
-        #warning use the FileScanner
+#warning use the FileScanner
         // xmps are identical, if their hash is identical
 
         using var md5 = System.Security.Cryptography.MD5.Create();
