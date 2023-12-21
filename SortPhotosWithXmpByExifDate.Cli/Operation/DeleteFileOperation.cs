@@ -5,7 +5,7 @@ using SortPhotosWithXmpByExifDate.Cli.Result;
 
 using SystemInterface.IO;
 
-namespace SortPhotosWithXmpByExifDate.Cli.Operations;
+namespace SortPhotosWithXmpByExifDate.Cli.Operation;
 
 public class DeleteFileOperation : IOperation
 {

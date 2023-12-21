@@ -4,6 +4,7 @@ using ImageMagick;
 
 using Microsoft.Extensions.Logging;
 
+using SortPhotosWithXmpByExifDate.Cli.Operation;
 using SortPhotosWithXmpByExifDate.Cli.Repository;
 using SortPhotosWithXmpByExifDate.Cli.Result;
 
@@ -14,14 +15,21 @@ namespace SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 
 public class FileAlreadyExistsErrorPerformer : ErrorPerformerBase<FileAlreadyExistsError>
 {
+    private Operations _operations;
+
 #warning Needs to be part of copy or move operation
     public FileAlreadyExistsErrorPerformer(
+        ILogger logger,
         IFilesStatistics filesStatistics,
         IFile file,
         IDirectory directory,
         string baseDir,
         bool isForce) : base(filesStatistics, file, directory, baseDir, isForce)
     {
+
+        // when we have an error, we want to copy
+        var isCopyingEnforced = true;
+        _operations = new Operations(logger, _file, _directory, _isForce, isCopyingEnforced);
     }
 
     public override void Perform(ILogger logger)
@@ -31,7 +39,7 @@ public class FileAlreadyExistsErrorPerformer : ErrorPerformerBase<FileAlreadyExi
             logger.LogInformation("Performing FileAlreadyExistsErrors");
             CollectCollisions(logger, _errorCollection.Errors,
                 (FileDecomposition targetFile, FileAlreadyExistsError error)
-                => HandleCollisionOrDuplicate(logger, error, targetFile));
+                => HandleCollisionOrDuplicate(logger, error, targetFile), _operations);
         }
     }
 
@@ -50,7 +58,7 @@ public class FileAlreadyExistsErrorPerformer : ErrorPerformerBase<FileAlreadyExi
     private void HandleDuplicate(ILogger logger, FileAlreadyExistsError error)
     {
         logger.LogDebug($"{error.OtherFile} is duplicate of {error.File}");
-        _deleteFileOperation.DeleteFile(error.OtherFile);
+        _operations.DeleteFileOperation.DeleteFile(error.OtherFile);
     }
 
     private bool IsDuplicate(ILogger logger, FileAlreadyExistsError error)
@@ -144,10 +152,10 @@ public class FileAlreadyExistsErrorPerformer : ErrorPerformerBase<FileAlreadyExi
         //  * skip copying error2.File ("20230101/1.jpg") to ErrorFiles/20230101/1.jpg
         //  * copy error2.OtherFile with appended number to ErrorFiles/20230101/1_2.jpg
 
-        CreateDirectoryAndCopyFile(logger, error, targetFile);
+        CreateDirectoryAndCopyFile(logger, error, targetFile, _operations.MoveFileOperation, _operations.CopyFileOperation);
 
         // 3: copy the other file into subdirectory with appended _number
-        CopyFileWithAppendedNumber(logger, error.OtherFile, targetFile);
+        CopyFileWithAppendedNumber(logger, error.OtherFile, targetFile, _operations.MoveFileOperation, _operations.CopyFileOperation);
     }
 
 }

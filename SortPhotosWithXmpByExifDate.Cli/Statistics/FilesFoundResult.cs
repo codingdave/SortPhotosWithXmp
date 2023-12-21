@@ -11,12 +11,13 @@ public class FilesFoundResult : IResult
     private readonly IFile _file;
     private readonly IDirectory _directory;
 
-    public FilesFoundResult(IFile file, IDirectory directory, string destinationPath, bool isForce)
+    public FilesFoundResult(ILogger logger, IFile file, IDirectory directory, string destinationPath, bool isForce)
     {
         _file = file;
         _directory = directory;
 
         FileAlreadyExistsErrorPerformer = new FileAlreadyExistsErrorPerformer(
+            logger,
             FilesStatistics,
             _file,
             _directory,

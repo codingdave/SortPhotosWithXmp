@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 
 using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 using SortPhotosWithXmpByExifDate.Cli.Extensions;
-using SortPhotosWithXmpByExifDate.Cli.Operations;
+using SortPhotosWithXmpByExifDate.Cli.Operation;
 using SortPhotosWithXmpByExifDate.Cli.Repository;
 using SortPhotosWithXmpByExifDate.Cli.Result;
 
@@ -34,7 +34,7 @@ internal class RearrangeByExifRunner : IRun
         _sourceDirectory = sourceDirectory ?? throw new ArgumentNullException(nameof(sourceDirectory));
         _destinationDirectory = destinationDirectory ?? throw new ArgumentNullException(nameof(destinationDirectory));
         _deleteOperation = new DeleteFileOperation(logger, file, directory, isForce);
-        _filesFoundResult = new FilesFoundResult(file, directory, destinationDirectory, isForce);
+        _filesFoundResult = new FilesFoundResult(logger, file, directory, destinationDirectory, isForce);
         var errorhandler = (FileAlreadyExistsError e) => _filesFoundResult.FileAlreadyExistsErrorPerformer.Errors.Add(e);
         _fileOperation = OperationFactory.GetCopyOrMoveOperation(logger, file, directory, errorhandler, isMove, isForce);
         _fileScanner = fileScanner;

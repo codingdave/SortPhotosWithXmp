@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 
+using SortPhotosWithXmpByExifDate.Cli.Operation;
 using SortPhotosWithXmpByExifDate.Cli.Result;
 
 using SystemInterface.IO;
@@ -21,12 +22,16 @@ public class NoTimeFoundErrorPerformer : ErrorPerformerBase<NoTimeFoundError>
 
     public override void Perform(ILogger logger)
     {
+        // when we have an error, we want to copy
+        var isCopyingEnforced = true;
+        var operations = new Operations(logger, _file, _directory, _isForce, isCopyingEnforced);
+
         if (_errorCollection.Errors.Any())
         {
             logger.LogInformation("Performing NoTimeFoundErrors");
             CollectCollisions(logger, _errorCollection.Errors,
                 (FileDecomposition targetFile, NoTimeFoundError error)
-                => CreateDirectoryAndCopyFile(logger, error, targetFile));
+                => CreateDirectoryAndCopyFile(logger, error, targetFile, operations.MoveFileOperation, operations.CopyFileOperation), operations);
         }
     }
 }
