@@ -18,6 +18,7 @@ public class FileScannerTest
 {
     private readonly ILogger _logger;
     private readonly FileScanner _fileScanner;
+    private readonly Mock<IFile> _fileMock;
     private readonly Mock<IDirectory> _directoryMock;
     private readonly List<string> _images;
     private readonly List<string> _sidecarFiles;
@@ -30,14 +31,16 @@ public class FileScannerTest
 
         // arrange
         _logger = _output.BuildLogger();
-        _fileScanner = new FileScanner(_logger);
         _directoryMock = new Mock<IDirectory>(MockBehavior.Strict);
-
         _ = _directoryMock
             .Setup(x => x.GetCurrentDirectory())
             .Returns("some/path");
 
         // _ = directoryMock.Setup(x => x.SetCurrentDirectory(It.IsAny<string>()));
+
+        _fileMock = new Mock<IFile>(MockBehavior.Loose);
+
+        _fileScanner = new FileScanner(_logger, _fileMock.Object);
 
         _images = new List<string>() {
             "/home/foo/some/path/DSC_9287.NEF",
