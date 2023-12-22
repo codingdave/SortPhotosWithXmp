@@ -1,6 +1,6 @@
 # SortPhotosWithXmp
 
-Sort your Photos and Videos by exif time. If you have .xmp files, this tool will preserve the Image<->Xmp relation by keeping them adjoint.
+Perform batch operations on your Photos and Videos by exif information. If you have .xmp files, this tool will preserve the Image<->Xmp relation by keeping them adjoint.
 
 For all desctructive (possibly dangerous) actions the safe (dry run) mode is the default. Performing the destructive operation (move, copy, delete) needs to be requested (--force).
 
