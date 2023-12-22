@@ -6,7 +6,6 @@ using SortPhotosWithXmpByExifDate.Statistics;
 
 using SystemInterface.IO;
 
-
 namespace SortPhotosWithXmpByExifDate.Performer;
 
 public class MetaDataErrorPerformer : ErrorPerformerBase<MetaDataError>
