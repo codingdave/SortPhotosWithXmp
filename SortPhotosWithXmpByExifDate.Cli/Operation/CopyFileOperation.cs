@@ -1,11 +1,11 @@
 using Microsoft.Extensions.Logging;
 
 using SortPhotosWithXmpByExifDate.ErrorHandlers;
-using SortPhotosWithXmpByExifDate.Cli.Repository;
+using SortPhotosWithXmpByExifDate.Repository;
 
 using SystemInterface.IO;
 
-namespace SortPhotosWithXmpByExifDate.Cli.Operation;
+namespace SortPhotosWithXmpByExifDate.Operation;
 
 public class CopyFileOperation : FileOperationBase
 {

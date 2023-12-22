@@ -1,11 +1,13 @@
 using Microsoft.Extensions.Logging;
 
 using SortPhotosWithXmpByExifDate.ErrorHandlers;
-using SortPhotosWithXmpByExifDate.Cli.Extensions;
+using SortPhotosWithXmpByExifDate.Extensions;
+using SortPhotosWithXmpByExifDate.Performer;
+using SortPhotosWithXmpByExifDate.Statistics;
 
 using SystemInterface.IO;
 
-namespace SortPhotosWithXmpByExifDate.Cli.Result;
+namespace SortPhotosWithXmpByExifDate.Result;
 
 public class FilesFoundResult : IResult
 {

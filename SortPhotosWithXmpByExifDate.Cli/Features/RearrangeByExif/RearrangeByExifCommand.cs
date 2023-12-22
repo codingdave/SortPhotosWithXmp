@@ -2,7 +2,7 @@ using System.CommandLine;
 using Microsoft.Extensions.Logging;
 using SortPhotosWithXmpByExifDate.CommandLine;
 using SystemInterface.IO;
-using SortPhotosWithXmpByExifDate.Cli.Extensions;
+using SortPhotosWithXmpByExifDate.Extensions;
 
 namespace SortPhotosWithXmpByExifDate.Features.RearrangeByExif;
 

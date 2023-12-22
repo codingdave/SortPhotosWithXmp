@@ -3,7 +3,7 @@ using System.CommandLine;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-using SortPhotosWithXmpByExifDate.Cli.Extensions;
+using SortPhotosWithXmpByExifDate.Extensions;
 using SortPhotosWithXmpByExifDate.Features;
 using SortPhotosWithXmpByExifDate.Features.CheckForDuplicateImages;
 using SortPhotosWithXmpByExifDate.Features.CheckIfFileNameContainsDateDifferentToExifDates;

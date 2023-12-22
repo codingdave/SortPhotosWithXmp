@@ -5,9 +5,9 @@ using CoenM.ImageHash.HashAlgorithms;
 
 using Microsoft.Extensions.Logging;
 
-using SortPhotosWithXmpByExifDate.Cli.Extensions;
-using SortPhotosWithXmpByExifDate.Cli.Repository;
-using SortPhotosWithXmpByExifDate.Cli.Result;
+using SortPhotosWithXmpByExifDate.Extensions;
+using SortPhotosWithXmpByExifDate.Repository;
+using SortPhotosWithXmpByExifDate.Result;
 using SortPhotosWithXmpByExifDate.CommandLine;
 
 using Configuration = SortPhotosWithXmpByExifDate.CommandLine.Configuration;
@@ -163,7 +163,7 @@ namespace SortPhotosWithXmpByExifDate.Features.CheckForDuplicateImages
             void CreateHashes(FileVariations variations)
             {
                 if (variations.Data is not null &&
-                    (variations.Data is not Cli.Repository.IPerceptualHash || variations.Data.IsModified))
+                    (variations.Data is not IPerceptualHash || variations.Data.IsModified))
                 {
                     variations.Data = CreateImageHash(variations.Data.OriginalFilename);
                 }

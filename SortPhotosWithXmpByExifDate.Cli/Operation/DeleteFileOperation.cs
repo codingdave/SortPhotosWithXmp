@@ -1,11 +1,11 @@
 using Microsoft.Extensions.Logging;
 
-using SortPhotosWithXmpByExifDate.Cli.Extensions;
-using SortPhotosWithXmpByExifDate.Cli.Result;
+using SortPhotosWithXmpByExifDate.Extensions;
+using SortPhotosWithXmpByExifDate.Statistics;
 
 using SystemInterface.IO;
 
-namespace SortPhotosWithXmpByExifDate.Cli.Operation;
+namespace SortPhotosWithXmpByExifDate.Operation;
 
 public class DeleteFileOperation : IOperation
 {

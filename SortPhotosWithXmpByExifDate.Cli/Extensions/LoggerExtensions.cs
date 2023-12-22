@@ -2,7 +2,7 @@ using Microsoft.Extensions.Logging;
 
 using Configuration = SortPhotosWithXmpByExifDate.CommandLine.Configuration;
 
-namespace SortPhotosWithXmpByExifDate.Cli.Extensions;
+namespace SortPhotosWithXmpByExifDate.Extensions;
 
 public static class LoggerExtensions
 {

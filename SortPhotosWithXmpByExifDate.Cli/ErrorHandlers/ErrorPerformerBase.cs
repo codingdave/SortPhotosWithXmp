@@ -1,15 +1,16 @@
 using Microsoft.Extensions.Logging;
 
-using SortPhotosWithXmpByExifDate.Cli;
-using SortPhotosWithXmpByExifDate.Cli.Extensions;
-using SortPhotosWithXmpByExifDate.Cli.Operation;
-using SortPhotosWithXmpByExifDate.Cli.Repository;
-using SortPhotosWithXmpByExifDate.Cli.Result;
+using SortPhotosWithXmpByExifDate.ErrorHandlers;
+using SortPhotosWithXmpByExifDate.Extensions;
+using SortPhotosWithXmpByExifDate.Operation;
+using SortPhotosWithXmpByExifDate.Repository;
+using SortPhotosWithXmpByExifDate.Result;
+using SortPhotosWithXmpByExifDate.Statistics;
 
 using SystemInterface.IO;
 
 
-namespace SortPhotosWithXmpByExifDate.ErrorHandlers;
+namespace SortPhotosWithXmpByExifDate.Performer;
 
 public abstract class ErrorPerformerBase<T> : IPerformer where T : IError
 {

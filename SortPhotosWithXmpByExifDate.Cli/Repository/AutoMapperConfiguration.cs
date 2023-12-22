@@ -1,6 +1,6 @@
 using AutoMapper;
 
-namespace SortPhotosWithXmpByExifDate.Cli.Repository;
+namespace SortPhotosWithXmpByExifDate.Repository;
 
 public class AutoMapperConfiguration
 {

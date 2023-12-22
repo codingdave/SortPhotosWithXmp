@@ -1,4 +1,4 @@
-namespace SortPhotosWithXmpByExifDate.Cli.Repository;
+namespace SortPhotosWithXmpByExifDate.Repository;
 
 public record struct SidecarFileHash(string OriginalFilename, byte[] Hash, DateTime LastWriteTimeUtc) : IImageFile, IHash
 {

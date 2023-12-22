@@ -1,6 +1,6 @@
 using System.CommandLine;
 
-using SortPhotosWithXmpByExifDate.Cli.Extensions;
+using SortPhotosWithXmpByExifDate.Extensions;
 
 namespace SortPhotosWithXmpByExifDate.CommandLine;
 
@@ -52,8 +52,8 @@ internal class CommandlineOptions
     internal Option<object?> GetOffsetOption()
     {
         // To workaround the following issue we return an object instead of a struct 
-        // "resource": "~/projects/SortPhotosWithXmpByExifDate/SortPhotosWithXmpByExifDate.Cli/CommandLine.cs",
-        // "message": "Argument 4: cannot convert from 'System.CommandLine.Option<System.TimeSpan?>' to 'System.CommandLine.Binding.IValueDescriptor<System.TimeSpan>' [SortPhotosWithXmpByExifDate.Cli]",
+        // "resource": "~/projects/SortPhotosWithXmpByExifDate/SortPhotosWithXmpByExifDate/CommandLine.cs",
+        // "message": "Argument 4: cannot convert from 'System.CommandLine.Option<System.TimeSpan?>' to 'System.CommandLine.Binding.IValueDescriptor<System.TimeSpan>' [SortPhotosWithXmpByExifDate]",
         // "startLineNumber": 148,
         return new Option<object?>(
             name: "--offset",

@@ -1,4 +1,4 @@
-namespace SortPhotosWithXmpByExifDate.Cli.Repository;
+namespace SortPhotosWithXmpByExifDate.Repository;
 
 public record struct ImageFile(string OriginalFilename, DateTime LastWriteTimeUtc) : IImageFile
 {

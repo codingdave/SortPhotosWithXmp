@@ -1,6 +1,6 @@
 using SystemInterface.IO;
 
-namespace SortPhotosWithXmpByExifDate.Cli.Extensions;
+namespace SortPhotosWithXmpByExifDate.Extensions;
 
 public static class PathExtensions
 {

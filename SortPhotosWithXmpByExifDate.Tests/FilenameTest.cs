@@ -1,4 +1,4 @@
-using SortPhotosWithXmpByExifDate.Cli.Repository;
+using SortPhotosWithXmpByExifDate.Repository;
 
 using Xunit;
 

@@ -3,17 +3,16 @@ using System.Diagnostics;
 using ImageMagick;
 
 using Microsoft.Extensions.Logging;
-
-using SortPhotosWithXmpByExifDate.Cli;
-using SortPhotosWithXmpByExifDate.Cli.Extensions;
-using SortPhotosWithXmpByExifDate.Cli.Operation;
-using SortPhotosWithXmpByExifDate.Cli.Result;
+using SortPhotosWithXmpByExifDate.Extensions;
+using SortPhotosWithXmpByExifDate.Operation;
 using SortPhotosWithXmpByExifDate.Features;
 
 using SystemInterface.IO;
+using SortPhotosWithXmpByExifDate.Statistics;
+using SortPhotosWithXmpByExifDate.ErrorHandlers;
 
 
-namespace SortPhotosWithXmpByExifDate.ErrorHandlers;
+namespace SortPhotosWithXmpByExifDate.Performer;
 
 public class FileAlreadyExistsErrorPerformer : ErrorPerformerBase<FileAlreadyExistsError>
 {

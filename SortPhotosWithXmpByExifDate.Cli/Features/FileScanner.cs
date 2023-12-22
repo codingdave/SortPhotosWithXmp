@@ -3,8 +3,8 @@ using System.Text.RegularExpressions;
 
 using Microsoft.Extensions.Logging;
 
-using SortPhotosWithXmpByExifDate.Cli.Extensions;
-using SortPhotosWithXmpByExifDate.Cli.Repository;
+using SortPhotosWithXmpByExifDate.Extensions;
+using SortPhotosWithXmpByExifDate.Repository;
 
 using SystemInterface.IO;
 namespace SortPhotosWithXmpByExifDate.Features;

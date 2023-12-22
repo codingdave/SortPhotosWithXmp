@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Logging;
 
-using SortPhotosWithXmpByExifDate.Cli.Operation;
-using SortPhotosWithXmpByExifDate.Cli.Repository;
-using SortPhotosWithXmpByExifDate.Cli.Result;
+using SortPhotosWithXmpByExifDate.Operation;
+using SortPhotosWithXmpByExifDate.Performer;
+using SortPhotosWithXmpByExifDate.Repository;
 
 namespace SortPhotosWithXmpByExifDate.Features.RearrangeByExif;
 

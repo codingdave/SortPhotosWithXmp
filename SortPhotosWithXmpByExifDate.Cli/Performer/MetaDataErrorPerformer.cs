@@ -1,13 +1,13 @@
 using Microsoft.Extensions.Logging;
 
-using SortPhotosWithXmpByExifDate.Cli;
-using SortPhotosWithXmpByExifDate.Cli.Operation;
-using SortPhotosWithXmpByExifDate.Cli.Result;
+using SortPhotosWithXmpByExifDate.ErrorHandlers;
+using SortPhotosWithXmpByExifDate.Operation;
+using SortPhotosWithXmpByExifDate.Statistics;
 
 using SystemInterface.IO;
 
 
-namespace SortPhotosWithXmpByExifDate.ErrorHandlers;
+namespace SortPhotosWithXmpByExifDate.Performer;
 
 public class MetaDataErrorPerformer : ErrorPerformerBase<MetaDataError>
 {

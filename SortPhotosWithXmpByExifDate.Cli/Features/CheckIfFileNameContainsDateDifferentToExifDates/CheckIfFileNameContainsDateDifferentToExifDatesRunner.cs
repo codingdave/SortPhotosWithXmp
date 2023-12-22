@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 
 
-using SortPhotosWithXmpByExifDate.Cli.Result;
+using SortPhotosWithXmpByExifDate.Result;
 
 namespace SortPhotosWithXmpByExifDate.Features.CheckIfFileNameContainsDateDifferentToExifDates;
 

@@ -3,12 +3,14 @@ using MetadataExtractor;
 using Microsoft.Extensions.Logging;
 
 using SortPhotosWithXmpByExifDate.ErrorHandlers;
-using SortPhotosWithXmpByExifDate.Cli.Extensions;
-using SortPhotosWithXmpByExifDate.Cli.Operation;
-using SortPhotosWithXmpByExifDate.Cli.Result;
+using SortPhotosWithXmpByExifDate.Extensions;
+using SortPhotosWithXmpByExifDate.Operation;
+using SortPhotosWithXmpByExifDate.Result;
+using SortPhotosWithXmpByExifDate.Statistics;
 
 using SystemInterface.IO;
-using SortPhotosWithXmpByExifDate.Cli;
+using MetadataExtractor.Formats.Xmp;
+using SortPhotosWithXmpByExifDate.Performer;
 
 namespace SortPhotosWithXmpByExifDate.Features.RearrangeByExif;
 
@@ -74,7 +76,7 @@ internal class RearrangeByExifRunner : IRun
                     else
                     {
                         // error: we need the date for rearranging
-                        _filesFoundResult.NoTimeFoundErrorPerformer.Errors.Add(new NoTimeFoundError(file, Helpers.GetMetadata(metaDataDirectories)));
+                        _filesFoundResult.NoTimeFoundErrorPerformer.Errors.Add(new NoTimeFoundError(file, GetMetadata(metaDataDirectories)));
                     }
 
                     var metaDataErrors = metaDataDirectories.SelectMany(t => t.Errors);
@@ -99,5 +101,41 @@ internal class RearrangeByExifRunner : IRun
         logger.LogInformation($"{nameof(RearrangeByExifRunner)}.{nameof(Run)} has finished");
 
         return _filesFoundResult;
+    }
+
+
+    private static List<string> GetMetadata(IReadOnlyList<MetadataExtractor.Directory> metaDataDirectories)
+    {
+        var ret = new List<string>();
+        foreach (var metadataDirectory in metaDataDirectories)
+        {
+            foreach (var tag in metadataDirectory.Tags)
+            {
+                ret.Add($"{metadataDirectory.Name} - {tag.Name} = {tag.Description}");
+            }
+            if (metadataDirectory is XmpDirectory xmpDirectory)
+            {
+                ret.AddRange(GetPropertyDescriptions(xmpDirectory));
+            }
+        }
+
+        return ret;
+    }
+
+    private static IList<string> GetPropertyDescriptions(XmpDirectory xmpDirectory)
+    {
+        List<string> propertyDescriptions = new();
+        if (xmpDirectory.XmpMeta != null)
+        {
+            foreach (var property in xmpDirectory.XmpMeta.Properties)
+            {
+                if (property.Path != null && property.Value != null)
+                {
+                    propertyDescriptions.Add($"{property.Path}: {property.Value}");
+                }
+            }
+        }
+
+        return propertyDescriptions;
     }
 }

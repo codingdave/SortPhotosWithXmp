@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 
-namespace SortPhotosWithXmpByExifDate.Cli.Result;
+
+namespace SortPhotosWithXmpByExifDate.Performer;
 
 public class CleanupPerformer : IPerformer
 {

@@ -1,6 +1,8 @@
 using Microsoft.Extensions.Logging;
 
-namespace SortPhotosWithXmpByExifDate.Cli.Result;
+using SortPhotosWithXmpByExifDate.Performer;
+
+namespace SortPhotosWithXmpByExifDate.Result;
 
 public class DeleteFilesResult : IResult
 {

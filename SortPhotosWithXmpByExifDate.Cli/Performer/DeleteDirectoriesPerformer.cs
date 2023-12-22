@@ -1,9 +1,8 @@
 using Microsoft.Extensions.Logging;
 
-using SortPhotosWithXmpByExifDate.ErrorHandlers;
-using SortPhotosWithXmpByExifDate.Cli.Operation;
+using SortPhotosWithXmpByExifDate.Operation;
 
-namespace SortPhotosWithXmpByExifDate.Cli.Result;
+namespace SortPhotosWithXmpByExifDate.Performer;
 
 public class DeleteDirectoriesPerformer : IPerformer
 {

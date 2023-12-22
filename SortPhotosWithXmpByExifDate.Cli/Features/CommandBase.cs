@@ -1,9 +1,9 @@
 using Microsoft.Extensions.Logging;
-using SortPhotosWithXmpByExifDate.Cli.Result;
 using System.CommandLine;
 using SystemInterface.IO;
-using SortPhotosWithXmpByExifDate.Cli.Extensions;
+using SortPhotosWithXmpByExifDate.Extensions;
 using SortPhotosWithXmpByExifDate.CommandLine;
+using SortPhotosWithXmpByExifDate.Result;
 namespace SortPhotosWithXmpByExifDate.Features;
 
 internal abstract class CommandBase

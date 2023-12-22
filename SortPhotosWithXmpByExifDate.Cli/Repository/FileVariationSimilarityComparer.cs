@@ -1,4 +1,4 @@
-namespace SortPhotosWithXmpByExifDate.Cli.Repository
+namespace SortPhotosWithXmpByExifDate.Repository
 {
     public class FileVariationSimilarityComparer : IComparer<(double similarity, FileVariations first, FileVariations second)>
     {

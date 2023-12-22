@@ -4,7 +4,7 @@ using SortPhotosWithXmpByExifDate.ErrorHandlers;
 
 using SystemInterface.IO;
 
-namespace SortPhotosWithXmpByExifDate.Cli.Operation;
+namespace SortPhotosWithXmpByExifDate.Operation;
 
 internal class OperationFactory
 {

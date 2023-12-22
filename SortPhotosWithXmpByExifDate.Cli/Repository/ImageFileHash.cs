@@ -1,4 +1,4 @@
-namespace SortPhotosWithXmpByExifDate.Cli.Repository;
+namespace SortPhotosWithXmpByExifDate.Repository;
 
 public record struct ImageFileHash(string OriginalFilename, ulong Hash, DateTime LastWriteTimeUtc) : IImageFile, IPerceptualHash
 {

@@ -1,4 +1,4 @@
-namespace SortPhotosWithXmpByExifDate.Cli.Repository;
+namespace SortPhotosWithXmpByExifDate.Repository;
 
 public record struct FileVariations(IImageFile? Data, List<IImageFile> SidecarFiles)
 {

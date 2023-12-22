@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-using SortPhotosWithXmpByExifDate.Cli.Result;
+using SortPhotosWithXmpByExifDate.Result;
 
 using SystemInterface.IO;
 namespace SortPhotosWithXmpByExifDate.Features.DeleteEmptyDirectory;

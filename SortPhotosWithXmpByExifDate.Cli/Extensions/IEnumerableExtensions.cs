@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace SortPhotosWithXmpByExifDate.Cli.Extensions;
+namespace SortPhotosWithXmpByExifDate.Extensions;
 
 public static class IEnumerableExtensions
 {

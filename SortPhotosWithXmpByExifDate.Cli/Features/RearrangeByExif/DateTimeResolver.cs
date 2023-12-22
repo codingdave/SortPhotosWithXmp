@@ -6,7 +6,7 @@ using DirectoryExtensions = MetadataExtractor.DirectoryExtensions;
 using System.Globalization;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
-using SortPhotosWithXmpByExifDate.Cli.Extensions;
+using SortPhotosWithXmpByExifDate.Extensions;
 
 namespace SortPhotosWithXmpByExifDate.Features.RearrangeByExif;
 

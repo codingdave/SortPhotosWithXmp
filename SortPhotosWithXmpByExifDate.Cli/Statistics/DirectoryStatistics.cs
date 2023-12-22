@@ -1,4 +1,4 @@
-namespace SortPhotosWithXmpByExifDate.Cli.Result;
+namespace SortPhotosWithXmpByExifDate.Statistics;
 
 public class DirectoryStatistics
 {
