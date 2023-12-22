@@ -4,6 +4,7 @@ using SortPhotosWithXmpByExifDate.Cli.Repository;
 using SortPhotosWithXmpByExifDate.Cli.Commands;
 using SystemInterface.IO;
 using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
+using SortPhotosWithXmpByExifDate.Cli.Extensions;
 
 namespace SortPhotosWithXmpByExifDate.Cli.Features.RearrangeByExif;
 

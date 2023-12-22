@@ -2,6 +2,7 @@ using System.Text.Json;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
+using SortPhotosWithXmpByExifDate.Cli.Extensions;
 
 namespace SortPhotosWithXmpByExifDate.Cli.Repository;
 

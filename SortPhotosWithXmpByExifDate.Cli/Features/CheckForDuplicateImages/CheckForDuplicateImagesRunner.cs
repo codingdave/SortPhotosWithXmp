@@ -6,6 +6,7 @@ using CoenM.ImageHash.HashAlgorithms;
 using Microsoft.Extensions.Logging;
 
 using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
+using SortPhotosWithXmpByExifDate.Cli.Extensions;
 using SortPhotosWithXmpByExifDate.Cli.Repository;
 using SortPhotosWithXmpByExifDate.Cli.Result;
 

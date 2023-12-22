@@ -1,4 +1,4 @@
-namespace SortPhotosWithXmpByExifDate.Cli.Commands;
+namespace SortPhotosWithXmpByExifDate.Cli.Extensions;
 
 public static class PathExtensions
 {

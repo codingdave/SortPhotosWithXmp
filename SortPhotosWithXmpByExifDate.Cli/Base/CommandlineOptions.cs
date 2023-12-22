@@ -1,5 +1,7 @@
 using System.CommandLine;
 
+using SortPhotosWithXmpByExifDate.Cli.Extensions;
+
 namespace SortPhotosWithXmpByExifDate.Cli.Commands;
 
 internal class CommandlineOptions

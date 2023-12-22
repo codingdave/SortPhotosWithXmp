@@ -7,6 +7,7 @@ using System.Globalization;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
+using SortPhotosWithXmpByExifDate.Cli.Extensions;
 
 namespace SortPhotosWithXmpByExifDate.Cli.Features.RearrangeByExif;
 
