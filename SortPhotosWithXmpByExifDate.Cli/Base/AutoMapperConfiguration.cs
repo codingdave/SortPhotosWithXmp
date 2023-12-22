@@ -8,17 +8,17 @@ public class AutoMapperConfiguration
     {
         var config = new MapperConfiguration(mapperConfigurationExpression =>
         {
-            mapperConfigurationExpression.CreateMap<ImageFile, ImageFileDto>();
-            mapperConfigurationExpression.CreateMap<ImageFileDto, ImageFile>();
+            _ = mapperConfigurationExpression.CreateMap<ImageFile, ImageFileDto>();
+            _ = mapperConfigurationExpression.CreateMap<ImageFileDto, ImageFile>();
 
-            mapperConfigurationExpression.CreateMap<ImageFileHash, ImageFileHashDto>();
-            mapperConfigurationExpression.CreateMap<ImageFileHashDto, ImageFileHash>();
+            _ = mapperConfigurationExpression.CreateMap<ImageFileHash, ImageFileHashDto>();
+            _ = mapperConfigurationExpression.CreateMap<ImageFileHashDto, ImageFileHash>();
 
-            mapperConfigurationExpression.CreateMap<SidecarFileHash, SidecarFileHashDto>();
-            mapperConfigurationExpression.CreateMap<SidecarFileHashDto, SidecarFileHash>();
+            _ = mapperConfigurationExpression.CreateMap<SidecarFileHash, SidecarFileHashDto>();
+            _ = mapperConfigurationExpression.CreateMap<SidecarFileHashDto, SidecarFileHash>();
 
-            mapperConfigurationExpression.CreateMap<FileVariations, FileVariationsDto>();
-            mapperConfigurationExpression.CreateMap<FileVariationsDto, FileVariations>();
+            _ = mapperConfigurationExpression.CreateMap<FileVariations, FileVariationsDto>();
+            _ = mapperConfigurationExpression.CreateMap<FileVariationsDto, FileVariations>();
         });
         return new Mapper(config);
     }
