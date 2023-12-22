@@ -4,12 +4,12 @@ using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 using System.CommandLine;
 using SystemInterface.IO;
 using SortPhotosWithXmpByExifDate.Cli.Extensions;
-
-namespace SortPhotosWithXmpByExifDate.Cli.Commands;
+using SortPhotosWithXmpByExifDate.CommandLine;
+namespace SortPhotosWithXmpByExifDate.Cli.Features;
 
 internal abstract class CommandBase
 {
-    public ILogger<CommandLine> Logger { get; }
+    public ILogger<CommandLineHandler> Logger { get; }
     private readonly CommandlineOptions _commandlineOptions;
 
     internal Option<string?> SourceOption => _commandlineOptions.SourceOption;
@@ -24,7 +24,7 @@ internal abstract class CommandBase
     public IDirectory Directory { get; }
 
     protected CommandBase(
-        ILogger<CommandLine> logger,
+        ILogger<CommandLineHandler> logger,
         CommandlineOptions commandlineOptions,
         IFile file,
         IDirectory directory)

@@ -7,7 +7,7 @@ using SystemInterface;
 using SystemInterface.IO;
 using SystemInterface.Security.AccessControl;
 
-namespace SortPhotosWithXmpByExifDate.Cli;
+namespace SortPhotosWithXmpByExifDate.Wrappers;
 
 internal class FileWrapper : IFile
 {

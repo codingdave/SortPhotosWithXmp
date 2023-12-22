@@ -9,12 +9,13 @@ using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
 using SortPhotosWithXmpByExifDate.Cli.Extensions;
 using SortPhotosWithXmpByExifDate.Cli.Repository;
 using SortPhotosWithXmpByExifDate.Cli.Result;
+using SortPhotosWithXmpByExifDate.CommandLine;
 
 namespace SortPhotosWithXmpByExifDate.Cli.Features.CheckForDuplicateImages
 {
     internal class CheckForDuplicateImagesRunner : IRun
     {
-        private readonly ILogger<CommandLine> _logger;
+        private readonly ILogger<CommandLineHandler> _logger;
         private readonly int _similarity;
         private readonly HashRepository _hashRepository;
         private readonly FileScanner _fileScanner;
@@ -23,7 +24,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Features.CheckForDuplicateImages
 
         public bool IsForce { get; }
 
-        public CheckForDuplicateImagesRunner(ILogger<CommandLine> logger, FileScanner fileScanner, bool isForce, int similarity = 100)
+        public CheckForDuplicateImagesRunner(ILogger<CommandLineHandler> logger, FileScanner fileScanner, bool isForce, int similarity = 100)
         {
             _logger = logger;
             _similarity = similarity;
@@ -204,7 +205,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Features.CheckForDuplicateImages
                     ret = new ImageFileHash(filename, hash, File.GetLastWriteTimeUtc(filename));
                 }
             }
-            catch (UnknownImageFormatException e)
+            catch (SixLabors.ImageSharp.UnknownImageFormatException e)
             {
                 _logger.LogExceptionWarning(filename, e);
             }

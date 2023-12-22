@@ -4,9 +4,11 @@ using Microsoft.Extensions.Hosting;
 
 using Serilog;
 
+using SortPhotosWithXmpByExifDate.Wrappers;
+
 using SystemInterface.IO;
 
-namespace SortPhotosWithXmpByExifDate.Cli;
+namespace SortPhotosWithXmpByExifDate.CommandLine;
 
 public static class Configuration
 {

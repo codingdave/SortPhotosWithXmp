@@ -2,9 +2,8 @@ using System.CommandLine;
 
 using Microsoft.Extensions.Logging;
 
-using SortPhotosWithXmpByExifDate.Cli.Commands;
-using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
-using SortPhotosWithXmpByExifDate.Cli.Extensions;
+using SortPhotosWithXmpByExifDate.CommandLine;using SortPhotosWithXmpByExifDate.Cli.Extensions;
+using SortPhotosWithXmpByExifDate.CommandLine;
 
 using SystemInterface.IO;
 
@@ -13,7 +12,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Features.RearrangeBySoftware;
 internal class RearrangeBySoftwareCommand : CommandBase
 {
     public RearrangeBySoftwareCommand(
-        ILogger<CommandLine> logger,
+        ILogger<CommandLineHandler> logger,
         CommandlineOptions commandlineOptions,
         IFile file,
         IDirectory directory)

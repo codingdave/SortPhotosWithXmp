@@ -1,12 +1,13 @@
+using SystemInterface.IO;
+
 namespace SortPhotosWithXmpByExifDate.Cli.Extensions;
 
 public static class PathExtensions
 {
-    public static string CreatePath(this string filePath)
+    public static string CreatePath(this string filePath, IDirectory directory)
     {
         var fixedPath = filePath.FixPath();
         var fullPath = Path.GetFullPath(fixedPath);
-        var directory = new DirectoryWrapper();
 
         if (!directory.Exists(fullPath))
         {

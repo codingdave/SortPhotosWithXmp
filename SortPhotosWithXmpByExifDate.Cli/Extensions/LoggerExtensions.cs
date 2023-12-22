@@ -1,5 +1,7 @@
 using Microsoft.Extensions.Logging;
 
+using SortPhotosWithXmpByExifDate.CommandLine;
+
 namespace SortPhotosWithXmpByExifDate.Cli.Extensions;
 
 public static class LoggerExtensions
