@@ -1,4 +1,4 @@
-# SortPhotosWithXmpByExifDate
+# SortPhotosWithXmp
 
 Sort your Photos and Videos by exif time. If you have .xmp files, this tool will preserve the Image<->Xmp relation by keeping them adjoint.
 
