@@ -1,11 +1,10 @@
 using Microsoft.Extensions.Logging;
 
-using SortPhotosWithXmpByExifDate.Cli.Features;
-using SortPhotosWithXmpByExifDate.Cli.Repository;
+using SortPhotosWithXmpByExifDate.CommandLine;
 
 using SystemInterface.IO;
 
-namespace SortPhotosWithXmpByExifDate.CommandLine;
+namespace SortPhotosWithXmpByExifDate.Features;
 
 internal abstract class FileScannerCommandBase : CommandBase
 {

@@ -1,4 +1,4 @@
-namespace SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
+namespace SortPhotosWithXmpByExifDate.ErrorHandlers;
 
 public sealed class NoTimeFoundError : ErrorBase
 {

@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 
+using SortPhotosWithXmpByExifDate.Cli;
 using SortPhotosWithXmpByExifDate.Cli.Extensions;
 using SortPhotosWithXmpByExifDate.Cli.Operation;
 using SortPhotosWithXmpByExifDate.Cli.Repository;
@@ -8,7 +9,7 @@ using SortPhotosWithXmpByExifDate.Cli.Result;
 using SystemInterface.IO;
 
 
-namespace SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
+namespace SortPhotosWithXmpByExifDate.ErrorHandlers;
 
 public abstract class ErrorPerformerBase<T> : IPerformer where T : IError
 {

@@ -1,4 +1,4 @@
-namespace SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
+namespace SortPhotosWithXmpByExifDate.ErrorHandlers;
 public sealed class ImageProcessingExceptionError : ExceptionErrorBase
 {
     public ImageProcessingExceptionError(string file, MetadataExtractor.ImageProcessingException exception)

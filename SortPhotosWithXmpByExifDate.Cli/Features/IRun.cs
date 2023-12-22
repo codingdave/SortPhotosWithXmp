@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 
 using SortPhotosWithXmpByExifDate.Cli.Result;
 
-namespace SortPhotosWithXmpByExifDate.Cli;
+namespace SortPhotosWithXmpByExifDate.Features;
 
 public interface IRun
 {

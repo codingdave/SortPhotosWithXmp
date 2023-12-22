@@ -3,12 +3,11 @@ using System.CommandLine;
 using Microsoft.Extensions.Logging;
 
 using SortPhotosWithXmpByExifDate.Cli.Extensions;
-using SortPhotosWithXmpByExifDate.Cli.Repository;
 using SortPhotosWithXmpByExifDate.CommandLine;
 
 using SystemInterface.IO;
 
-namespace SortPhotosWithXmpByExifDate.Cli.Features.CheckForDuplicateImages;
+namespace SortPhotosWithXmpByExifDate.Features.CheckForDuplicateImages;
 
 internal class CheckForDuplicateImagesCommand : FileScannerCommandBase
 {

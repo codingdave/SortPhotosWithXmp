@@ -1,11 +1,10 @@
 using Microsoft.Extensions.Logging;
 
-using SortPhotosWithXmpByExifDate.Cli.Repository;
 using SortPhotosWithXmpByExifDate.Cli.Result;
 
 using SystemInterface.IO;
 
-namespace SortPhotosWithXmpByExifDate.Cli.Features.DeleteLonelyXmp;
+namespace SortPhotosWithXmpByExifDate.Features.DeleteLonelyXmp;
 
 public class DeleteLeftoverXmpsRunner : IRun
 {

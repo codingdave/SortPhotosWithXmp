@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 
 using SortPhotosWithXmpByExifDate.Cli.Repository;
+using SortPhotosWithXmpByExifDate.Features;
 
 using SystemInterface.IO;
 

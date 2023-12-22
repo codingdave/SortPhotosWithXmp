@@ -2,7 +2,7 @@ using Microsoft.Extensions.Logging;
 
 using SortPhotosWithXmpByExifDate.Cli.Result;
 
-namespace SortPhotosWithXmpByExifDate.Cli.Features.RearrangeByCameraManufacturer;
+namespace SortPhotosWithXmpByExifDate.Features.RearrangeByCameraManufacturer;
 
 internal class RearrangeByCameraManufacturerRunner : IRun
 {

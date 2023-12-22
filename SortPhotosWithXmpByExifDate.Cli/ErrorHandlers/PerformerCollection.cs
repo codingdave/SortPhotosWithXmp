@@ -2,10 +2,11 @@ using System.Collections.Concurrent;
 
 using Microsoft.Extensions.Logging;
 
+using SortPhotosWithXmpByExifDate.Cli;
 using SortPhotosWithXmpByExifDate.Cli.Extensions;
 using SortPhotosWithXmpByExifDate.Cli.Result;
 
-namespace SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
+namespace SortPhotosWithXmpByExifDate.ErrorHandlers;
 
 public class PerformerCollection : IPerformerCollection
 {

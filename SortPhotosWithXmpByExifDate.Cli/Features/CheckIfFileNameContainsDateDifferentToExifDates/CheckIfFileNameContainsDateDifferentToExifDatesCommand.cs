@@ -7,7 +7,7 @@ using SortPhotosWithXmpByExifDate.CommandLine;
 
 using SystemInterface.IO;
 
-namespace SortPhotosWithXmpByExifDate.Cli.Features.CheckIfFileNameContainsDateDifferentToExifDates;
+namespace SortPhotosWithXmpByExifDate.Features.CheckIfFileNameContainsDateDifferentToExifDates;
 
 internal class CheckIfFileNameContainsDateDifferentToExifDatesCommand : CommandBase
 {

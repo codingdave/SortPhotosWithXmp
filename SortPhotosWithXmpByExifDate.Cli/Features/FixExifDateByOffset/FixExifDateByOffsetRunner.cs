@@ -2,7 +2,7 @@ using Microsoft.Extensions.Logging;
 
 using SortPhotosWithXmpByExifDate.Cli.Result;
 
-namespace SortPhotosWithXmpByExifDate.Cli.Features.FixExifDateByOffset;
+namespace SortPhotosWithXmpByExifDate.Features.FixExifDateByOffset;
 
 internal class FixExifDateByOffsetRunner : IRun
 {

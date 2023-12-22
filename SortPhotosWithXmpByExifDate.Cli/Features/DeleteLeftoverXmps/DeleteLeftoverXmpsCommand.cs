@@ -2,13 +2,12 @@ using System.CommandLine;
 
 using Microsoft.Extensions.Logging;
 
-using SortPhotosWithXmpByExifDate.CommandLine;using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
+using SortPhotosWithXmpByExifDate.CommandLine;
 using SortPhotosWithXmpByExifDate.Cli.Extensions;
-using SortPhotosWithXmpByExifDate.Cli.Repository;
 
 using SystemInterface.IO;
 
-namespace SortPhotosWithXmpByExifDate.Cli.Features.DeleteLonelyXmp;
+namespace SortPhotosWithXmpByExifDate.Features.DeleteLonelyXmp;
 
 #warning Rename Xmp to SidecarFiles or the other way around
 

@@ -2,7 +2,7 @@ using Microsoft.Extensions.Logging;
 
 using SortPhotosWithXmpByExifDate.Cli.Result;
 
-namespace SortPhotosWithXmpByExifDate.Cli.Features.RearrangeBySoftware;
+namespace SortPhotosWithXmpByExifDate.Features.RearrangeBySoftware;
 
 internal class RearrangeBySoftwareRunner : IRun
 {

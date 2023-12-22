@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 
-namespace SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
+namespace SortPhotosWithXmpByExifDate.ErrorHandlers;
 
 public class ErrorCollection<T> : IErrorCollection<T> where T : IError
 {

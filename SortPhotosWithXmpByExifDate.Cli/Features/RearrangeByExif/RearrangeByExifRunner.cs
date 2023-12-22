@@ -2,15 +2,15 @@ using MetadataExtractor;
 
 using Microsoft.Extensions.Logging;
 
-using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
+using SortPhotosWithXmpByExifDate.ErrorHandlers;
 using SortPhotosWithXmpByExifDate.Cli.Extensions;
 using SortPhotosWithXmpByExifDate.Cli.Operation;
-using SortPhotosWithXmpByExifDate.Cli.Repository;
 using SortPhotosWithXmpByExifDate.Cli.Result;
 
 using SystemInterface.IO;
+using SortPhotosWithXmpByExifDate.Cli;
 
-namespace SortPhotosWithXmpByExifDate.Cli.Features.RearrangeByExif;
+namespace SortPhotosWithXmpByExifDate.Features.RearrangeByExif;
 
 internal class RearrangeByExifRunner : IRun
 {

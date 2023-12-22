@@ -4,7 +4,7 @@ using SortPhotosWithXmpByExifDate.Cli.Operation;
 using SortPhotosWithXmpByExifDate.Cli.Repository;
 using SortPhotosWithXmpByExifDate.Cli.Result;
 
-namespace SortPhotosWithXmpByExifDate.Cli.Features.RearrangeByExif;
+namespace SortPhotosWithXmpByExifDate.Features.RearrangeByExif;
 
 internal class ToExifPathPerformer : IPerformer
 {

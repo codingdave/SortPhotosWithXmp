@@ -2,12 +2,12 @@ using System.CommandLine;
 
 using Microsoft.Extensions.Logging;
 
-using SortPhotosWithXmpByExifDate.CommandLine;using SortPhotosWithXmpByExifDate.Cli.Extensions;
+using SortPhotosWithXmpByExifDate.Cli.Extensions;
 using SortPhotosWithXmpByExifDate.CommandLine;
 
 using SystemInterface.IO;
 
-namespace SortPhotosWithXmpByExifDate.Cli.Features.RearrangeBySoftware;
+namespace SortPhotosWithXmpByExifDate.Features.RearrangeBySoftware;
 
 internal class RearrangeBySoftwareCommand : CommandBase
 {

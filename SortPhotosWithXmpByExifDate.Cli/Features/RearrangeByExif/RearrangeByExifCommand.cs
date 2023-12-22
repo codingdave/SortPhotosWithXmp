@@ -1,11 +1,10 @@
 using System.CommandLine;
 using Microsoft.Extensions.Logging;
-using SortPhotosWithXmpByExifDate.Cli.Repository;
-using SortPhotosWithXmpByExifDate.CommandLine;using SystemInterface.IO;
-using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
+using SortPhotosWithXmpByExifDate.CommandLine;
+using SystemInterface.IO;
 using SortPhotosWithXmpByExifDate.Cli.Extensions;
 
-namespace SortPhotosWithXmpByExifDate.Cli.Features.RearrangeByExif;
+namespace SortPhotosWithXmpByExifDate.Features.RearrangeByExif;
 
 internal class RearrangeByExifCommand : FileScannerCommandBase
 {

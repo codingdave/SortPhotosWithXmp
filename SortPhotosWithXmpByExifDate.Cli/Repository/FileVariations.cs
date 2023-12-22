@@ -2,7 +2,7 @@ namespace SortPhotosWithXmpByExifDate.Cli.Repository;
 
 public record struct FileVariations(IImageFile? Data, List<IImageFile> SidecarFiles)
 {
-    public IEnumerable<IImageFile> All
+    public readonly IEnumerable<IImageFile> All
     {
         get
         {

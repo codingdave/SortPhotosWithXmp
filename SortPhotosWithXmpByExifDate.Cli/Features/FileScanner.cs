@@ -1,13 +1,13 @@
-using System.Configuration.Assemblies;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 
 using Microsoft.Extensions.Logging;
 
 using SortPhotosWithXmpByExifDate.Cli.Extensions;
+using SortPhotosWithXmpByExifDate.Cli.Repository;
 
 using SystemInterface.IO;
-namespace SortPhotosWithXmpByExifDate.Cli.Repository;
+namespace SortPhotosWithXmpByExifDate.Features;
 
 public class FileScanner : IFileScanner
 {

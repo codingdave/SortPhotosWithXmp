@@ -1,4 +1,6 @@
-namespace SortPhotosWithXmpByExifDate.Cli.Repository;
+using SortPhotosWithXmpByExifDate.Cli.Repository;
+
+namespace SortPhotosWithXmpByExifDate.Features;
 
 public interface IFileScanner
 {

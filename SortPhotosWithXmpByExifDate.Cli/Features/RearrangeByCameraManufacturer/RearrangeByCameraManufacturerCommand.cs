@@ -2,12 +2,12 @@ using System.CommandLine;
 
 using Microsoft.Extensions.Logging;
 
-using SortPhotosWithXmpByExifDate.CommandLine;using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
+using SortPhotosWithXmpByExifDate.CommandLine;
 using SortPhotosWithXmpByExifDate.Cli.Extensions;
 
 using SystemInterface.IO;
 
-namespace SortPhotosWithXmpByExifDate.Cli.Features.RearrangeByCameraManufacturer;
+namespace SortPhotosWithXmpByExifDate.Features.RearrangeByCameraManufacturer;
 
 internal class RearrangeByCameraManufacturerCommand : CommandBase
 {

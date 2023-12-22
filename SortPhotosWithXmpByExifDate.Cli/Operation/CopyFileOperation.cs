@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
+using SortPhotosWithXmpByExifDate.ErrorHandlers;
 using SortPhotosWithXmpByExifDate.Cli.Repository;
 
 using SystemInterface.IO;

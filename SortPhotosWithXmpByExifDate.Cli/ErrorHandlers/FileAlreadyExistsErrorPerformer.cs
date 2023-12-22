@@ -4,19 +4,20 @@ using ImageMagick;
 
 using Microsoft.Extensions.Logging;
 
+using SortPhotosWithXmpByExifDate.Cli;
 using SortPhotosWithXmpByExifDate.Cli.Extensions;
 using SortPhotosWithXmpByExifDate.Cli.Operation;
-using SortPhotosWithXmpByExifDate.Cli.Repository;
 using SortPhotosWithXmpByExifDate.Cli.Result;
+using SortPhotosWithXmpByExifDate.Features;
 
 using SystemInterface.IO;
 
 
-namespace SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
+namespace SortPhotosWithXmpByExifDate.ErrorHandlers;
 
 public class FileAlreadyExistsErrorPerformer : ErrorPerformerBase<FileAlreadyExistsError>
 {
-    private Operations _operations;
+    private readonly Operations _operations;
 
 #warning Needs to be part of copy or move operation
     public FileAlreadyExistsErrorPerformer(

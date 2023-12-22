@@ -3,12 +3,12 @@ using System.CommandLine;
 using Microsoft.Extensions.Logging;
 
 
-using SortPhotosWithXmpByExifDate.CommandLine;using SortPhotosWithXmpByExifDate.Cli.ErrorCollection;
+using SortPhotosWithXmpByExifDate.CommandLine;
 using SortPhotosWithXmpByExifDate.Cli.Extensions;
 
 using SystemInterface.IO;
 
-namespace SortPhotosWithXmpByExifDate.Cli.Features.FixExifDateByOffset;
+namespace SortPhotosWithXmpByExifDate.Features.FixExifDateByOffset;
 
 internal class FixExifDateByOffsetCommand : CommandBase
 {

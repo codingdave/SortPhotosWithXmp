@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-using SortPhotosWithXmpByExifDate.CommandLine;
+using Configuration = SortPhotosWithXmpByExifDate.CommandLine.Configuration;
 
 namespace SortPhotosWithXmpByExifDate.Cli.Extensions;
 

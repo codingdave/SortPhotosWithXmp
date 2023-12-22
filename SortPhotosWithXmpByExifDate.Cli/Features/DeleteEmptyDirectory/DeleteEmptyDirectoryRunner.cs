@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using SortPhotosWithXmpByExifDate.Cli.Result;
 
 using SystemInterface.IO;
-namespace SortPhotosWithXmpByExifDate.Cli.Features.DeleteEmptyDirectory;
+namespace SortPhotosWithXmpByExifDate.Features.DeleteEmptyDirectory;
 
 public class DeleteEmptyDirectoryRunner : IRun
 {

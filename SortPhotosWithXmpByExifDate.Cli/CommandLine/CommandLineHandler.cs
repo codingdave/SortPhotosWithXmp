@@ -3,17 +3,16 @@ using System.CommandLine;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-using SortPhotosWithXmpByExifDate.Cli;
 using SortPhotosWithXmpByExifDate.Cli.Extensions;
-using SortPhotosWithXmpByExifDate.Cli.Features.CheckForDuplicateImages;
-using SortPhotosWithXmpByExifDate.Cli.Features.CheckIfFileNameContainsDateDifferentToExifDates;
-using SortPhotosWithXmpByExifDate.Cli.Features.DeleteEmptyDirectory;
-using SortPhotosWithXmpByExifDate.Cli.Features.DeleteLonelyXmp;
-using SortPhotosWithXmpByExifDate.Cli.Features.FixExifDateByOffset;
-using SortPhotosWithXmpByExifDate.Cli.Features.RearrangeByCameraManufacturer;
-using SortPhotosWithXmpByExifDate.Cli.Features.RearrangeByExif;
-using SortPhotosWithXmpByExifDate.Cli.Features.RearrangeBySoftware;
-using SortPhotosWithXmpByExifDate.Cli.Repository;
+using SortPhotosWithXmpByExifDate.Features;
+using SortPhotosWithXmpByExifDate.Features.CheckForDuplicateImages;
+using SortPhotosWithXmpByExifDate.Features.CheckIfFileNameContainsDateDifferentToExifDates;
+using SortPhotosWithXmpByExifDate.Features.DeleteEmptyDirectory;
+using SortPhotosWithXmpByExifDate.Features.DeleteLonelyXmp;
+using SortPhotosWithXmpByExifDate.Features.FixExifDateByOffset;
+using SortPhotosWithXmpByExifDate.Features.RearrangeByCameraManufacturer;
+using SortPhotosWithXmpByExifDate.Features.RearrangeByExif;
+using SortPhotosWithXmpByExifDate.Features.RearrangeBySoftware;
 
 using SystemInterface.IO;
 
