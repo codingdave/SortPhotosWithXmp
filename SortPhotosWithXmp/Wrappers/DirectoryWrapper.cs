@@ -15,7 +15,9 @@ public class DirectoryWrapper : IDirectory
     {
         // TODO: Not yet implemented
         _ = Directory.CreateDirectory(path);
+#pragma warning disable CS8603 // Possible null reference return.
         return null;
+#pragma warning restore CS8603 // Possible null reference return.
     }
 
     public IDirectoryInfo CreateDirectory(string path, IDirectorySecurity directorySecurity)

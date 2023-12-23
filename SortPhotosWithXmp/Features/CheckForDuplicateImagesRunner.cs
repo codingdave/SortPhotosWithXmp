@@ -161,7 +161,7 @@ namespace SortPhotosWithXmp.Features
             var result = Parallel.ForEach(_fileScanner.FilenameMap.Values, CreateHashes);
             if (!result.IsCompleted)
             {
-                _logger.LogError($"Parallel.ForEach failed: LowestBreakIteration: {result.LowestBreakIteration}, {result}");
+                _logger.LogError($"Parallel.ForEach failed - LowestBreakIteration: {result.LowestBreakIteration}, {result}");
             }
 
             void CreateHashes(FileVariations variations)
