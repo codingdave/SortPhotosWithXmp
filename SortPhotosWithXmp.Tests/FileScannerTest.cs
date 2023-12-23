@@ -19,8 +19,8 @@ public class FileScannerTest
 {
     private readonly ILogger _logger;
     private readonly FileScanner _fileScanner;
-    private readonly Mock<IFile> _fileMock;
-    private readonly Mock<IDirectory> _directoryMock;
+    private readonly IFile _fileWrapper;
+    private readonly IDirectory _directoryWrapper;
     private readonly List<string> _images;
     private readonly List<string> _sidecarFiles;
     private readonly List<string> _bogusFiles;
@@ -32,16 +32,11 @@ public class FileScannerTest
 
         // arrange
         _logger = _output.BuildLogger();
-        _directoryMock = new Mock<IDirectory>(MockBehavior.Strict);
-        _ = _directoryMock
-            .Setup(x => x.GetCurrentDirectory())
-            .Returns("some/path");
+        
+        var fileMock = new Mock<IFile>(MockBehavior.Loose);
+        _fileWrapper = fileMock.Object;
 
-        // _ = directoryMock.Setup(x => x.SetCurrentDirectory(It.IsAny<string>()));
-
-        _fileMock = new Mock<IFile>(MockBehavior.Loose);
-
-        _fileScanner = new FileScanner(_logger, _fileMock.Object);
+        _fileScanner = new FileScanner(_logger, _fileWrapper);
 
         _images = new List<string>() {
             "/home/foo/some/path/DSC_9287.NEF",
@@ -66,15 +61,24 @@ public class FileScannerTest
         fileList.AddRange(_sidecarFiles);
         fileList.AddRange(_bogusFiles);
 
-        _ = _directoryMock
+        var directoryMock = new Mock<IDirectory>(MockBehavior.Strict);
+        _ = directoryMock
+            .Setup(x => x.GetCurrentDirectory())
+            .Returns("some/path");
+
+        // _ = directoryMock.Setup(x => x.SetCurrentDirectory(It.IsAny<string>()));
+
+        _ = directoryMock
             .Setup(x => x.EnumerateFiles(It.IsAny<string>(), "*", System.IO.SearchOption.AllDirectories))
             .Returns(fileList);
+
+        _directoryWrapper = directoryMock.Object;
     }
 
     [Fact]
     public void GetAllImageDataInCurrentDirectory()
     {
-        var (images, xmps) = _fileScanner.GetAllImageDataInCurrentDirectory(_directoryMock.Object);
+        var (images, xmps) = _fileScanner.GetAllImageDataInCurrentDirectory(_directoryWrapper);
         Assert.Equal(_images, images.ToList());
         Assert.Equal(_sidecarFiles, xmps.ToList());
     }
@@ -111,7 +115,7 @@ public class FileScannerTest
         };
 
         // act
-        _fileScanner.Crawl(_directoryMock.Object);
+        _fileScanner.Crawl(_directoryWrapper);
 
         // assert
         Assert.Equal(fileVariation.Count(), _fileScanner.FilenameMap.Values.Count());
@@ -133,7 +137,7 @@ public class FileScannerTest
 
     private IImageFile GetImageFile(string filepath)
     {
-        return new ImageFile(filepath);
+        return new ImageFile(filepath, _fileWrapper);
         // var mock = new Mock<IImageFile>(MockBehavior.Strict);
         // _ = mock.Setup(x => x.Filename).Returns(filepath);
         // return mock.Object;
