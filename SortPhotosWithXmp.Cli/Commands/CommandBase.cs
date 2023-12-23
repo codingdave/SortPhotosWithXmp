@@ -20,20 +20,20 @@ internal abstract class CommandBase
     internal Option<bool> MoveOption => _commandlineOptions.MoveOption;
     internal Option<int> SimilarityOption => _commandlineOptions.SimilarityOption;
 
-    public IFile File { get; }
+    public IFile FileWrapper { get; }
 
-    public IDirectory Directory { get; }
+    public IDirectory DirectoryWrapper { get; }
 
     protected CommandBase(
         ILogger<LoggerContext> logger,
         CommandlineOptions commandlineOptions,
-        IFile file,
-        IDirectory directory)
+        IFile fileWrapper,
+        IDirectory directoryWrapper)
     {
         Logger = logger;
         _commandlineOptions = commandlineOptions;
-        File = file;
-        Directory = directory;
+        FileWrapper = fileWrapper;
+        DirectoryWrapper = directoryWrapper;
     }
 
     protected void Run(IRun f)

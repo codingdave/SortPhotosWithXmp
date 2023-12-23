@@ -12,7 +12,7 @@ public class ErrorCollection<T> : IErrorCollection<T> where T : IError
 
     public void Add(T error)
     {
-        var existingError = _errors.FirstOrDefault(e => string.Equals(e.File, error.File));
+        var existingError = _errors.FirstOrDefault(e => string.Equals(e.FileName, error.FileName));
         if (existingError == null)
         {
             _errors.Add(error);

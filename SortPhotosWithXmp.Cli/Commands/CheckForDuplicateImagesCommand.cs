@@ -15,10 +15,10 @@ internal class CheckForDuplicateImagesCommand : FileScannerCommandBase
     public CheckForDuplicateImagesCommand(
         ILogger<LoggerContext> logger,
         CommandlineOptions commandlineOptions,
-        IFile file,
-        IDirectory directory,
+        IFile fileWrapper,
+        IDirectory directoryWrapper,
         Func<FileScanner?> getFileScanner, Action<FileScanner> setFileScanner)
-        : base(logger, commandlineOptions, file, directory, getFileScanner, setFileScanner)
+        : base(logger, commandlineOptions, fileWrapper, directoryWrapper, getFileScanner, setFileScanner)
     {
     }
 

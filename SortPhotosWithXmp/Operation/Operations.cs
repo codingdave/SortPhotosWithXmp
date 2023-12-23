@@ -9,9 +9,6 @@ namespace SortPhotosWithXmp.Operation;
 
 public class Operations
 {
-    private readonly IFile _file;
-    private readonly IDirectory _directory;
-
     private static void Errorhandler(FileAlreadyExistsError e)
     {
         throw new NotImplementedException();
@@ -28,16 +25,20 @@ public class Operations
 
     public DeleteFileOperation DeleteFileOperation { get; }
 
-    public Operations(ILogger logger, IFile file, IDirectory directory, bool isForce, bool isCopyingEnforced)
+    public IFile FileWrapper { get; }
+
+    public IDirectory DirectoryWrapper { get; }
+
+    public Operations(ILogger logger, IFile fileWrapper, IDirectory directoryWrapper, bool isForce, bool isCopyingEnforced)
     {
-        _file = file;
-        _directory = directory;
+        FileWrapper = fileWrapper;
+        DirectoryWrapper = directoryWrapper;
         _isForce = isForce;
         _isCopyingEnforced = isCopyingEnforced;
 
 #warning copy and move should HAVE not ARE a directory operator
-        CopyFileOperation = new CopyFileOperation(logger, _file, _directory, Errorhandler, _isCopyingEnforced);
-        MoveFileOperation = new MoveFileOperation(logger, _file, _directory, Errorhandler, _isCopyingEnforced);
-        DeleteFileOperation = new DeleteFileOperation(logger, _file, _directory, _isForce);
+        CopyFileOperation = new CopyFileOperation(logger, FileWrapper, DirectoryWrapper, Errorhandler, _isCopyingEnforced);
+        MoveFileOperation = new MoveFileOperation(logger, FileWrapper, DirectoryWrapper, Errorhandler, _isCopyingEnforced);
+        DeleteFileOperation = new DeleteFileOperation(logger, FileWrapper, DirectoryWrapper, _isForce);
     }
 }

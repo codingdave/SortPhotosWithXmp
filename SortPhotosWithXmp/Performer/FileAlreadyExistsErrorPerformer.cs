@@ -22,15 +22,15 @@ public class FileAlreadyExistsErrorPerformer : ErrorPerformerBase<FileAlreadyExi
     public FileAlreadyExistsErrorPerformer(
         ILogger logger,
         IFilesStatistics filesStatistics,
-        IFile file,
-        IDirectory directory,
+        IFile fileWrapper,
+        IDirectory directoryWrapper,
         string baseDir,
-        bool isForce) : base(filesStatistics, file, directory, baseDir, isForce)
+        bool isForce) : base(filesStatistics, fileWrapper, directoryWrapper, baseDir, isForce)
     {
 
         // when we have an error, we want to copy
         var isCopyingEnforced = true;
-        _operations = new Operations(logger, _file, _directory, _isForce, isCopyingEnforced);
+        _operations = new Operations(logger, _fileWrapper, _directoryWrapper, _isForce, isCopyingEnforced);
     }
 
     public override void Perform(ILogger logger)
@@ -58,7 +58,7 @@ public class FileAlreadyExistsErrorPerformer : ErrorPerformerBase<FileAlreadyExi
 
     private void HandleDuplicate(ILogger logger, FileAlreadyExistsError error)
     {
-        logger.LogDebug($"{error.OtherFile} is duplicate of {error.File}");
+        logger.LogDebug($"{error.OtherFile} is duplicate of {error.FileName}");
         _operations.DeleteFileOperation.DeleteFile(error.OtherFile);
     }
 
@@ -68,7 +68,7 @@ public class FileAlreadyExistsErrorPerformer : ErrorPerformerBase<FileAlreadyExi
         var isDuplicate = false;
 
         // same type (image vs xmp)
-        var extensionFile = Path.GetExtension(error.File);
+        var extensionFile = Path.GetExtension(error.FileName);
         var extensionOther = Path.GetExtension(error.OtherFile);
         var sameExtension = extensionFile == extensionOther;
         Debug.Assert(sameExtension, "Extension should always match");
@@ -89,8 +89,8 @@ public class FileAlreadyExistsErrorPerformer : ErrorPerformerBase<FileAlreadyExi
         // xmps are identical, if their hash is identical
 
         using var md5 = System.Security.Cryptography.MD5.Create();
-        using var fileStream = _file.OpenRead(error.File);
-        using var otherfileStream = _file.OpenRead(error.OtherFile);
+        using var fileStream = _fileWrapper.OpenRead(error.FileName);
+        using var otherfileStream = _fileWrapper.OpenRead(error.OtherFile);
         var hash1 = md5.ComputeHash(fileStream.FileStreamInstance);
         var hash2 = md5.ComputeHash(otherfileStream.FileStreamInstance);
         var isHashIdentical = hash1 == hash2;
@@ -109,7 +109,7 @@ public class FileAlreadyExistsErrorPerformer : ErrorPerformerBase<FileAlreadyExi
         try
         {
             ResourceLimits.LimitMemory(new Percentage(90));
-            using var copiedImage = new MagickImage(error.File);
+            using var copiedImage = new MagickImage(error.FileName);
             using var otherImage = new MagickImage(error.OtherFile);
             var distortion = copiedImage.Compare(otherImage, ErrorMetric.Absolute);
             var isDistorted = distortion > .000001;
@@ -134,7 +134,7 @@ public class FileAlreadyExistsErrorPerformer : ErrorPerformerBase<FileAlreadyExi
         FileDecomposition targetFile,
         FileAlreadyExistsError error)
     {
-        logger.LogDebug($"Handling collision between {error.File} and {error.OtherFile}!");
+        logger.LogDebug($"Handling collision between {error.FileName} and {error.OtherFile}!");
 
         // if we have a collision, we create a directory and copy all collisions with appended number into it
         // A collision happens when we have several files with the same name and the same target directory

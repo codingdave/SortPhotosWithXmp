@@ -12,10 +12,10 @@ internal class RearrangeByExifCommand : FileScannerCommandBase
     public RearrangeByExifCommand(
         ILogger<LoggerContext> logger,
         CommandlineOptions commandlineOptions,
-        IFile file,
-        IDirectory directory,
+        IFile fileWrapper,
+        IDirectory directoryWrapper,
         Func<FileScanner?> getFileScanner, Action<FileScanner> setFileScanner)
-        : base(logger, commandlineOptions, file, directory, getFileScanner, setFileScanner)
+        : base(logger, commandlineOptions, fileWrapper, directoryWrapper, getFileScanner, setFileScanner)
     {
     }
 
@@ -49,8 +49,8 @@ internal class RearrangeByExifCommand : FileScannerCommandBase
                sourcePath,
                destinationPath,
                GetFileScanner(sourcePath),
-               File,
-               Directory,
+               FileWrapper,
+               DirectoryWrapper,
                isMove,
                isForce));
         }

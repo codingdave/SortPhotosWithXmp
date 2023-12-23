@@ -26,11 +26,11 @@ public class FileScanner : IFileScanner
     };
     private readonly ILogger _logger;
 
-    public FileScanner(ILogger logger, IFile file) => (_logger, File) = (logger, file);
+    public FileScanner(ILogger logger, IFile fileWrapper) => (_logger, FileWrapper) = (logger, fileWrapper);
 
-    public void Crawl(IDirectory directory)
+    public void Crawl(IDirectory directoryWrapper)
     {
-        ScanDirectory = directory.GetCurrentDirectory();
+        ScanDirectory = directoryWrapper.GetCurrentDirectory();
 
         // Multiple filetypes make the extension mandatory and
         // Multiple edits share the same originating file/key DSC_9287.NEF:
@@ -46,10 +46,10 @@ public class FileScanner : IFileScanner
         // as the key as the base for all variations.
 
         // find all images
-        var (imageNames, xmpNames) = GetAllImageDataInCurrentDirectory(directory);
+        var (imageNames, xmpNames) = GetAllImageDataInCurrentDirectory(directoryWrapper);
 
         // first add all images
-        imageNames.Do(imageName => FilenameMap.Add(imageName, new(new ImageFile(imageName, File), new())));
+        imageNames.Do(imageName => FilenameMap.Add(imageName, new(new ImageFile(imageName, FileWrapper), new())));
         // then add the corresponding sidecar files
         xmpNames.Do(xmpName =>
         {
@@ -57,7 +57,7 @@ public class FileScanner : IFileScanner
 
             if (FilenameMap.TryGetValue(filenameWithoutExtensionAndVersion, out var value))
             {
-                value.SidecarFiles.Add(new ImageFile(xmpName, File));
+                value.SidecarFiles.Add(new ImageFile(xmpName, FileWrapper));
             }
             else
             {
@@ -67,7 +67,7 @@ public class FileScanner : IFileScanner
                     string.Equals(xmpName[^XmpExtension.Length..], XmpExtension, StringComparison.OrdinalIgnoreCase)
                     && FilenameMap.TryGetValue(xmpName[..^XmpExtension.Length], out var fileVariation))
                 {
-                    fileVariation.SidecarFiles.Add(new ImageFile(xmpName, File));
+                    fileVariation.SidecarFiles.Add(new ImageFile(xmpName, FileWrapper));
                 }
                 else
                 {
@@ -76,33 +76,33 @@ public class FileScanner : IFileScanner
                         // We did not find the image, so we assume it does not exist
                         _logger.LogTrace($"Expected base image '{filenameWithoutExtensionAndVersion}' not found for '{xmpName}'");
                     }
-                    value = new FileVariations(null, new List<IImageFile>() { new ImageFile(xmpName, File) });
+                    value = new FileVariations(null, new List<IImageFile>() { new ImageFile(xmpName, FileWrapper) });
                     FilenameMap.Add(filenameWithoutExtensionAndVersion, value);
                 }
             }
         });
     }
 
-    internal (IList<string> images, IList<string> xmps) GetAllImageDataInCurrentDirectory(IDirectory directory)
+    internal (IList<string> images, IList<string> xmps) GetAllImageDataInCurrentDirectory(IDirectory directoryWrapper)
     {
         var xmpRegexString = @".*\" + XmpExtension + "$";
         var xmpRegex = new Regex(xmpRegexString, RegexOptions.IgnoreCase);
 
         var imageRegexString = @".*\.(?:" + string.Join(@"|", _extensions) + ")$";
         var imageRegex = new Regex(imageRegexString, RegexOptions.IgnoreCase);
-        var path = directory.GetCurrentDirectory();
+        var path = directoryWrapper.GetCurrentDirectory();
 
-        return FindMatchingFiles(directory, imageRegex, xmpRegex, path);
+        return FindMatchingFiles(directoryWrapper, imageRegex, xmpRegex, path);
     }
 
     private (IList<string> images, IList<string> xmps)
-        FindMatchingFiles(IDirectory directory, Regex imageRegex, Regex xmpRegex, string path)
+    FindMatchingFiles(IDirectory directoryWrapper, Regex imageRegex, Regex xmpRegex, string path)
     {
         _logger.LogInformation($"Scanning '{path}' for images and sidecar files.");
         var sw = new Stopwatch();
         sw.Start();
 
-        var files = directory.EnumerateFiles(path, "*", SearchOption.AllDirectories).AsParallel();
+        var files = directoryWrapper.EnumerateFiles(path, "*", SearchOption.AllDirectories).AsParallel();
         var images = files.Where(x => imageRegex.IsMatch(x)).ToList();
         var xmps = files.Where(x => xmpRegex.IsMatch(x)).ToList();
 
@@ -174,7 +174,7 @@ public class FileScanner : IFileScanner
         {
             if (fileVariation.Data != null)
             {
-                var stream = File.OpenRead(fileVariation.Data.CurrentFilename);
+                var stream = FileWrapper.OpenRead(fileVariation.Data.CurrentFilename);
                 var hash = md5.ComputeHash(stream.FileStreamInstance);
                 if (HashMap.TryGetValue(hash, out var value))
                 {
@@ -208,5 +208,5 @@ public class FileScanner : IFileScanner
     public IDictionary<string, FileVariations> FilenameMap { get; } = new Dictionary<string, FileVariations>();
     public IDictionary<byte[], IEnumerable<FileVariations>> HashMap { get; } = new Dictionary<byte[], IEnumerable<FileVariations>>();
 
-    public IFile File { get; }
+    public IFile FileWrapper { get; }
 }

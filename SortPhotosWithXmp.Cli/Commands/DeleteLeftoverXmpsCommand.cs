@@ -17,10 +17,10 @@ internal class DeleteLeftoverXmpsCommand : FileScannerCommandBase
     public DeleteLeftoverXmpsCommand(
         ILogger<LoggerContext> logger,
         CommandlineOptions commandlineOptions,
-        IFile file,
-        IDirectory directory,
+        IFile fileWrapper,
+        IDirectory directoryWrapper,
         Func<FileScanner?> getFileScanner, Action<FileScanner> setFileScanner)
-        : base(logger, commandlineOptions, file, directory, getFileScanner, setFileScanner)
+        : base(logger, commandlineOptions, fileWrapper, directoryWrapper, getFileScanner, setFileScanner)
     {
     }
 
@@ -44,7 +44,7 @@ internal class DeleteLeftoverXmpsCommand : FileScannerCommandBase
     {
         try
         {
-            Run(new DeleteLeftoverXmpsRunner(isForce, GetFileScanner(sourcePath), File));
+            Run(new DeleteLeftoverXmpsRunner(isForce, GetFileScanner(sourcePath), FileWrapper));
         }
         catch (Exception e)
         {

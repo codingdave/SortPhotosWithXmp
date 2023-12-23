@@ -14,9 +14,9 @@ internal class RearrangeByCameraManufacturerCommand : CommandBase
     public RearrangeByCameraManufacturerCommand(
         ILogger<LoggerContext> logger,
         CommandlineOptions commandlineOptions,
-        IFile file,
-        IDirectory directory)
-        : base(logger, commandlineOptions, file, directory)
+        IFile fileWrapper,
+        IDirectory directoryWrapper)
+        : base(logger, commandlineOptions, fileWrapper, directoryWrapper)
     {
     }
 

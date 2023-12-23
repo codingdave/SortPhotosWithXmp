@@ -8,8 +8,9 @@ using Microsoft.Extensions.Logging;
 using SortPhotosWithXmp.Extensions;
 using SortPhotosWithXmp.Repository;
 using SortPhotosWithXmp.Result;
+using SortPhotosWithXmp.Wrappers;
 
-using SystemInterface.IO;
+using SystemWrapper.IO;
 
 using Configuration = SortPhotosWithXmp.Core.Configuration;
 
@@ -30,7 +31,7 @@ namespace SortPhotosWithXmp.Features
         {
             _logger = logger;
             _similarity = similarity;
-            _hashRepository = new HashRepository(logger, Configuration.GetBasePath(), fileScanner.File);
+            _hashRepository = new HashRepository(logger, Configuration.GetBasePath(), fileScanner.FileWrapper);
             _fileScanner = fileScanner;
             IsForce = isForce;
         }
@@ -193,9 +194,9 @@ namespace SortPhotosWithXmp.Features
 
         private SidecarFileHash CreateXmpHash(HashAlgorithm hashAlgorithm, string filename)
         {
-            using var stream = File.OpenRead(filename);
+            using var stream = _fileScanner.FileWrapper.OpenRead(filename).StreamInstance;
             var hash = hashAlgorithm.ComputeHash(stream);
-            return new SidecarFileHash(filename, hash, _fileScanner.File.GetLastWriteTimeUtc(filename), _fileScanner.File);
+            return new SidecarFileHash(filename, hash, _fileScanner.FileWrapper.GetLastWriteTimeUtc(filename), _fileScanner.FileWrapper);
         }
 
         private ImageFileHash? CreateImageHash(string filename)
@@ -203,11 +204,9 @@ namespace SortPhotosWithXmp.Features
             ImageFileHash? ret = null;
             try
             {
-                using var imageStream = File.OpenRead(filename);
+                using var imageStream = _fileScanner.FileWrapper.OpenRead(filename).StreamInstance;
                 var hash = _hashAlgorithm.Hash(imageStream);
-                {
-                    ret = new ImageFileHash(filename, hash, _fileScanner.File.GetLastWriteTimeUtc(filename), _fileScanner.File);
-                }
+                ret = new ImageFileHash(filename, hash, _fileScanner.FileWrapper.GetLastWriteTimeUtc(filename), _fileScanner.FileWrapper);
             }
             catch (SixLabors.ImageSharp.UnknownImageFormatException e)
             {

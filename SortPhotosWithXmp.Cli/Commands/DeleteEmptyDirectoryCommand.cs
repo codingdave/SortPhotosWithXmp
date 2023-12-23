@@ -15,9 +15,9 @@ internal class DeleteEmptyDirectoryCommand : CommandBase
     public DeleteEmptyDirectoryCommand(
         ILogger<LoggerContext> logger,
         CommandlineOptions commandlineOptions,
-        IFile file,
-        IDirectory directory)
-        : base(logger, commandlineOptions, file, directory)
+        IFile fileWrapper,
+        IDirectory directoryWrapper)
+        : base(logger, commandlineOptions, fileWrapper, directoryWrapper)
     {
     }
 
@@ -41,7 +41,7 @@ internal class DeleteEmptyDirectoryCommand : CommandBase
     {
         try
         {
-            Run(new DeleteEmptyDirectoryRunner(Directory, directory, isForce));
+            Run(new DeleteEmptyDirectoryRunner(DirectoryWrapper, directory, isForce));
         }
         catch (Exception e)
         {

@@ -15,10 +15,10 @@ internal abstract class FileScannerCommandBase : CommandBase
     public FileScannerCommandBase(
         ILogger<LoggerContext> logger,
         CommandlineOptions commandlineOptions,
-        IFile file,
-        IDirectory directory,
+        IFile fileWrapper,
+        IDirectory directoryWrapper,
         Func<FileScanner?> getFileScanner, Action<FileScanner> setFileScanner)
-        : base(logger, commandlineOptions, file, directory)
+        : base(logger, commandlineOptions, fileWrapper, directoryWrapper)
     {
         _getFileScanner = getFileScanner;
         _setFileScanner = setFileScanner;
@@ -30,9 +30,9 @@ internal abstract class FileScannerCommandBase : CommandBase
         var fileScanner = _getFileScanner();
         if (fileScanner == null)
         {
-            fileScanner = new FileScanner(Logger, File);
-            Directory.SetCurrentDirectory(sourcePath);
-            fileScanner.Crawl(Directory);
+            fileScanner = new FileScanner(Logger, FileWrapper);
+            DirectoryWrapper.SetCurrentDirectory(sourcePath);
+            fileScanner.Crawl(DirectoryWrapper);
             _setFileScanner(fileScanner);
             Logger.LogInformation($"New FileScanner has been created for {sourcePath}");
         }

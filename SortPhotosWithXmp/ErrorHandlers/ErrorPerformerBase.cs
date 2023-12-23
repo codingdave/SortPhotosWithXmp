@@ -15,21 +15,21 @@ public abstract class ErrorPerformerBase<T> : IPerformer where T : IError
 {
     protected readonly IErrorCollection<T> _errorCollection = new ErrorCollection<T>();
     protected readonly IFilesStatistics _filesStatistics;
-    protected readonly IFile _file;
-    protected readonly IDirectory _directory;
+    protected readonly IFile _fileWrapper;
+    protected readonly IDirectory _directoryWrapper;
     private readonly string _baseDir;
     protected readonly bool _isForce;
 
     public ErrorPerformerBase(
         IFilesStatistics filesStatistics,
-        IFile file,
-        IDirectory directory,
+        IFile fileWrapper,
+        IDirectory directoryWrapper,
         string baseDir,
         bool isForce)
     {
         _filesStatistics = filesStatistics;
-        _file = file;
-        _directory = directory;
+        _fileWrapper = fileWrapper;
+        _directoryWrapper = directoryWrapper;
         _baseDir = baseDir;
         _isForce = isForce;
     }
@@ -47,14 +47,14 @@ public abstract class ErrorPerformerBase<T> : IPerformer where T : IError
 
             logger.LogError($"{errors.Count()} {directoryName} issues will be located in the directory '{targetDirectory}'");
 
-            RenamePossiblyExistingDirectory(logger, targetDirectory, operations.MoveFileOperation);
+            RenamePossiblyExistingDirectory(logger, targetDirectory, operations.MoveFileOperation, operations.FileWrapper);
             operations.CopyFileOperation.CreateDirectory(targetDirectory);
 
             foreach (var error in errors)
             {
                 try
                 {
-                    var file = CreateFileDecompositionAtCollisionDirectory(targetDirectory, error.File, operations.MoveFileOperation);
+                    var file = CreateFileDecompositionAtCollisionDirectory(targetDirectory, error.FileName, operations.MoveFileOperation);
                     action(file, error);
                 }
                 catch (Exception e)
@@ -71,15 +71,15 @@ public abstract class ErrorPerformerBase<T> : IPerformer where T : IError
         copyFileOperation.CreateDirectory(targetFile.Directory);
 
         // 2: copy the first file of the collision to the other duplicates s.t. we can investigate easily
-        CopyFileWithAppendedNumber(logger, error.File, targetFile, moveFileOperation, copyFileOperation);
+        CopyFileWithAppendedNumber(logger, error.FileName, targetFile, moveFileOperation, copyFileOperation);
     }
 
-    private void RenamePossiblyExistingDirectory(ILogger logger, string sourceDirName, MoveFileOperation moveFileOperation)
+    private void RenamePossiblyExistingDirectory(ILogger logger, string sourceDirName, MoveFileOperation moveFileOperation, IFile fileWrapper)
     {
         // rename possibly existing ErrorFiles directory (add lastWriteTime to the end)
-        if (_directory.Exists(sourceDirName))
+        if (_directoryWrapper.Exists(sourceDirName))
         {
-            var time = File.GetLastWriteTime(sourceDirName).ToString("yyyyMMddTHHmmss");
+            var time = fileWrapper.GetLastWriteTime(sourceDirName).ToString("yyyyMMddTHHmmss");
             var d = new DirectoryInfo(sourceDirName);
             var parentDirectory = d.Parent ?? throw new InvalidOperationException("Parent of path does not exist");
             var directoryName = d.Name;
@@ -116,11 +116,11 @@ public abstract class ErrorPerformerBase<T> : IPerformer where T : IError
     {
         // copy this file into subdirectory with appended _number
         var path = targetFile.Directory;
-        var fileCount = _directory.GetFiles(path, "*" + targetFile.Extension).Length;
+        var fileCount = _directoryWrapper.GetFiles(path, "*" + targetFile.Extension).Length;
         var numberString = fileCount > 0 ? "_" + fileCount : string.Empty;
         var filenameWithExtension = targetFile.Name + numberString + targetFile.Extension;
         var fullname = moveFileOperation.JoinFile(path, filenameWithExtension);
         logger.LogTrace("Collision for '{errorFile}'. Arrange next to others as '{fullname}'", errorFile, fullname);
-        copyFileOperation.ChangeFiles(new List<IImageFile>() { new ImageFile(errorFile, _file) }, fullname);
+        copyFileOperation.ChangeFiles(new List<IImageFile>() { new ImageFile(errorFile, _fileWrapper) }, fullname);
     }
 }

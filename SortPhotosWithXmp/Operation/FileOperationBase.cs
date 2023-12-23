@@ -11,13 +11,15 @@ namespace SortPhotosWithXmp.Operation;
 public abstract class FileOperationBase : IOperation
 {
     protected readonly ILogger _logger;
-    protected readonly IDirectory _directory;
+    protected readonly IFile _fileWrapper;
+    protected readonly IDirectory _directoryWrapper;
     protected readonly Action<FileAlreadyExistsError> _handleError;
 
-    protected FileOperationBase(ILogger logger, IDirectory directory, Action<FileAlreadyExistsError> handleError, bool isForce)
+    protected FileOperationBase(ILogger logger, IFile fileWrapper, IDirectory directoryWrapper, Action<FileAlreadyExistsError> handleError, bool isForce)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _directory = directory ?? throw new ArgumentNullException(nameof(directory));
+        _fileWrapper = fileWrapper;
+        _directoryWrapper = directoryWrapper ?? throw new ArgumentNullException(nameof(directoryWrapper));
         _handleError = handleError ?? throw new ArgumentNullException(nameof(handleError));
         IsForce = isForce;
         _directorySeparator = Path.DirectorySeparatorChar.ToString();
@@ -37,9 +39,9 @@ public abstract class FileOperationBase : IOperation
 
         var directoryPath = Path.GetDirectoryName(targetPath) ?? throw new InvalidOperationException($"Path.GetFullPath({targetPath})");
 
-        if (IsForce && !_directory.Exists(directoryPath))
+        if (IsForce && !_directoryWrapper.Exists(directoryPath))
         {
-            _ = _directory.CreateDirectory(directoryPath);
+            _ = _directoryWrapper.CreateDirectory(directoryPath);
         }
     }
 
@@ -53,7 +55,7 @@ public abstract class FileOperationBase : IOperation
         {
             var targetName = JoinFile(targetPath, Path.GetFileName(file.CurrentFilename));
 
-            if (File.Exists(targetName))
+            if (_fileWrapper.Exists(targetName))
             {
                 var error = new FileAlreadyExistsError(targetName, file.CurrentFilename, $"File {file.CurrentFilename} already exists at {targetName}");
                 _handleError(error);

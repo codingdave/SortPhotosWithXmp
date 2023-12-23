@@ -9,15 +9,13 @@ namespace SortPhotosWithXmp.Operation;
 
 public class CopyFileOperation : FileOperationBase
 {
-    private readonly IFile _file;
-
     internal CopyFileOperation(
         ILogger logger,
-        IFile file,
-        IDirectory directory,
+        IFile fileWrapper,
+        IDirectory directoryWrapper,
         Action<FileAlreadyExistsError> handleError,
         bool isForce)
-        : base(logger, directory, handleError, isForce) => _file = file ?? throw new ArgumentNullException(nameof(file));
+        : base(logger, fileWrapper, directoryWrapper, handleError, isForce) { }
 
 
     public override void ChangeFiles(IEnumerable<IImageFile> files, string targetPath)
@@ -25,7 +23,7 @@ public class CopyFileOperation : FileOperationBase
         void Errorhandler(string sourceFileName, string destFileName)
         {
             _logger.LogTrace($"CopyFileOperation({sourceFileName}, {destFileName});");
-            _file.Move(sourceFileName, destFileName);
+            _fileWrapper.Move(sourceFileName, destFileName);
         };
 
         ChangeFiles(files, targetPath, Errorhandler);

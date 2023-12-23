@@ -4,14 +4,14 @@ namespace SortPhotosWithXmp.Extensions;
 
 public static class PathExtensions
 {
-    public static string CreatePath(this string filePath, IDirectory directory)
+    public static string CreatePath(this string filePath, IDirectory directoryWrapper)
     {
         var fixedPath = filePath.FixPath();
         var fullPath = Path.GetFullPath(fixedPath);
 
-        if (!directory.Exists(fullPath))
+        if (!directoryWrapper.Exists(fullPath))
         {
-            _ = directory.CreateDirectory(fullPath);
+            _ = directoryWrapper.CreateDirectory(fullPath);
         }
         return filePath;
     }

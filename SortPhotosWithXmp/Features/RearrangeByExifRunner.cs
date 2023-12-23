@@ -21,25 +21,25 @@ public class RearrangeByExifRunner : IRun
     private readonly FileOperationBase _fileOperation;
     private readonly DeleteFileOperation _deleteOperation;
     private readonly IFileScanner _fileScanner;
-    private readonly IDirectory _directory;
+    private readonly IDirectory _directoryWrapper;
 
     public RearrangeByExifRunner(ILogger logger,
                              string sourceDirectory,
                              string destinationDirectory,
                              IFileScanner fileScanner,
-                             IFile file,
-                             IDirectory directory,
+                             IFile fileWrapper,
+                             IDirectory directoryWrapper,
                              bool isMove,
                              bool isForce)
     {
         _sourceDirectory = sourceDirectory ?? throw new ArgumentNullException(nameof(sourceDirectory));
         _destinationDirectory = destinationDirectory ?? throw new ArgumentNullException(nameof(destinationDirectory));
-        _deleteOperation = new DeleteFileOperation(logger, file, directory, isForce);
-        _filesFoundResult = new FilesFoundResult(logger, file, directory, destinationDirectory, isForce);
+        _deleteOperation = new DeleteFileOperation(logger, fileWrapper, directoryWrapper, isForce);
+        _filesFoundResult = new FilesFoundResult(logger, fileWrapper, directoryWrapper, destinationDirectory, isForce);
         var errorhandler = (FileAlreadyExistsError e) => _filesFoundResult.FileAlreadyExistsErrorPerformer.Errors.Add(e);
-        _fileOperation = OperationFactory.GetCopyOrMoveOperation(logger, file, directory, errorhandler, isMove, isForce);
+        _fileOperation = OperationFactory.GetCopyOrMoveOperation(logger, fileWrapper, directoryWrapper, errorhandler, isMove, isForce);
         _fileScanner = fileScanner;
-        _directory = directory;
+        _directoryWrapper = directoryWrapper;
     }
 
     public bool IsForce => _fileOperation.IsForce;

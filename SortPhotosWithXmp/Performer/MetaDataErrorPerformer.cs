@@ -12,10 +12,10 @@ public class MetaDataErrorPerformer : ErrorPerformerBase<MetaDataError>
 {
     public MetaDataErrorPerformer(
         IFilesStatistics filesStatistics,
-        IFile file,
-        IDirectory directory,
+        IFile fileWrapper,
+        IDirectory directoryWrapper,
         string baseDir,
-        bool isForce) : base(filesStatistics, file, directory, baseDir, isForce)
+        bool isForce) : base(filesStatistics, fileWrapper, directoryWrapper, baseDir, isForce)
     {
     }
 
@@ -26,7 +26,7 @@ public class MetaDataErrorPerformer : ErrorPerformerBase<MetaDataError>
             logger.LogInformation("Performing MetaDataErrors");
             // when we have an error, we want to copy
             var isCopyingEnforced = true;
-            var operations = new Operations(logger, _file, _directory, _isForce, isCopyingEnforced);
+            var operations = new Operations(logger, _fileWrapper, _directoryWrapper, _isForce, isCopyingEnforced);
 
             CollectCollisions(logger, _errorCollection.Errors,
                 (FileDecomposition targetFile, MetaDataError error)

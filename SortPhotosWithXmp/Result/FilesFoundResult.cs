@@ -11,33 +11,33 @@ namespace SortPhotosWithXmp.Result;
 
 public class FilesFoundResult : IResult
 {
-    private readonly IFile _file;
-    private readonly IDirectory _directory;
+    private readonly IFile _fileWrapper;
+    private readonly IDirectory _directoryWrapper;
 
-    public FilesFoundResult(ILogger logger, IFile file, IDirectory directory, string destinationPath, bool isForce)
+    public FilesFoundResult(ILogger logger, IFile fileWrapper, IDirectory directoryWrapper, string destinationPath, bool isForce)
     {
-        _file = file;
-        _directory = directory;
+        _fileWrapper = fileWrapper;
+        _directoryWrapper = directoryWrapper;
 
         FileAlreadyExistsErrorPerformer = new FileAlreadyExistsErrorPerformer(
             logger,
             FilesStatistics,
-            _file,
-            _directory,
+            _fileWrapper,
+            _directoryWrapper,
             destinationPath,
             isForce);
 
         NoTimeFoundErrorPerformer = new NoTimeFoundErrorPerformer(
             FilesStatistics,
-            _file,
-            _directory,
+            _fileWrapper,
+            _directoryWrapper,
             destinationPath,
             isForce);
 
         MetaDataErrorPerformer = new MetaDataErrorPerformer(
             FilesStatistics,
-            _file,
-            _directory,
+            _fileWrapper,
+            _directoryWrapper,
             destinationPath,
             isForce);
     }
@@ -54,12 +54,12 @@ public class FilesFoundResult : IResult
     {
         foreach (var error in GeneralExceptionErrors.Errors)
         {
-            logger.LogExceptionError(error.File, error.Exception);
+            logger.LogExceptionError(error.FileName, error.Exception);
         }
 
         foreach (var error in ImageProcessingExceptionErrors.Errors)
         {
-            logger.LogExceptionError(error.File, error.Exception);
+            logger.LogExceptionError(error.FileName, error.Exception);
         }
     }
 }

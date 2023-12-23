@@ -10,15 +10,15 @@ namespace SortPhotosWithXmp.Operation;
 public class DeleteFileOperation : IOperation
 {
     private readonly ILogger _logger;
-    private readonly IFile _file;
-    private readonly IDirectory _directory;
+    private readonly IFile _fileWrapper;
+    private readonly IDirectory _directoryWrapper;
     public bool IsForce { get; }
     public DirectoryStatistics DirectoryStatistics { get; }
-    internal DeleteFileOperation(ILogger logger, IFile file, IDirectory directory, bool isForce)
+    internal DeleteFileOperation(ILogger logger, IFile fileWrapper, IDirectory directoryWrapper, bool isForce)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _file = file ?? throw new ArgumentNullException(nameof(file));
-        _directory = directory ?? throw new ArgumentNullException(nameof(directory));
+        _fileWrapper = fileWrapper ?? throw new ArgumentNullException(nameof(fileWrapper));
+        _directoryWrapper = directoryWrapper ?? throw new ArgumentNullException(nameof(directoryWrapper));
         IsForce = isForce;
         DirectoryStatistics = new DirectoryStatistics();
     }
@@ -28,7 +28,7 @@ public class DeleteFileOperation : IOperation
         if (IsForce)
         {
             _logger.LogTrace($"IFile.Delete '{file}';");
-            _file.Delete(file);
+            _fileWrapper.Delete(file);
         }
         else
         {
@@ -41,7 +41,7 @@ public class DeleteFileOperation : IOperation
         if (IsForce)
         {
             _logger.LogTrace("IDirectory.Delete({path});", directory);
-            _directory.Delete(directory, false);
+            _directoryWrapper.Delete(directory, false);
         }
         else
         {
@@ -56,7 +56,7 @@ public class DeleteFileOperation : IOperation
     {
         if (path != null)
         {
-            foreach (var subDirectory in _directory.GetDirectories(path))
+            foreach (var subDirectory in _directoryWrapper.GetDirectories(path))
             {
                 RecursivelyDeleteEmptyDirectories(subDirectory);
             }
@@ -69,16 +69,16 @@ public class DeleteFileOperation : IOperation
     {
         try
         {
-            if (_directory.Exists(path))
+            if (_directoryWrapper.Exists(path))
             {
                 DirectoryStatistics.DirectoriesFound.Add(path);
                 if (
                     // if no directories are within this path
-                    !_directory.GetDirectories(path).Any()
+                    !_directoryWrapper.GetDirectories(path).Any()
                     // if no files are within this path
-                    && !_directory.GetFiles(path).Any()
+                    && !_directoryWrapper.GetFiles(path).Any()
                     // if path is not a file
-                    && !_file.Exists(path))
+                    && !_fileWrapper.Exists(path))
                 {
                     DeleteDirectory(path);
                 }

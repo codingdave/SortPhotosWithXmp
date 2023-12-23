@@ -2,9 +2,9 @@ namespace SortPhotosWithXmp.ErrorHandlers;
 
 public abstract class ErrorBase : IError
 {
-    public ErrorBase(string file, IEnumerable<string> messages)
+    public ErrorBase(string fileName, IEnumerable<string> messages)
     {
-        File = file;
+        FileName = fileName;
         _messages = messages;
     }
 
@@ -12,7 +12,7 @@ public abstract class ErrorBase : IError
 
     public string ErrorMessage => string.Join(Environment.NewLine, _messages);
 
-    public string File { get; }
+    public string FileName { get; }
 
     public abstract string Name { get; }
 
@@ -23,6 +23,6 @@ public abstract class ErrorBase : IError
 
     public override string ToString()
     {
-        return $"{File}. {ErrorMessage}";
+        return $"{FileName}. {ErrorMessage}";
     }
 }
