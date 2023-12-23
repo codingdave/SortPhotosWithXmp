@@ -8,7 +8,6 @@ using Microsoft.Extensions.Logging;
 using SortPhotosWithXmp.Extensions;
 using SortPhotosWithXmp.Repository;
 using SortPhotosWithXmp.Result;
-using SortPhotosWithXmp.Core;
 
 using Configuration = SortPhotosWithXmp.Core.Configuration;
 

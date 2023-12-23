@@ -4,7 +4,6 @@ using SortPhotosWithXmp.CommandLine;
 using SystemInterface.IO;
 using SortPhotosWithXmp.Extensions;
 using SortPhotosWithXmp.Features;
-using SortPhotosWithXmp.Features;
 
 namespace SortPhotosWithXmp.Commands;
 

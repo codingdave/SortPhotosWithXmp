@@ -4,7 +4,6 @@ using SortPhotosWithXmp.ErrorHandlers;
 using SortPhotosWithXmp.Extensions;
 using SortPhotosWithXmp.Operation;
 using SortPhotosWithXmp.Repository;
-using SortPhotosWithXmp.Result;
 using SortPhotosWithXmp.Statistics;
 
 using SystemInterface.IO;

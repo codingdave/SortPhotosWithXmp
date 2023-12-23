@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using SortPhotosWithXmp.CommandLine;
 using SortPhotosWithXmp.Extensions;
 using SortPhotosWithXmp.Features;
-using SortPhotosWithXmp.Features;
 
 using SystemInterface.IO;
 

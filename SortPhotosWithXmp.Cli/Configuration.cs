@@ -8,7 +8,7 @@ using SortPhotosWithXmp.Wrappers;
 
 using SystemInterface.IO;
 
-namespace SortPhotosWithXmp.CommandLine;
+namespace SortPhotosWithXmp;
 
 public static class Configuration
 {

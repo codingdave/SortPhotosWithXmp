@@ -1,18 +1,8 @@
 using System.CommandLine;
 
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 using SortPhotosWithXmp.Commands;
-using SortPhotosWithXmp.Extensions;
-using SortPhotosWithXmp.Features;
-using SortPhotosWithXmp.Features;
-using SortPhotosWithXmp.Features;
-using SortPhotosWithXmp.Features;
-using SortPhotosWithXmp.Features;
-using SortPhotosWithXmp.Features;
-using SortPhotosWithXmp.Features;
-using SortPhotosWithXmp.Features;
 using SortPhotosWithXmp.Features;
 
 using SystemInterface.IO;
@@ -37,13 +27,19 @@ internal class CommandLineHandler
         _fileScanner = value;
     }
 
-    public CommandLineHandler()
+    public CommandLineHandler(ILogger<LoggerContext> logger, IFile file, IDirectory directory)
     {
-        var host = Configuration.CreateHost();
-        _logger = host.Services.GetRequiredService<ILogger<LoggerContext>>();
-        var file = host.Services.GetRequiredService<IFile>();
-        var directory = host.Services.GetRequiredService<IDirectory>();
-        _logger.TestInformationLevels();
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+        if (file is null)
+        {
+            throw new ArgumentNullException(nameof(file));
+        }
+
+        if (directory is null)
+        {
+            throw new ArgumentNullException(nameof(directory));
+        }
 
         _rootCommand = new RootCommand("Rearrange files containing Exif data")
         {
