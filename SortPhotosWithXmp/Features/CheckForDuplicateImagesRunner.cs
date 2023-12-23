@@ -9,6 +9,8 @@ using SortPhotosWithXmp.Extensions;
 using SortPhotosWithXmp.Repository;
 using SortPhotosWithXmp.Result;
 
+using SystemInterface.IO;
+
 using Configuration = SortPhotosWithXmp.Core.Configuration;
 
 namespace SortPhotosWithXmp.Features
@@ -28,7 +30,7 @@ namespace SortPhotosWithXmp.Features
         {
             _logger = logger;
             _similarity = similarity;
-            _hashRepository = new HashRepository(logger, Configuration.GetBasePath());
+            _hashRepository = new HashRepository(logger, Configuration.GetBasePath(), fileScanner.File);
             _fileScanner = fileScanner;
             IsForce = isForce;
         }
@@ -86,7 +88,6 @@ namespace SortPhotosWithXmp.Features
 
         public void DeleteDuplicateImages(FileVariations first, FileVariations second, double similarity)
         {
-#warning DeleteDuplicateImages
             // deletion of images - which one shall we delete?
             // imagine one of them has a descriptive filename, the other does not
             // we should at first copy them all next to each other to evaluate in the duplicate directory
@@ -99,11 +100,12 @@ namespace SortPhotosWithXmp.Features
             if (IsForce)
             {
             }
+
+            throw new NotImplementedException("");
         }
 
         public void DeleteDuplicateXmps(IEnumerable<string> enumerable)
         {
-#warning DeleteDuplicateXmps
             // deletion of duplicate xmps is critical:
             // - We need to delete the one that is not next to the corresponding image.
             // - if there are more locations with existing images the images would need to match as well and then we could delete the image with its xmp.
@@ -116,6 +118,8 @@ namespace SortPhotosWithXmp.Features
             if (IsForce)
             {
             }
+
+            throw new NotImplementedException();
         }
 
         private void CreateSimilarityMap(IEnumerable<FileVariations> hashedImages, int similarity)
@@ -191,7 +195,7 @@ namespace SortPhotosWithXmp.Features
         {
             using var stream = File.OpenRead(filename);
             var hash = hashAlgorithm.ComputeHash(stream);
-            return new SidecarFileHash(filename, hash, File.GetLastWriteTimeUtc(filename));
+            return new SidecarFileHash(filename, hash, _fileScanner.File.GetLastWriteTimeUtc(filename), _fileScanner.File);
         }
 
         private ImageFileHash? CreateImageHash(string filename)
@@ -202,7 +206,7 @@ namespace SortPhotosWithXmp.Features
                 using var imageStream = File.OpenRead(filename);
                 var hash = _hashAlgorithm.Hash(imageStream);
                 {
-                    ret = new ImageFileHash(filename, hash, File.GetLastWriteTimeUtc(filename));
+                    ret = new ImageFileHash(filename, hash, _fileScanner.File.GetLastWriteTimeUtc(filename), _fileScanner.File);
                 }
             }
             catch (SixLabors.ImageSharp.UnknownImageFormatException e)

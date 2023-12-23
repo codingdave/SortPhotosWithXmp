@@ -121,6 +121,6 @@ public abstract class ErrorPerformerBase<T> : IPerformer where T : IError
         var filenameWithExtension = targetFile.Name + numberString + targetFile.Extension;
         var fullname = moveFileOperation.JoinFile(path, filenameWithExtension);
         logger.LogTrace("Collision for '{errorFile}'. Arrange next to others as '{fullname}'", errorFile, fullname);
-        copyFileOperation.ChangeFiles(new List<IImageFile>() { new ImageFile(errorFile) }, fullname);
+        copyFileOperation.ChangeFiles(new List<IImageFile>() { new ImageFile(errorFile, _file) }, fullname);
     }
 }

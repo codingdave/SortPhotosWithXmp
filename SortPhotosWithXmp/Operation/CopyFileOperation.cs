@@ -17,10 +17,7 @@ public class CopyFileOperation : FileOperationBase
         IDirectory directory,
         Action<FileAlreadyExistsError> handleError,
         bool isForce)
-        : base(logger, directory, handleError, isForce)
-    {
-        _file = file ?? throw new ArgumentNullException(nameof(file));
-    }
+        : base(logger, directory, handleError, isForce) => _file = file ?? throw new ArgumentNullException(nameof(file));
 
 
     public override void ChangeFiles(IEnumerable<IImageFile> files, string targetPath)

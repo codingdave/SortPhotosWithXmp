@@ -100,7 +100,6 @@ public abstract class FileOperationBase : IOperation
         return Path.Join(Path.GetDirectoryName(path), _directorySeparator);
     }
 
-
     public override string ToString()
     {
         return GetType().Name + ", IsForce: " + IsForce;
@@ -135,7 +134,6 @@ public class Program
 	Console.WriteLine($"{joinedPath}");	
 		var u2 = Path.Join("/home/user/", "/");
 		Console.WriteLine($"{u2}");	
-		
 	}
 }
 */

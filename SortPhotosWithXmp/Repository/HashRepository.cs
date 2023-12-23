@@ -6,21 +6,30 @@ using Microsoft.Extensions.Logging;
 
 using SortPhotosWithXmp.Extensions;
 
+using SystemInterface.IO;
+
 namespace SortPhotosWithXmp.Repository;
 
 internal class HashRepository
 {
     private readonly ILogger _logger;
     private readonly string _baseDirectory;
+    private readonly IFile _file;
     private readonly Mapper _mapper = AutoMapperConfiguration.InitializeAutomapper();
     private readonly string _filename;
     private readonly JsonSerializerOptions _jsonSerializerOptions;
     private readonly object _lock = new();
 
-    public HashRepository(ILogger logger, string baseDirectory)
+    public HashRepository(ILogger logger, string baseDirectory, IFile file)
     {
-        _logger = logger;
+        if (string.IsNullOrEmpty(baseDirectory))
+        {
+            throw new ArgumentException($"'{nameof(baseDirectory)}' cannot be null or empty.", nameof(baseDirectory));
+        }
+
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _baseDirectory = baseDirectory;
+        _file = file ?? throw new ArgumentNullException(nameof(file));
         _filename = $"{_baseDirectory}fileData.json";
 
         _jsonSerializerOptions = new JsonSerializerOptions
@@ -42,11 +51,11 @@ internal class HashRepository
                 {
 #warning Check invalidation rules for 1. filename different/null, 2. any sidecar file
                     _logger.LogInformation($"Loading file data from a previous run from '{_filename}'.");
-                    var fileDataDto = JsonSerializer.Deserialize<IEnumerable<FileVariationsDto>>(File.ReadAllText(_filename))!;
+                    var fileDataDto = JsonSerializer.Deserialize<IEnumerable<FileVariationsDto>>(_file.ReadAllText(_filename))!;
                     fileData = fileDataDto.Select(x => _mapper.Map<FileVariations>(x))
                     .Where(x => x.Data != null
-                                && File.Exists(x.Data.CurrentFilename)
-                                && x.Data.LastWriteTimeUtc == File.GetLastWriteTimeUtc(x.Data.CurrentFilename)).ToHashSet();
+                                && _file.Exists(x.Data.CurrentFilename)
+                                && x.Data.LastWriteTimeUtc == _file.GetLastWriteTimeUtc(x.Data.CurrentFilename)).ToHashSet();
                 }
                 catch (Exception e)
                 {

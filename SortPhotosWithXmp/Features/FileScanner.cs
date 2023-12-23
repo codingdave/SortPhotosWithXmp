@@ -24,11 +24,9 @@ public class FileScanner : IFileScanner
         "mp4",
         "mov"
     };
-
-    private readonly IFile _file;
     private readonly ILogger _logger;
 
-    public FileScanner(ILogger logger, IFile file) => (_logger, _file) = (logger, file);
+    public FileScanner(ILogger logger, IFile file) => (_logger, File) = (logger, file);
 
     public void Crawl(IDirectory directory)
     {
@@ -48,37 +46,37 @@ public class FileScanner : IFileScanner
         // as the key as the base for all variations.
 
         // find all images
-        var (images, xmps) = GetAllImageDataInCurrentDirectory(directory);
+        var (imageNames, xmpNames) = GetAllImageDataInCurrentDirectory(directory);
 
         // first add all images
-        images.Do(image => FilenameMap.Add(image, new(new ImageFile(image), new())));
+        imageNames.Do(imageName => FilenameMap.Add(imageName, new(new ImageFile(imageName, File), new())));
         // then add the corresponding sidecar files
-        xmps.Do(file =>
+        xmpNames.Do(xmpName =>
         {
-            var filenameWithoutExtensionAndVersion = ExtractFilenameWithoutExtensionAndVersion(file);
+            var filenameWithoutExtensionAndVersion = ExtractFilenameWithoutExtensionAndVersion(xmpName);
 
             if (FilenameMap.TryGetValue(filenameWithoutExtensionAndVersion, out var value))
             {
-                value.SidecarFiles.Add(new ImageFile(file));
+                value.SidecarFiles.Add(new ImageFile(xmpName, File));
             }
             else
             {
                 // Could be a wrong positive:                 
                 // some/other/path/050826_foo_03.JPG.xmp could be Version0 for some/other/path/050826_foo_03.JPG but detected as Version3
                 if (
-                    string.Equals(file[^XmpExtension.Length..], XmpExtension, StringComparison.OrdinalIgnoreCase)
-                    && FilenameMap.TryGetValue(file[..^XmpExtension.Length], out var fileVariation))
+                    string.Equals(xmpName[^XmpExtension.Length..], XmpExtension, StringComparison.OrdinalIgnoreCase)
+                    && FilenameMap.TryGetValue(xmpName[..^XmpExtension.Length], out var fileVariation))
                 {
-                    fileVariation.SidecarFiles.Add(new ImageFile(file));
+                    fileVariation.SidecarFiles.Add(new ImageFile(xmpName, File));
                 }
                 else
                 {
-                    if (!string.Equals(filenameWithoutExtensionAndVersion, file))
+                    if (!string.Equals(filenameWithoutExtensionAndVersion, xmpName))
                     {
                         // We did not find the image, so we assume it does not exist
-                        _logger.LogTrace($"Expected base image '{filenameWithoutExtensionAndVersion}' not found for '{file}'");
+                        _logger.LogTrace($"Expected base image '{filenameWithoutExtensionAndVersion}' not found for '{xmpName}'");
                     }
-                    value = new FileVariations(null, new List<IImageFile>() { new ImageFile(file) });
+                    value = new FileVariations(null, new List<IImageFile>() { new ImageFile(xmpName, File) });
                     FilenameMap.Add(filenameWithoutExtensionAndVersion, value);
                 }
             }
@@ -113,7 +111,6 @@ public class FileScanner : IFileScanner
 
         return (images, xmps);
     }
-
 
     public string ExtractFilenameWithoutExtensionAndVersion(string file)
     {
@@ -177,7 +174,7 @@ public class FileScanner : IFileScanner
         {
             if (fileVariation.Data != null)
             {
-                var stream = _file.OpenRead(fileVariation.Data.CurrentFilename);
+                var stream = File.OpenRead(fileVariation.Data.CurrentFilename);
                 var hash = md5.ComputeHash(stream.FileStreamInstance);
                 if (HashMap.TryGetValue(hash, out var value))
                 {
@@ -210,4 +207,6 @@ public class FileScanner : IFileScanner
 
     public IDictionary<string, FileVariations> FilenameMap { get; } = new Dictionary<string, FileVariations>();
     public IDictionary<byte[], IEnumerable<FileVariations>> HashMap { get; } = new Dictionary<byte[], IEnumerable<FileVariations>>();
+
+    public IFile File { get; }
 }
