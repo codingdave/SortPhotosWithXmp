@@ -35,7 +35,7 @@ public class RearrangeByExifRunner : IRun
         _sourceDirectory = sourceDirectory ?? throw new ArgumentNullException(nameof(sourceDirectory));
         _destinationDirectory = destinationDirectory ?? throw new ArgumentNullException(nameof(destinationDirectory));
         _deleteOperation = new DeleteFileOperation(logger, fileWrapper, directoryWrapper, isForce);
-        _filesFoundResult = new FilesFoundResult(logger, fileWrapper, directoryWrapper, destinationDirectory, isForce, new DeleteDirectoriesPerformer(_sourceDirectory, _deleteOperation));
+        _filesFoundResult = new FilesFoundResult(logger, fileWrapper, directoryWrapper, destinationDirectory, isForce, _sourceDirectory, _deleteOperation);
         var errorhandler = (FileAlreadyExistsError e) => _filesFoundResult.FileAlreadyExistsErrorPerformer.Errors.Add(e);
         _fileOperation = OperationFactory.GetCopyOrMoveOperation(logger, fileWrapper, directoryWrapper, errorhandler, isMove, isForce);
         _fileScanner = fileScanner;

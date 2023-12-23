@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 
 using SortPhotosWithXmp.ErrorHandlers;
 using SortPhotosWithXmp.Extensions;
+using SortPhotosWithXmp.Operation;
 using SortPhotosWithXmp.Performer;
 using SortPhotosWithXmp.Statistics;
 
@@ -14,7 +15,7 @@ public class FilesFoundResult : IResult
     private readonly IFile _fileWrapper;
     private readonly IDirectory _directoryWrapper;
 
-    public FilesFoundResult(ILogger logger, IFile fileWrapper, IDirectory directoryWrapper, string destinationPath, bool isForce, DeleteDirectoriesPerformer deleteDirectoriesPerformer)
+    public FilesFoundResult(ILogger logger, IFile fileWrapper, IDirectory directoryWrapper, string destinationPath, bool isForce, string sourceDirectory, DeleteFileOperation deleteOperation)
     {
         _fileWrapper = fileWrapper;
         _directoryWrapper = directoryWrapper;
@@ -41,10 +42,10 @@ public class FilesFoundResult : IResult
             destinationPath,
             isForce);
 
-        CleanupPerformer = new CleanupPerformer(deleteDirectoriesPerformer);
+        DeleteDirectoriesPerformer = new DeleteDirectoriesPerformer(sourceDirectory, deleteOperation);
     }
 
-    public CleanupPerformer CleanupPerformer { get; }
+    public DeleteDirectoriesPerformer DeleteDirectoriesPerformer { get; }
     public FileAlreadyExistsErrorPerformer FileAlreadyExistsErrorPerformer { get; }
     public IErrorCollection<GeneralExceptionError> GeneralExceptionErrors { get; } = new ErrorCollection<GeneralExceptionError>();
     public IErrorCollection<ImageProcessingExceptionError> ImageProcessingExceptionErrors { get; } = new ErrorCollection<ImageProcessingExceptionError>();

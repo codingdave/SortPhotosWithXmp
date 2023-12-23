@@ -49,7 +49,7 @@ internal abstract class CommandBase
                 filesFoundResult.MetaDataErrorPerformer.Perform(Logger);
                 filesFoundResult.FileAlreadyExistsErrorPerformer.Perform(Logger);
                 filesFoundResult.NoTimeFoundErrorPerformer.Perform(Logger);
-                filesFoundResult.CleanupPerformer.Perform(Logger);
+                filesFoundResult.DeleteDirectoriesPerformer.Perform(Logger);
             }
             result.Log(Logger);
             Logger.LogInformation($"Done processing result");
