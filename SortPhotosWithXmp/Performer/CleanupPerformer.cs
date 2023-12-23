@@ -5,7 +5,9 @@ namespace SortPhotosWithXmp.Performer;
 
 public class CleanupPerformer : IPerformer
 {
-    public DeleteDirectoriesPerformer Performer { get; internal set; }
+    public DeleteDirectoriesPerformer Performer { get; }
+
+    public CleanupPerformer(DeleteDirectoriesPerformer performer) => Performer = performer;
 
     public void Perform(ILogger logger)
     {

@@ -35,7 +35,7 @@ public class RearrangeByExifRunner : IRun
         _sourceDirectory = sourceDirectory ?? throw new ArgumentNullException(nameof(sourceDirectory));
         _destinationDirectory = destinationDirectory ?? throw new ArgumentNullException(nameof(destinationDirectory));
         _deleteOperation = new DeleteFileOperation(logger, fileWrapper, directoryWrapper, isForce);
-        _filesFoundResult = new FilesFoundResult(logger, fileWrapper, directoryWrapper, destinationDirectory, isForce);
+        _filesFoundResult = new FilesFoundResult(logger, fileWrapper, directoryWrapper, destinationDirectory, isForce, new DeleteDirectoriesPerformer(_sourceDirectory, _deleteOperation));
         var errorhandler = (FileAlreadyExistsError e) => _filesFoundResult.FileAlreadyExistsErrorPerformer.Errors.Add(e);
         _fileOperation = OperationFactory.GetCopyOrMoveOperation(logger, fileWrapper, directoryWrapper, errorhandler, isMove, isForce);
         _fileScanner = fileScanner;
@@ -48,7 +48,7 @@ public class RearrangeByExifRunner : IRun
     {
         DateTimeResolver dateTimeResolver = new(logger);
         logger.LogInformation($"Starting {nameof(RearrangeByExifRunner)}.{nameof(Run)} with search path: '{_sourceDirectory}' and destination path '{_destinationDirectory}'. {_fileOperation}");
-
+        
         _fileScanner.FilenameMap.Values
 #if RELEASE
         .AsParallel().ForAll(
@@ -96,7 +96,6 @@ public class RearrangeByExifRunner : IRun
             }
         });
 
-        _filesFoundResult.CleanupPerformer.Performer = new DeleteDirectoriesPerformer(_sourceDirectory, _deleteOperation);
         logger.LogInformation($"{nameof(RearrangeByExifRunner)}.{nameof(Run)} has finished");
 
         return _filesFoundResult;

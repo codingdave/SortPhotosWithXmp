@@ -14,7 +14,7 @@ public class FilesFoundResult : IResult
     private readonly IFile _fileWrapper;
     private readonly IDirectory _directoryWrapper;
 
-    public FilesFoundResult(ILogger logger, IFile fileWrapper, IDirectory directoryWrapper, string destinationPath, bool isForce)
+    public FilesFoundResult(ILogger logger, IFile fileWrapper, IDirectory directoryWrapper, string destinationPath, bool isForce, DeleteDirectoriesPerformer deleteDirectoriesPerformer)
     {
         _fileWrapper = fileWrapper;
         _directoryWrapper = directoryWrapper;
@@ -40,9 +40,11 @@ public class FilesFoundResult : IResult
             _directoryWrapper,
             destinationPath,
             isForce);
+
+        CleanupPerformer = new CleanupPerformer(deleteDirectoriesPerformer);
     }
 
-    public CleanupPerformer CleanupPerformer { get; internal set; } = new CleanupPerformer();
+    public CleanupPerformer CleanupPerformer { get; }
     public FileAlreadyExistsErrorPerformer FileAlreadyExistsErrorPerformer { get; }
     public IErrorCollection<GeneralExceptionError> GeneralExceptionErrors { get; } = new ErrorCollection<GeneralExceptionError>();
     public IErrorCollection<ImageProcessingExceptionError> ImageProcessingExceptionErrors { get; } = new ErrorCollection<ImageProcessingExceptionError>();
